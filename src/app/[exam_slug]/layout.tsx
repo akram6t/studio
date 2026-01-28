@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useParams, usePathname, useRouter } from 'next/navigation';
@@ -55,7 +54,7 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
       </Link>
 
       <Card className={cn(
-        "mb-0 overflow-hidden border-none shadow-md transition-all duration-700 rounded-b-none",
+        "mb-[5px] overflow-hidden border-none shadow-md transition-all duration-700",
         isUnlocked 
           ? "bg-amber-600 text-white" 
           : "bg-primary text-primary-foreground"
@@ -129,7 +128,7 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
       </Card>
 
       <div className="sticky top-16 z-40 -mx-4 md:mx-0">
-        <div className="bg-background/95 backdrop-blur-md border-y md:border-x md:rounded-b-xl shadow-[0_4px_15px_rgb(0,0,0,0.05)] px-4 md:px-1 py-1">
+        <div className="bg-background/95 backdrop-blur-md border-y md:border-x md:rounded-xl shadow-[0_4px_15px_rgb(0,0,0,0.05)] px-4 md:px-1 py-1">
           <Tabs value={currentTab || ''} onValueChange={(val) => router.push(`/${slug}/${val}`)} className="w-full">
             <TabsList className="bg-transparent h-auto p-0 flex w-full justify-start md:justify-center overflow-x-auto whitespace-nowrap scrollbar-hide">
               {tabs.map(tab => (
