@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Play, CheckCircle2, Clock, BarChart3 } from "lucide-react";
+import { ArrowLeft, Play, CheckCircle2, Clock, BarChart3, BookText } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -43,8 +43,11 @@ export default function SubjectPracticePage() {
       </Link>
 
       <div className="mb-10">
-        <h1 className="text-4xl font-headline font-bold mb-2">{getSubjectTitle(subjectId)}</h1>
-        <p className="text-muted-foreground">Select a practice set to improve your skills in this subject.</p>
+        <div className="flex items-center gap-3 mb-2">
+          <BookText className="h-6 w-6 text-primary" />
+          <h1 className="text-4xl font-headline font-bold">{getSubjectTitle(subjectId)}</h1>
+        </div>
+        <p className="text-muted-foreground">Master {getSubjectTitle(subjectId)} by practicing these core topics.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -53,19 +56,19 @@ export default function SubjectPracticePage() {
           const isCompleted = progress === 100;
 
           return (
-            <Card key={set.id} className="group hover:shadow-lg transition-all border-none shadow-md overflow-hidden flex flex-col">
+            <Card key={set.id} className="group hover:shadow-lg transition-all border-none shadow-md overflow-hidden flex flex-col bg-card">
               <div className={cn(
-                "h-1.5 w-full",
+                "h-1.5 w-full transition-colors",
                 isCompleted ? "bg-emerald-500" : "bg-primary/20"
               )} />
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start mb-2">
-                  <Badge variant="outline" className={cn("text-[10px] font-bold uppercase", getDifficultyColor(set.difficulty))}>
+                  <Badge variant="outline" className={cn("text-[10px] font-bold uppercase tracking-wider", getDifficultyColor(set.difficulty))}>
                     {set.difficulty}
                   </Badge>
-                  {isCompleted && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+                  {isCompleted && <CheckCircle2 className="h-5 w-5 text-emerald-500 animate-in zoom-in duration-300" />}
                 </div>
-                <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-1">
                   {set.title}
                 </CardTitle>
                 <CardDescription className="flex items-center gap-2 mt-1">
@@ -86,7 +89,7 @@ export default function SubjectPracticePage() {
 
               <CardFooter className="pt-0 p-6 bg-muted/5 group-hover:bg-muted/10 transition-colors">
                 <Button className="w-full gap-2 rounded-xl" variant={isCompleted ? "outline" : "default"}>
-                  {isCompleted ? "Review Set" : progress > 0 ? "Resume Practice" : "Start Now"}
+                  {isCompleted ? "Review Set" : progress > 0 ? "Resume Topic" : "Start Topic"}
                   <Play className="h-4 w-4 fill-current" />
                 </Button>
               </CardFooter>
@@ -98,8 +101,8 @@ export default function SubjectPracticePage() {
       {sets.length === 0 && (
         <div className="text-center py-20 bg-muted/20 rounded-3xl border-2 border-dashed">
           <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-xl font-bold mb-2">Coming Soon</h3>
-          <p className="text-muted-foreground">We are currently preparing sets for this subject.</p>
+          <h3 className="text-xl font-bold mb-2">Topics Coming Soon</h3>
+          <p className="text-muted-foreground">We are currently preparing practice modules for this subject.</p>
         </div>
       )}
     </div>

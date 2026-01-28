@@ -114,11 +114,38 @@ export const getContent = (slug: string): ContentItem[] => [
   { id: 'c5', title: 'Mathematics Shortcut Tricks', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/book5/300/400' },
 ];
 
-export const getPracticeSets = (subjectId: string): PracticeSet[] => [
-  { id: 'ps1', title: 'Arithmetic Foundation Set', totalQuestions: 30, completedQuestions: 12, difficulty: 'Easy' },
-  { id: 'ps2', title: 'Advanced Algebra Challenge', totalQuestions: 50, completedQuestions: 0, difficulty: 'Hard' },
-  { id: 'ps3', title: 'Data Interpretation Basic', totalQuestions: 20, completedQuestions: 20, difficulty: 'Medium' },
-  { id: 'ps4', title: 'Mixed Reasoning Puzzles', totalQuestions: 40, completedQuestions: 5, difficulty: 'Medium' },
-  { id: 'ps5', title: 'Daily Quick Practice', totalQuestions: 15, completedQuestions: 15, difficulty: 'Easy' },
-  { id: 'ps6', title: 'Geometry Concepts 1', totalQuestions: 35, completedQuestions: 0, difficulty: 'Medium' },
-];
+export const getPracticeSets = (subjectId: string): PracticeSet[] => {
+  switch (subjectId) {
+    case 'quant':
+      return [
+        { id: 'ps1', title: 'Number Systems', totalQuestions: 30, completedQuestions: 12, difficulty: 'Easy' },
+        { id: 'ps2', title: 'Profit & Loss', totalQuestions: 50, completedQuestions: 0, difficulty: 'Medium' },
+        { id: 'ps3', title: 'Time & Work', totalQuestions: 40, completedQuestions: 40, difficulty: 'Medium' },
+        { id: 'ps4', title: 'Data Interpretation', totalQuestions: 25, completedQuestions: 5, difficulty: 'Hard' },
+        { id: 'ps5', title: 'Simple & Compound Interest', totalQuestions: 35, completedQuestions: 0, difficulty: 'Medium' },
+      ];
+    case 'english':
+      return [
+        { id: 'e1', title: 'Reading Comprehension', totalQuestions: 20, completedQuestions: 10, difficulty: 'Medium' },
+        { id: 'e2', title: 'Sentence Correction', totalQuestions: 50, completedQuestions: 0, difficulty: 'Easy' },
+        { id: 'e3', title: 'Vocabulary & Idioms', totalQuestions: 100, completedQuestions: 100, difficulty: 'Medium' },
+        { id: 'e4', title: 'Fill in the Blanks', totalQuestions: 40, completedQuestions: 5, difficulty: 'Easy' },
+      ];
+    case 'reasoning':
+      return [
+        { id: 'r1', title: 'Syllogism', totalQuestions: 30, completedQuestions: 30, difficulty: 'Medium' },
+        { id: 'r2', title: 'Seating Arrangement', totalQuestions: 25, completedQuestions: 0, difficulty: 'Hard' },
+        { id: 'r3', title: 'Blood Relations', totalQuestions: 20, completedQuestions: 15, difficulty: 'Easy' },
+        { id: 'r4', title: 'Coding-Decoding', totalQuestions: 40, completedQuestions: 10, difficulty: 'Medium' },
+      ];
+    case 'gk':
+      return [
+        { id: 'g1', title: 'Indian History', totalQuestions: 150, completedQuestions: 50, difficulty: 'Medium' },
+        { id: 'g2', title: 'Geography', totalQuestions: 120, completedQuestions: 0, difficulty: 'Medium' },
+        { id: 'g3', title: 'General Science', totalQuestions: 200, completedQuestions: 20, difficulty: 'Easy' },
+        { id: 'g4', title: 'Current Affairs 2024', totalQuestions: 300, completedQuestions: 300, difficulty: 'Medium' },
+      ];
+    default:
+      return [];
+  }
+};
