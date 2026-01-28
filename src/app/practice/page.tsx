@@ -116,16 +116,15 @@ export default function PracticePage() {
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-headline font-bold">Recommended Topics</h2>
-              <Button variant="link" className="text-accent font-bold p-0">View all</Button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {["Profit & Loss", "Verbal Ability", "Time & Work", "Syllogism", "Indian History", "Sentence Correction", "Data Interpretation", "Current Affairs"].map((topic, i) => (
-                <div key={i} className="bg-card p-4 rounded-xl border hover:border-accent transition-colors cursor-pointer group">
+                <div key={i} className="bg-card p-4 rounded-xl border hover:border-accent/50 transition-all cursor-pointer group">
                   <div className="flex items-center justify-between mb-2">
                     <Zap className="h-4 w-4 text-accent opacity-50 group-hover:opacity-100" />
                     <Badge className="text-[10px] bg-muted text-muted-foreground border-none">Topic</Badge>
                   </div>
-                  <span className="text-sm font-bold block">{topic}</span>
+                  <span className="text-sm font-bold block group-hover:text-accent transition-colors">{topic}</span>
                 </div>
               ))}
             </div>
