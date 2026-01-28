@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Menu, User, BookOpen, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 
 export default function Navbar() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -63,6 +63,10 @@ export default function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
+              <SheetTitle className="sr-only">Menu</SheetTitle>
+              <SheetDescription className="sr-only">
+                Navigation links for exams, practice materials, and account management.
+              </SheetDescription>
               <div className="flex flex-col gap-6 mt-10">
                 <Link href="/exams" className="text-lg font-medium">Exams</Link>
                 <Link href="#" className="text-lg font-medium">Practice</Link>
