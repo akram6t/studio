@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useParams } from "next/navigation";
@@ -6,7 +5,6 @@ import { getPracticeSets } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Play, CheckCircle2, Clock, BarChart3, BookText } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -23,15 +21,6 @@ export default function SubjectPracticePage() {
       case 'reasoning': return 'Reasoning Ability';
       case 'gk': return 'General Knowledge';
       default: return 'Practice Sets';
-    }
-  };
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Easy': return 'text-emerald-600 border-emerald-200 bg-emerald-50';
-      case 'Medium': return 'text-amber-600 border-amber-200 bg-amber-50';
-      case 'Hard': return 'text-rose-600 border-rose-200 bg-rose-50';
-      default: return '';
     }
   };
 
@@ -62,10 +51,7 @@ export default function SubjectPracticePage() {
                 isCompleted ? "bg-emerald-500" : "bg-primary/20"
               )} />
               <CardHeader className="pb-4">
-                <div className="flex justify-between items-start mb-2">
-                  <Badge variant="outline" className={cn("text-[10px] font-bold uppercase tracking-wider", getDifficultyColor(set.difficulty))}>
-                    {set.difficulty}
-                  </Badge>
+                <div className="flex justify-end items-start mb-2">
                   {isCompleted && <CheckCircle2 className="h-5 w-5 text-emerald-500 animate-in zoom-in duration-300" />}
                 </div>
                 <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-1">
@@ -80,7 +66,7 @@ export default function SubjectPracticePage() {
               <CardContent className="flex-grow pb-4">
                 <div className="space-y-3">
                   <div className="flex justify-between text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                    <span>{set.completedQuestions} Solved</span>
+                    <span>{set.completedQuestions}/{set.totalQuestions} Solved</span>
                     <span>{Math.round(progress)}%</span>
                   </div>
                   <Progress value={progress} className="h-2" />
