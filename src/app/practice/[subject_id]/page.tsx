@@ -59,7 +59,7 @@ export default function SubjectPracticePage() {
                 </CardTitle>
                 <CardDescription className="flex items-center gap-2 mt-1">
                   <BarChart3 className="h-3 w-3" />
-                  {set.totalQuestions} Questions
+                  {set.totalQuestions} Sets
                 </CardDescription>
               </CardHeader>
               
