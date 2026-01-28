@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useParams } from 'next/navigation';
@@ -26,7 +25,7 @@ export default function ContentPage() {
         <p className="text-muted-foreground text-sm">Curated PDFs, presentations, and blog posts.</p>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {content.map(item => (
           <div key={item.id} className="group cursor-pointer">
             <Card className="aspect-[3/4] relative overflow-hidden border-none shadow-sm bg-white dark:bg-card group-hover:-translate-y-1 transition-all duration-300 flex flex-col">
@@ -49,11 +48,11 @@ export default function ContentPage() {
                   </div>
                 </div>
                 
-                <div className="p-2 bg-white dark:bg-card flex flex-col gap-1 border-t relative z-20">
-                  <h3 className="font-bold text-[11px] leading-tight line-clamp-2 h-7">{item.title}</h3>
+                <div className="p-3 bg-white dark:bg-card flex flex-col gap-2 border-t relative z-20">
+                  <h3 className="font-bold text-sm leading-snug line-clamp-2 h-10">{item.title}</h3>
                   <div className="flex items-center justify-between mt-1">
-                    <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">{item.type}</span>
-                    <Download className="h-3 w-3 text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{item.type}</span>
+                    <Download className="h-4 w-4 text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </div>
               </CardContent>
