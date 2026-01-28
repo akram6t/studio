@@ -40,8 +40,7 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
           <div 
             key={test.id} 
             className={cn(
-              "relative flex flex-col md:flex-row items-center gap-4 md:gap-6 p-4 pt-8 md:pt-4 md:p-5 bg-card border rounded-2xl shadow-sm hover:shadow-md transition-all group overflow-hidden",
-              !canAccess && "opacity-50 grayscale-[0.3] hover:opacity-70 transition-opacity"
+              "relative flex flex-col md:flex-row items-center gap-4 md:gap-6 p-4 pt-8 md:pt-4 md:p-5 bg-card border rounded-2xl shadow-sm hover:shadow-md transition-all group overflow-hidden"
             )}
           >
             {/* Absolute Badge at Top-Left */}

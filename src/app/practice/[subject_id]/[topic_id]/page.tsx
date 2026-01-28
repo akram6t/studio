@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useParams } from "next/navigation";
@@ -36,8 +35,8 @@ export default function TopicSetsPage() {
       </Link>
 
       <div className="mb-10">
-        <h1 className="text-4xl font-headline font-bold mb-2">{currentTopic?.title || 'Topic Sets'}</h1>
-        <p className="text-muted-foreground">Select a practice set to test your skills on this specific topic.</p>
+        <h1 className="text-2xl md:text-4xl font-headline font-bold mb-2">{currentTopic?.title || 'Topic Sets'}</h1>
+        <p className="text-sm md:text-base text-muted-foreground">Select a practice set to test your skills on this specific topic.</p>
       </div>
 
       <div className="space-y-4">
@@ -48,8 +47,7 @@ export default function TopicSetsPage() {
             <Card 
               key={set.id} 
               className={cn(
-                "group border-none shadow-md overflow-hidden hover:shadow-lg transition-all",
-                !canAccess && "opacity-60 grayscale-[0.2]"
+                "group border-none shadow-md overflow-hidden hover:shadow-lg transition-all"
               )}
             >
               <CardContent className="p-0">
