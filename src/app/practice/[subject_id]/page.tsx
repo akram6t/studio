@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useParams } from "next/navigation";
@@ -5,7 +6,7 @@ import { getPracticeSets } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Play, CheckCircle2, Clock, BarChart3, BookText, Hash, Binary, Type, Globe, Brain, HelpCircle, FileQuestion, GraduationCap } from "lucide-react";
+import { ArrowLeft, Play, CheckCircle2, BarChart3, BookText, Hash, Binary, Type, Globe, Brain, FileQuestion, Clock } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -59,7 +60,7 @@ export default function SubjectPracticePage() {
           const isCompleted = progress === 100;
 
           return (
-            <Card key={set.id} className="group hover:shadow-lg transition-all border-none shadow-md overflow-hidden flex flex-col bg-card">
+            <Card key={set.id} className="group hover:shadow-lg transition-all duration-300 border-none shadow-md overflow-hidden flex flex-col bg-card">
               <div className={cn(
                 "h-1.5 w-full transition-colors",
                 isCompleted ? "bg-emerald-500" : "bg-primary/20"
@@ -67,8 +68,10 @@ export default function SubjectPracticePage() {
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start mb-2">
                   <div className={cn(
-                    "p-2 rounded-lg transition-colors",
-                    isCompleted ? "bg-emerald-100 text-emerald-600" : "bg-muted group-hover:bg-primary group-hover:text-white"
+                    "p-2.5 rounded-xl transition-all duration-300",
+                    isCompleted 
+                      ? "bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white" 
+                      : "bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-white"
                   )}>
                     {getTopicIcon(set.title)}
                   </div>
@@ -95,7 +98,7 @@ export default function SubjectPracticePage() {
 
               <CardFooter className="pt-0 p-6 bg-muted/5 group-hover:bg-muted/10 transition-colors">
                 <Link href={`/practice/${subjectId}/${set.id}`} className="w-full">
-                  <Button className="w-full gap-2 rounded-xl group-hover:text-primary-foreground" variant={isCompleted ? "outline" : "default"}>
+                  <Button className="w-full gap-2 rounded-xl group-hover:bg-primary group-hover:text-primary-foreground transition-colors" variant={isCompleted ? "outline" : "default"}>
                     {isCompleted ? "Review Set" : progress > 0 ? "Resume Topic" : "Start Topic"}
                     <Play className="h-4 w-4 fill-current" />
                   </Button>
