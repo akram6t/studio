@@ -38,6 +38,18 @@ export interface ContentItem {
   thumbnail?: string;
 }
 
+export interface Book {
+  id: string;
+  title: string;
+  author: string;
+  category: string;
+  price: number;
+  rating: number;
+  image: string;
+  pages: number;
+  language: string;
+}
+
 export interface PracticeSet {
   id: string;
   title: string;
@@ -97,6 +109,23 @@ export const EXAMS: Exam[] = [
 ];
 
 export const CATEGORIES = Array.from(new Set(EXAMS.map(e => e.category)));
+
+export const BOOKS: Book[] = [
+  { id: 'b1', title: 'Quantitative Aptitude for Competitive Exams', author: 'R.S. Aggarwal', category: 'SSC Exams', price: 450, rating: 4.8, image: 'https://picsum.photos/seed/book1/300/400', pages: 750, language: 'English' },
+  { id: 'b2', title: 'Modern Approach to Verbal Reasoning', author: 'Dr. R.S. Aggarwal', category: 'Reasoning', price: 380, rating: 4.7, image: 'https://picsum.photos/seed/book2/300/400', pages: 620, language: 'English' },
+  { id: 'b3', title: 'GATE Engineering Mathematics', author: 'Made Easy Publications', category: 'Engineering', price: 550, rating: 4.9, image: 'https://picsum.photos/seed/book3/300/400', pages: 500, language: 'English' },
+  { id: 'b4', title: 'Indian Polity for UPSC', author: 'M. Laxmikanth', category: 'Civil Services', price: 620, rating: 4.9, image: 'https://picsum.photos/seed/book4/300/400', pages: 800, language: 'English' },
+  { id: 'b5', title: 'Word Power Made Easy', author: 'Norman Lewis', category: 'English', price: 150, rating: 4.8, image: 'https://picsum.photos/seed/book5/300/400', pages: 400, language: 'English' },
+  { id: 'b6', title: 'Fast Track Objective Arithmetic', author: 'Rajesh Verma', category: 'SSC Exams', price: 280, rating: 4.5, image: 'https://picsum.photos/seed/book6/300/400', pages: 450, language: 'Hindi' },
+  { id: 'b7', title: 'Object-Oriented Programming with C++', author: 'E. Balagurusamy', category: 'IT/Software', price: 420, rating: 4.6, image: 'https://picsum.photos/seed/book7/300/400', pages: 580, language: 'English' },
+  { id: 'b8', title: 'Geography of India', author: 'Majid Husain', category: 'Civil Services', price: 490, rating: 4.4, image: 'https://picsum.photos/seed/book8/300/400', pages: 600, language: 'English' },
+  { id: 'b9', title: 'English Grammar & Composition', author: 'Wren & Martin', category: 'English', price: 250, rating: 4.8, image: 'https://picsum.photos/seed/book9/300/400', pages: 350, language: 'English' },
+  { id: 'b10', title: 'Data Interpretation Master', author: 'Pearson', category: 'Banking', price: 340, rating: 4.3, image: 'https://picsum.photos/seed/book10/300/400', pages: 300, language: 'English' },
+  { id: 'b11', title: 'Aptitude Cracked', author: 'Kaplan', category: 'IT/Software', price: 599, rating: 4.7, image: 'https://picsum.photos/seed/book11/300/400', pages: 420, language: 'English' },
+  { id: 'b12', title: 'Cracking the Coding Interview', author: 'Gayle Laakmann', category: 'IT/Software', price: 899, rating: 4.9, image: 'https://picsum.photos/seed/book12/300/400', pages: 700, language: 'English' },
+];
+
+export const BOOK_CATEGORIES = Array.from(new Set(BOOKS.map(b => b.category)));
 
 export const getMockTests = (slug: string): TestItem[] => [
   { id: 'm1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock' },
