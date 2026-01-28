@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -100,9 +99,13 @@ export default function ExamOverview() {
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-xl font-headline font-bold">Preparation Kit</h3>
               {isUnlocked ? (
-                <Crown className="text-amber-600 h-6 w-6" />
+                <div className="bg-amber-600 p-1.5 rounded-lg text-white">
+                  <Crown className="h-5 w-5" />
+                </div>
               ) : (
-                <Zap className="text-accent h-6 w-6" />
+                <div className="bg-accent p-1.5 rounded-lg text-white">
+                  <Zap className="h-5 w-5" />
+                </div>
               )}
             </div>
 
@@ -158,18 +161,6 @@ export default function ExamOverview() {
             )}
           </CardContent>
         </Card>
-
-        <div className="bg-card p-6 rounded-2xl shadow-sm border">
-          <h3 className="text-lg font-bold mb-4">Latest Updates</h3>
-          <ul className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <li key={i} className="group cursor-pointer">
-                <p className="text-xs text-muted-foreground mb-1">Oct 15, 2024</p>
-                <h4 className="text-sm font-semibold group-hover:text-primary transition-colors">Official notification for 2024 out now.</h4>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
     </div>
   );
