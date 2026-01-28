@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,13 +9,10 @@ import {
   Languages, 
   BrainCircuit, 
   Globe, 
-  Zap, 
   Target, 
-  TrendingUp,
   ArrowRight,
   Clock
 } from "lucide-react";
-import Link from "next/link";
 
 const SUBJECTS = [
   {
@@ -67,6 +63,11 @@ const RECENT_ACTIVITY = [
   { id: 3, title: "Number Series", subject: "Reasoning", score: "25/25", date: "Yesterday" },
 ];
 
+const TOPICS = [
+  "Profit & Loss", "Verbal Ability", "Time & Work", "Syllogism", 
+  "Indian History", "Sentence Correction", "Data Interpretation", "Current Affairs"
+];
+
 export default function PracticePage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -114,52 +115,22 @@ export default function PracticePage() {
           </section>
 
           <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-headline font-bold">Recommended Topics</h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {["Profit & Loss", "Verbal Ability", "Time & Work", "Syllogism", "Indian History", "Sentence Correction", "Data Interpretation", "Current Affairs"].map((topic, i) => (
-                <div key={i} className="bg-card p-4 rounded-xl border hover:border-accent/50 transition-all cursor-pointer group">
-                  <div className="flex items-center justify-between mb-2">
-                    <Zap className="h-4 w-4 text-accent opacity-50 group-hover:opacity-100" />
-                    <Badge className="text-[10px] bg-muted text-muted-foreground border-none">Topic</Badge>
-                  </div>
-                  <span className="text-sm font-bold block group-hover:text-accent transition-colors">{topic}</span>
-                </div>
+            <h2 className="text-2xl font-headline font-bold mb-6">Recommended Topics</h2>
+            <div className="flex flex-wrap gap-3">
+              {TOPICS.map((topic, i) => (
+                <Badge 
+                  key={i} 
+                  variant="outline" 
+                  className="px-4 py-2 text-sm cursor-pointer hover:border-primary transition-colors"
+                >
+                  {topic}
+                </Badge>
               ))}
             </div>
           </section>
         </div>
 
         <div className="space-y-8">
-          <Card className="border-none shadow-md bg-primary text-primary-foreground overflow-hidden relative">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Performance
-              </CardTitle>
-              <CardDescription className="text-primary-foreground/70">
-                You've improved by 12% this week!
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6 relative z-10">
-              <div className="flex items-end gap-1">
-                <span className="text-5xl font-bold">142</span>
-                <span className="text-xl opacity-70 mb-1">XP</span>
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Rank among peers: <span className="font-bold">#42</span></p>
-                <div className="flex gap-1">
-                  {[...Array(7)].map((_, i) => (
-                    <div key={i} className={`flex-1 h-12 rounded-md ${i < 5 ? 'bg-white/40' : 'bg-white/10'}`} />
-                  ))}
-                </div>
-                <p className="text-[10px] text-center opacity-70">Daily Activity (Mon - Sun)</p>
-              </div>
-            </CardContent>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 -mr-16 -mt-16 rounded-full" />
-          </Card>
-
           <Card className="border-none shadow-md">
             <CardHeader>
               <CardTitle className="text-lg">Recent Activity</CardTitle>
