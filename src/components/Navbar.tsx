@@ -29,7 +29,7 @@ export default function Navbar() {
           
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <Link href="/exams" className="transition-colors hover:text-accent">Exams</Link>
-            <Link href="#" className="transition-colors hover:text-accent">Practice</Link>
+            <Link href="/practice" className="transition-colors hover:text-accent">Practice</Link>
             <Link href="#" className="transition-colors hover:text-accent">Courses</Link>
           </nav>
         </div>
@@ -69,7 +69,7 @@ export default function Navbar() {
               </SheetDescription>
               <div className="flex flex-col gap-6 mt-10">
                 <Link href="/exams" className="text-lg font-medium">Exams</Link>
-                <Link href="#" className="text-lg font-medium">Practice</Link>
+                <Link href="/practice" className="text-lg font-medium">Practice</Link>
                 <Link href="#" className="text-lg font-medium">Courses</Link>
                 <hr />
                 <Link href="/login" className="text-lg font-medium">Log In</Link>
