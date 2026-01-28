@@ -4,7 +4,7 @@
 import { TestItem } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Timer, Award, FileQuestion, Lock, Play } from 'lucide-react';
+import { Timer, Award, FileQuestion, Lock, Play, History, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
@@ -17,6 +17,19 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
     window.addEventListener('premium-unlocked', handleUnlock);
     return () => window.removeEventListener('premium-unlocked', handleUnlock);
   }, []);
+
+  const getTestIcon = (type: string) => {
+    switch (type) {
+      case 'mock':
+        return <Play className="h-8 w-8 fill-current" />;
+      case 'test':
+        return <ClipboardCheck className="h-8 w-8" />;
+      case 'previous':
+        return <History className="h-8 w-8" />;
+      default:
+        return <Play className="h-8 w-8 fill-current" />;
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -35,7 +48,7 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
               "h-16 w-16 hidden md:flex shrink-0 items-center justify-center rounded-2xl transition-colors",
               isUnlocked ? "bg-amber-100 text-amber-600 group-hover:bg-amber-600 group-hover:text-white" : "bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white"
             )}>
-              <Play className="h-8 w-8 fill-current" />
+              {getTestIcon(test.type)}
             </div>
             
             <div className="flex-grow space-y-2 text-center md:text-left">
