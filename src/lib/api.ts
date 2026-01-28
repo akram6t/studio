@@ -1,4 +1,6 @@
 
+import { PlaceHolderImages } from './placeholder-images';
+
 export interface Exam {
   id: string;
   slug: string;
@@ -52,6 +54,8 @@ export interface TopicSet {
   isFree: boolean;
 }
 
+const getImage = (id: string) => PlaceHolderImages.find(img => img.id === id)?.imageUrl || `https://picsum.photos/seed/${id}/600/400`;
+
 export const EXAMS: Exam[] = [
   {
     id: '1',
@@ -60,7 +64,7 @@ export const EXAMS: Exam[] = [
     category: 'SSC Exams',
     description: 'Staff Selection Commission - General Duty Constable Exam Preparation.',
     trending: true,
-    image: 'https://picsum.photos/seed/ssc/400/250'
+    image: getImage('exam-ssc')
   },
   {
     id: '2',
@@ -69,7 +73,7 @@ export const EXAMS: Exam[] = [
     category: 'Engineering',
     description: 'Graduate Aptitude Test in Engineering for engineering graduates.',
     trending: true,
-    image: 'https://picsum.photos/seed/gate/400/250'
+    image: getImage('exam-gate')
   },
   {
     id: '3',
@@ -78,7 +82,7 @@ export const EXAMS: Exam[] = [
     category: 'IT/Software',
     description: 'CDAC Common Admission Test for PG Diploma courses.',
     trending: false,
-    image: 'https://picsum.photos/seed/cdac/400/250'
+    image: getImage('exam-cat')
   },
   {
     id: '4',
@@ -87,7 +91,7 @@ export const EXAMS: Exam[] = [
     category: 'Civil Services',
     description: 'The premier exam for IAS, IPS, and IFS services in India.',
     trending: true,
-    image: 'https://picsum.photos/seed/upsc/400/250'
+    image: getImage('exam-upsc')
   }
 ];
 
@@ -116,11 +120,11 @@ export const getQuizzes = (slug: string): QuizItem[] => [
 ];
 
 export const getContent = (slug: string): ContentItem[] => [
-  { id: 'c1', title: 'Preparation Strategy Guide', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/book1/300/400' },
-  { id: 'c2', title: 'Last 10 Year Analysis', type: 'ppt', url: '#', thumbnail: 'https://picsum.photos/seed/book2/300/400' },
-  { id: 'c3', title: 'How to score 90+ in English', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/book3/300/400' },
-  { id: 'c4', title: 'Important Formulas Sheet', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/book4/300/400' },
-  { id: 'c5', title: 'Mathematics Shortcut Tricks', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/book5/300/400' },
+  { id: 'c1', title: 'Preparation Strategy Guide', type: 'pdf', url: '#', thumbnail: PlaceHolderImages.find(img => img.id === 'book-cover-1')?.imageUrl },
+  { id: 'c2', title: 'Last 10 Year Analysis', type: 'ppt', url: '#', thumbnail: PlaceHolderImages.find(img => img.id === 'book-cover-2')?.imageUrl },
+  { id: 'c3', title: 'How to score 90+ in English', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/blog-study/300/400' },
+  { id: 'c4', title: 'Important Formulas Sheet', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/formulas/300/400' },
+  { id: 'c5', title: 'Mathematics Shortcut Tricks', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/tricks/300/400' },
 ];
 
 export const getPracticeSets = (subjectId: string): PracticeSet[] => {

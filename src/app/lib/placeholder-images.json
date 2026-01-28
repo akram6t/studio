@@ -4,38 +4,44 @@
     {
       "id": "exam-ssc",
       "description": "SSC GD Constable Exam",
-      "imageUrl": "https://picsum.photos/seed/ssc/600/400",
-      "imageHint": "government exam"
+      "imageUrl": "https://picsum.photos/seed/ssc-exam/600/400",
+      "imageHint": "government building"
     },
     {
       "id": "exam-gate",
       "description": "GATE Engineering Exam",
-      "imageUrl": "https://picsum.photos/seed/gate/600/400",
-      "imageHint": "engineering student"
+      "imageUrl": "https://picsum.photos/seed/gate-exam/600/400",
+      "imageHint": "engineering technology"
     },
     {
       "id": "exam-cat",
-      "description": "CAT Entrance Exam",
-      "imageUrl": "https://picsum.photos/seed/cat/600/400",
-      "imageHint": "business study"
+      "description": "CDAC C-CAT Exam",
+      "imageUrl": "https://picsum.photos/seed/cdac-exam/600/400",
+      "imageHint": "computer software"
+    },
+    {
+      "id": "exam-upsc",
+      "description": "UPSC Civil Services Exam",
+      "imageUrl": "https://picsum.photos/seed/upsc-exam/600/400",
+      "imageHint": "library books"
     },
     {
       "id": "user-avatar",
       "description": "User profile avatar",
-      "imageUrl": "https://picsum.photos/seed/user/100/100",
-      "imageHint": "human avatar"
+      "imageUrl": "https://picsum.photos/seed/user-avatar/100/100",
+      "imageHint": "person portrait"
     },
     {
       "id": "book-cover-1",
       "description": "Study Guide Cover",
-      "imageUrl": "https://picsum.photos/seed/book1/300/400",
-      "imageHint": "book cover"
+      "imageUrl": "https://picsum.photos/seed/guide-1/300/400",
+      "imageHint": "educational book"
     },
     {
       "id": "book-cover-2",
       "description": "Exam Analysis Cover",
-      "imageUrl": "https://picsum.photos/seed/book2/300/400",
-      "imageHint": "educational book"
+      "imageUrl": "https://picsum.photos/seed/analysis-1/300/400",
+      "imageHint": "notebook study"
     }
   ]
 }
