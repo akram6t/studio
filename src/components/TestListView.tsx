@@ -1,3 +1,4 @@
+
 "use client";
 
 import { TestItem } from '@/lib/api';
@@ -14,11 +15,11 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
           key={test.id} 
           className={cn(
             "flex flex-col md:flex-row items-center gap-6 p-5 bg-card border rounded-2xl shadow-sm hover:shadow-md transition-all group",
-            !test.isFree && "opacity-60 grayscale-[0.5] hover:opacity-80 transition-opacity"
+            !test.isFree && "opacity-50 grayscale-[0.3] hover:opacity-70 transition-opacity"
           )}
         >
           <div className="h-16 w-16 hidden md:flex shrink-0 items-center justify-center bg-primary/5 rounded-2xl text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-            <FileQuestion className="h-8 w-8" />
+            <Play className="h-8 w-8 fill-current" />
           </div>
           
           <div className="flex-grow space-y-2 text-center md:text-left">

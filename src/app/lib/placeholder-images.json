@@ -24,6 +24,18 @@
       "description": "User profile avatar",
       "imageUrl": "https://picsum.photos/seed/user/100/100",
       "imageHint": "human avatar"
+    },
+    {
+      "id": "book-cover-1",
+      "description": "Study Guide Cover",
+      "imageUrl": "https://picsum.photos/seed/book1/300/400",
+      "imageHint": "book cover"
+    },
+    {
+      "id": "book-cover-2",
+      "description": "Exam Analysis Cover",
+      "imageUrl": "https://picsum.photos/seed/book2/300/400",
+      "imageHint": "educational book"
     }
   ]
 }

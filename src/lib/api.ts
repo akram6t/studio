@@ -99,8 +99,9 @@ export const getQuizzes = (slug: string): QuizItem[] => [
 ];
 
 export const getContent = (slug: string): ContentItem[] => [
-  { id: 'c1', title: 'Preparation Strategy Guide', type: 'pdf', url: '#' },
-  { id: 'c2', title: 'Last 10 Year Analysis', type: 'ppt', url: '#' },
-  { id: 'c3', title: 'How to score 90+ in English', type: 'blog', url: '#' },
-  { id: 'c4', title: 'Important Formulas Sheet', type: 'pdf', url: '#' },
+  { id: 'c1', title: 'Preparation Strategy Guide', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/book1/300/400' },
+  { id: 'c2', title: 'Last 10 Year Analysis', type: 'ppt', url: '#', thumbnail: 'https://picsum.photos/seed/book2/300/400' },
+  { id: 'c3', title: 'How to score 90+ in English', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/book3/300/400' },
+  { id: 'c4', title: 'Important Formulas Sheet', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/book4/300/400' },
+  { id: 'c5', title: 'Mathematics Shortcut Tricks', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/book5/300/400' },
 ];
