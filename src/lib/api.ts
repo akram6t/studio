@@ -19,6 +19,7 @@ export interface TestItem {
   numberOfQuestions: number;
   isFree: boolean;
   type: 'mock' | 'test' | 'previous';
+  subject?: string;
 }
 
 export interface QuizItem {
@@ -104,8 +105,14 @@ export const getMockTests = (slug: string): TestItem[] => [
 ];
 
 export const getTests = (slug: string): TestItem[] => [
-  { id: 't1', title: 'Subject Test: English Language', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test' },
-  { id: 't2', title: 'Subject Test: General Intelligence', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test' },
+  { id: 't1', title: 'Percentage & Fractions', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude' },
+  { id: 't2', title: 'Profit, Loss & Discount', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude' },
+  { id: 't3', title: 'Direct & Indirect Speech', durationInMinutes: 20, marks: 20, numberOfQuestions: 20, isFree: true, type: 'test', subject: 'English Language' },
+  { id: 't4', title: 'Reading Comprehension Master', durationInMinutes: 40, marks: 30, numberOfQuestions: 15, isFree: false, type: 'test', subject: 'English Language' },
+  { id: 't5', title: 'Coding Decoding Advanced', durationInMinutes: 25, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Reasoning Ability' },
+  { id: 't6', title: 'Syllogism Specialist', durationInMinutes: 15, marks: 10, numberOfQuestions: 10, isFree: true, type: 'test', subject: 'Reasoning Ability' },
+  { id: 't7', title: 'Indian Constitution & Polity', durationInMinutes: 30, marks: 50, numberOfQuestions: 50, isFree: false, type: 'test', subject: 'General Awareness' },
+  { id: 't8', title: 'Modern Indian History', durationInMinutes: 30, marks: 50, numberOfQuestions: 50, isFree: true, type: 'test', subject: 'General Awareness' },
 ];
 
 export const getPrevPapers = (slug: string): TestItem[] => [
