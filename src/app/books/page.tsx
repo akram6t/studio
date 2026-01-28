@@ -194,7 +194,7 @@ export default function BooksPage() {
 function BookCard({ book }: { book: Book }) {
   return (
     <Card className="group flex flex-col border-none shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 bg-card">
-      <div className="aspect-[3/4] relative overflow-hidden bg-muted">
+      <div className="aspect-square relative overflow-hidden bg-muted">
         <Image 
           src={book.image} 
           alt={book.title} 
@@ -215,7 +215,7 @@ function BookCard({ book }: { book: Book }) {
             {book.category}
           </Badge>
         </div>
-        <h3 className="font-bold text-sm md:text-base leading-snug line-clamp-2 h-10 mb-1 group-hover:text-primary transition-colors">
+        <h3 className="font-bold text-sm md:text-base leading-tight line-clamp-2 h-12 mb-1 group-hover:text-primary transition-colors">
           {book.title}
         </h3>
         <p className="text-xs text-muted-foreground mb-4">By {book.author}</p>
