@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { getContent } from '@/lib/api';
-import { FileText, MonitorPlay, BookOpen, Download } from 'lucide-react';
+import { FileText, MonitorPlay, BookOpen } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 
@@ -48,11 +48,10 @@ export default function ContentPage() {
                   </div>
                 </div>
                 
-                <div className="p-3 bg-white dark:bg-card flex flex-col gap-2 border-t relative z-20">
-                  <h3 className="font-bold text-sm leading-snug line-clamp-2 h-10">{item.title}</h3>
+                <div className="p-4 bg-white dark:bg-card flex flex-col gap-2 border-t relative z-20">
+                  <h3 className="font-bold text-base leading-snug line-clamp-2 h-12">{item.title}</h3>
                   <div className="flex items-center justify-between mt-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{item.type}</span>
-                    <Download className="h-4 w-4 text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{item.type}</span>
                   </div>
                 </div>
               </CardContent>
