@@ -3,7 +3,7 @@
 import { TestItem } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Timer, Award, FileQuestion, Lock, Play, History, ClipboardCheck } from 'lucide-react';
+import { Timer, Award, FileQuestion, Lock, Play, History, ClipboardCheck, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
@@ -34,6 +34,7 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
     <div className="space-y-3 md:space-y-4">
       {tests.map(test => {
         const canAccess = test.isFree || isUnlocked;
+        const isPreviousYear = test.type === 'previous';
         
         return (
           <div 
@@ -95,8 +96,12 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
               )}>
                 {canAccess ? (
                   <>
-                    <Play className="h-3 w-3 md:h-4 md:w-4 fill-current" />
-                    Start Test
+                    {isPreviousYear ? (
+                      <Eye className="h-3 w-3 md:h-4 md:w-4" />
+                    ) : (
+                      <Play className="h-3 w-3 md:h-4 md:w-4 fill-current" />
+                    )}
+                    {isPreviousYear ? 'View Paper' : 'Start Test'}
                   </>
                 ) : (
                   <>
