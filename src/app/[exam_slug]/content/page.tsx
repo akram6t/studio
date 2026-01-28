@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useParams } from 'next/navigation';
@@ -13,9 +12,9 @@ export default function ContentPage() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'pdf': return <FileText className="h-8 w-8 text-red-500" />;
-      case 'ppt': return <MonitorPlay className="h-8 w-8 text-orange-500" />;
-      default: return <BookOpen className="h-8 w-8 text-blue-500" />;
+      case 'pdf': return <FileText className="h-10 w-10 text-red-500" />;
+      case 'ppt': return <MonitorPlay className="h-10 w-10 text-orange-500" />;
+      default: return <BookOpen className="h-10 w-10 text-blue-500" />;
     }
   };
 
@@ -26,23 +25,30 @@ export default function ContentPage() {
         <p className="text-muted-foreground text-sm">Curated PDFs, presentations, and blog posts.</p>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
         {content.map(item => (
-          <Card key={item.id} className="group hover:shadow-md transition-all border-none shadow-sm bg-muted/20">
-            <CardContent className="p-6 flex flex-col items-center text-center">
-              <div className="mb-4 p-4 bg-white dark:bg-card rounded-2xl shadow-sm group-hover:scale-110 transition-transform">
-                {getIcon(item.type)}
-              </div>
-              <h3 className="font-bold mb-2 line-clamp-1">{item.title}</h3>
-              <p className="text-xs text-muted-foreground uppercase">{item.type} Document</p>
-            </CardContent>
-            <CardFooter className="p-4 pt-0">
-              <Button variant="ghost" className="w-full gap-2 text-accent hover:text-accent hover:bg-accent/5">
-                <Download className="h-4 w-4" />
-                Download
-              </Button>
-            </CardFooter>
-          </Card>
+          <div key={item.id} className="group cursor-pointer">
+            <Card className="aspect-[3/4] relative overflow-hidden border-none shadow-lg bg-white dark:bg-card group-hover:-translate-y-2 transition-all duration-300 flex flex-col">
+              {/* Spine Effect */}
+              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-black/10 z-10" />
+              <div className="absolute left-1.5 top-0 bottom-0 w-px bg-white/20 z-10" />
+              
+              <CardContent className="p-0 flex-grow flex flex-col">
+                <div className="flex-grow flex items-center justify-center bg-muted/30 p-8">
+                  <div className="p-6 bg-white dark:bg-card rounded-2xl shadow-sm transform group-hover:scale-110 transition-transform duration-500">
+                    {getIcon(item.type)}
+                  </div>
+                </div>
+                <div className="p-4 bg-white dark:bg-card-foreground/5 flex flex-col gap-1 border-t">
+                  <h3 className="font-bold text-sm leading-tight line-clamp-2">{item.title}</h3>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{item.type}</span>
+                    <Download className="h-3 w-3 text-accent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         ))}
       </div>
     </div>

@@ -1,16 +1,22 @@
-
 "use client";
 
 import { TestItem } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Timer, Award, FileQuestion, Lock, Play } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function TestListView({ tests }: { tests: TestItem[] }) {
   return (
     <div className="space-y-4">
       {tests.map(test => (
-        <div key={test.id} className="flex flex-col md:flex-row items-center gap-6 p-5 bg-card border rounded-2xl shadow-sm hover:shadow-md hover:border-accent/30 transition-all group">
+        <div 
+          key={test.id} 
+          className={cn(
+            "flex flex-col md:flex-row items-center gap-6 p-5 bg-card border rounded-2xl shadow-sm hover:shadow-md transition-all group",
+            !test.isFree && "opacity-60 grayscale-[0.5] hover:opacity-80 transition-opacity"
+          )}
+        >
           <div className="h-16 w-16 hidden md:flex shrink-0 items-center justify-center bg-primary/5 rounded-2xl text-primary group-hover:bg-primary group-hover:text-white transition-colors">
             <FileQuestion className="h-8 w-8" />
           </div>
@@ -44,9 +50,21 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
           </div>
 
           <div className="shrink-0 w-full md:w-auto">
-            <Button className="w-full md:w-auto gap-2 rounded-xl h-12 px-8">
-              <Play className="h-4 w-4 fill-current" />
-              {test.isFree ? 'Start Test' : 'Unlock Now'}
+            <Button className={cn(
+              "w-full md:w-auto gap-2 rounded-xl h-12 px-8",
+              !test.isFree && "bg-amber-600 hover:bg-amber-700"
+            )}>
+              {test.isFree ? (
+                <>
+                  <Play className="h-4 w-4 fill-current" />
+                  Start Test
+                </>
+              ) : (
+                <>
+                  <Lock className="h-4 w-4" />
+                  Unlock Now
+                </>
+              )}
             </Button>
           </div>
         </div>
