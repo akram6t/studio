@@ -1,9 +1,11 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import { 
   Calculator, 
   Languages, 
@@ -106,9 +108,11 @@ export default function PracticePage() {
                     </div>
                     <Progress value={subject.progress} className="h-2" />
                   </div>
-                  <Button className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors" variant="outline">
-                    Start Practice <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  <Link href={`/practice/${subject.id}`} className="block">
+                    <Button className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors" variant="outline">
+                      Start Practice <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}

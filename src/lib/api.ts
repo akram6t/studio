@@ -35,6 +35,14 @@ export interface ContentItem {
   thumbnail?: string;
 }
 
+export interface PracticeSet {
+  id: string;
+  title: string;
+  totalQuestions: number;
+  completedQuestions: number;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+}
+
 export const EXAMS: Exam[] = [
   {
     id: '1',
@@ -104,4 +112,13 @@ export const getContent = (slug: string): ContentItem[] => [
   { id: 'c3', title: 'How to score 90+ in English', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/book3/300/400' },
   { id: 'c4', title: 'Important Formulas Sheet', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/book4/300/400' },
   { id: 'c5', title: 'Mathematics Shortcut Tricks', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/book5/300/400' },
+];
+
+export const getPracticeSets = (subjectId: string): PracticeSet[] => [
+  { id: 'ps1', title: 'Arithmetic Foundation Set', totalQuestions: 30, completedQuestions: 12, difficulty: 'Easy' },
+  { id: 'ps2', title: 'Advanced Algebra Challenge', totalQuestions: 50, completedQuestions: 0, difficulty: 'Hard' },
+  { id: 'ps3', title: 'Data Interpretation Basic', totalQuestions: 20, completedQuestions: 20, difficulty: 'Medium' },
+  { id: 'ps4', title: 'Mixed Reasoning Puzzles', totalQuestions: 40, completedQuestions: 5, difficulty: 'Medium' },
+  { id: 'ps5', title: 'Daily Quick Practice', totalQuestions: 15, completedQuestions: 15, difficulty: 'Easy' },
+  { id: 'ps6', title: 'Geometry Concepts 1', totalQuestions: 35, completedQuestions: 0, difficulty: 'Medium' },
 ];
