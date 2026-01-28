@@ -1,4 +1,3 @@
-
 "use client";
 
 import { TestItem } from '@/lib/api';
@@ -47,15 +46,15 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
             {/* Absolute Badge at Top-Left */}
             <div className="absolute top-0 left-0 z-10">
               {test.isFree ? (
-                <div className="bg-emerald-500 text-white text-[9px] font-bold px-3 py-1.5 rounded-br-xl shadow-sm flex items-center gap-1 uppercase tracking-widest">
-                  Free Content
+                <div className="bg-emerald-500 text-white text-[8px] font-bold px-2 py-1 rounded-br-xl shadow-sm flex items-center gap-1 uppercase tracking-widest">
+                  Free
                 </div>
               ) : (
                 <div className={cn(
-                  "text-white text-[9px] font-bold px-3 py-1.5 rounded-br-xl shadow-sm flex items-center gap-1 uppercase tracking-widest",
+                  "text-white text-[8px] font-bold px-2 py-1 rounded-br-xl shadow-sm flex items-center gap-1 uppercase tracking-widest",
                   isUnlocked ? "bg-amber-600" : "bg-amber-600"
                 )}>
-                  {isUnlocked ? <Play className="h-2.5 w-2.5 fill-current" /> : <Lock className="h-2.5 w-2.5" />} 
+                  {isUnlocked ? <Play className="h-2 w-2 fill-current" /> : <Lock className="h-2 w-2" />} 
                   {isUnlocked ? "Unlocked" : "Premium"}
                 </div>
               )}
