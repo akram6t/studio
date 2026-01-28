@@ -43,6 +43,15 @@ export interface PracticeSet {
   difficulty: 'Easy' | 'Medium' | 'Hard';
 }
 
+export interface TopicSet {
+  id: string;
+  title: string;
+  questions: number;
+  timeLimit: number;
+  isCompleted: boolean;
+  isFree: boolean;
+}
+
 export const EXAMS: Exam[] = [
   {
     id: '1',
@@ -118,34 +127,42 @@ export const getPracticeSets = (subjectId: string): PracticeSet[] => {
   switch (subjectId) {
     case 'quant':
       return [
-        { id: 'ps1', title: 'Number Systems', totalQuestions: 30, completedQuestions: 12, difficulty: 'Easy' },
-        { id: 'ps2', title: 'Profit & Loss', totalQuestions: 50, completedQuestions: 0, difficulty: 'Medium' },
-        { id: 'ps3', title: 'Time & Work', totalQuestions: 40, completedQuestions: 40, difficulty: 'Medium' },
-        { id: 'ps4', title: 'Data Interpretation', totalQuestions: 25, completedQuestions: 5, difficulty: 'Hard' },
-        { id: 'ps5', title: 'Simple & Compound Interest', totalQuestions: 35, completedQuestions: 0, difficulty: 'Medium' },
+        { id: 'number-systems', title: 'Number Systems', totalQuestions: 30, completedQuestions: 12, difficulty: 'Easy' },
+        { id: 'profit-loss', title: 'Profit & Loss', totalQuestions: 50, completedQuestions: 0, difficulty: 'Medium' },
+        { id: 'time-work', title: 'Time & Work', totalQuestions: 40, completedQuestions: 40, difficulty: 'Medium' },
+        { id: 'data-interpretation', title: 'Data Interpretation', totalQuestions: 25, completedQuestions: 5, difficulty: 'Hard' },
+        { id: 'si-ci', title: 'Simple & Compound Interest', totalQuestions: 35, completedQuestions: 0, difficulty: 'Medium' },
       ];
     case 'english':
       return [
-        { id: 'e1', title: 'Reading Comprehension', totalQuestions: 20, completedQuestions: 10, difficulty: 'Medium' },
-        { id: 'e2', title: 'Sentence Correction', totalQuestions: 50, completedQuestions: 0, difficulty: 'Easy' },
-        { id: 'e3', title: 'Vocabulary & Idioms', totalQuestions: 100, completedQuestions: 100, difficulty: 'Medium' },
-        { id: 'e4', title: 'Fill in the Blanks', totalQuestions: 40, completedQuestions: 5, difficulty: 'Easy' },
+        { id: 'reading-comp', title: 'Reading Comprehension', totalQuestions: 20, completedQuestions: 10, difficulty: 'Medium' },
+        { id: 'sentence-corr', title: 'Sentence Correction', totalQuestions: 50, completedQuestions: 0, difficulty: 'Easy' },
+        { id: 'vocab-idioms', title: 'Vocabulary & Idioms', totalQuestions: 100, completedQuestions: 100, difficulty: 'Medium' },
+        { id: 'fill-blanks', title: 'Fill in the Blanks', totalQuestions: 40, completedQuestions: 5, difficulty: 'Easy' },
       ];
     case 'reasoning':
       return [
-        { id: 'r1', title: 'Syllogism', totalQuestions: 30, completedQuestions: 30, difficulty: 'Medium' },
-        { id: 'r2', title: 'Seating Arrangement', totalQuestions: 25, completedQuestions: 0, difficulty: 'Hard' },
-        { id: 'r3', title: 'Blood Relations', totalQuestions: 20, completedQuestions: 15, difficulty: 'Easy' },
-        { id: 'r4', title: 'Coding-Decoding', totalQuestions: 40, completedQuestions: 10, difficulty: 'Medium' },
+        { id: 'syllogism', title: 'Syllogism', totalQuestions: 30, completedQuestions: 30, difficulty: 'Medium' },
+        { id: 'seating-arr', title: 'Seating Arrangement', totalQuestions: 25, completedQuestions: 0, difficulty: 'Hard' },
+        { id: 'blood-rel', title: 'Blood Relations', totalQuestions: 20, completedQuestions: 15, difficulty: 'Easy' },
+        { id: 'coding-decoding', title: 'Coding-Decoding', totalQuestions: 40, completedQuestions: 10, difficulty: 'Medium' },
       ];
     case 'gk':
       return [
-        { id: 'g1', title: 'Indian History', totalQuestions: 150, completedQuestions: 50, difficulty: 'Medium' },
-        { id: 'g2', title: 'Geography', totalQuestions: 120, completedQuestions: 0, difficulty: 'Medium' },
-        { id: 'g3', title: 'General Science', totalQuestions: 200, completedQuestions: 20, difficulty: 'Easy' },
-        { id: 'g4', title: 'Current Affairs 2024', totalQuestions: 300, completedQuestions: 300, difficulty: 'Medium' },
+        { id: 'history', title: 'Indian History', totalQuestions: 150, completedQuestions: 50, difficulty: 'Medium' },
+        { id: 'geography', title: 'Geography', totalQuestions: 120, completedQuestions: 0, difficulty: 'Medium' },
+        { id: 'science', title: 'General Science', totalQuestions: 200, completedQuestions: 20, difficulty: 'Easy' },
+        { id: 'ca-2024', title: 'Current Affairs 2024', totalQuestions: 300, completedQuestions: 300, difficulty: 'Medium' },
       ];
     default:
       return [];
   }
 };
+
+export const getTopicSets = (topicId: string): TopicSet[] => [
+  { id: 's1', title: 'Practice Set 1: Basic Level', questions: 10, timeLimit: 10, isCompleted: true, isFree: true },
+  { id: 's2', title: 'Practice Set 2: Intermediate', questions: 15, timeLimit: 15, isCompleted: false, isFree: true },
+  { id: 's3', title: 'Practice Set 3: Advanced Concepts', questions: 20, timeLimit: 20, isCompleted: false, isFree: false },
+  { id: 's4', title: 'Practice Set 4: Mix Bag', questions: 25, timeLimit: 25, isCompleted: false, isFree: false },
+  { id: 's5', title: 'Practice Set 5: Speed Test', questions: 15, timeLimit: 10, isCompleted: false, isFree: false },
+];

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useParams } from "next/navigation";
@@ -74,10 +75,12 @@ export default function SubjectPracticePage() {
               </CardContent>
 
               <CardFooter className="pt-0 p-6 bg-muted/5 group-hover:bg-muted/10 transition-colors">
-                <Button className="w-full gap-2 rounded-xl" variant={isCompleted ? "outline" : "default"}>
-                  {isCompleted ? "Review Set" : progress > 0 ? "Resume Topic" : "Start Topic"}
-                  <Play className="h-4 w-4 fill-current" />
-                </Button>
+                <Link href={`/practice/${subjectId}/${set.id}`} className="w-full">
+                  <Button className="w-full gap-2 rounded-xl group-hover:text-primary-foreground" variant={isCompleted ? "outline" : "default"}>
+                    {isCompleted ? "Review Set" : progress > 0 ? "Resume Topic" : "Start Topic"}
+                    <Play className="h-4 w-4 fill-current" />
+                  </Button>
+                </Link>
               </CardFooter>
             </Card>
           );
