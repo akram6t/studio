@@ -1,0 +1,29 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "exam-ssc",
+      "description": "SSC GD Constable Exam",
+      "imageUrl": "https://picsum.photos/seed/ssc/600/400",
+      "imageHint": "government exam"
+    },
+    {
+      "id": "exam-gate",
+      "description": "GATE Engineering Exam",
+      "imageUrl": "https://picsum.photos/seed/gate/600/400",
+      "imageHint": "engineering student"
+    },
+    {
+      "id": "exam-cat",
+      "description": "CAT Entrance Exam",
+      "imageUrl": "https://picsum.photos/seed/cat/600/400",
+      "imageHint": "business study"
+    },
+    {
+      "id": "user-avatar",
+      "description": "User profile avatar",
+      "imageUrl": "https://picsum.photos/seed/user/100/100",
+      "imageHint": "human avatar"
+    }
+  ]
+}
