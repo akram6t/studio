@@ -106,7 +106,7 @@ export default function PracticePage() {
                     </div>
                     <Progress value={subject.progress} className="h-2" />
                   </div>
-                  <Button className="w-full gap-2 group-hover:bg-primary transition-colors" variant="outline">
+                  <Button className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors" variant="outline">
                     Start Practice <ArrowRight className="h-4 w-4" />
                   </Button>
                 </CardContent>
@@ -121,7 +121,7 @@ export default function PracticePage() {
                 <Badge 
                   key={i} 
                   variant="outline" 
-                  className="px-4 py-2 text-sm cursor-pointer hover:border-primary transition-colors"
+                  className="px-4 py-2 text-sm cursor-default hover:border-primary hover:text-primary transition-colors"
                 >
                   {topic}
                 </Badge>
