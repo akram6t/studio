@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useParams, usePathname, useRouter } from 'next/navigation';
@@ -55,7 +54,7 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
       </Link>
 
       <Card className={cn(
-        "mb-6 md:mb-8 overflow-hidden border-none shadow-lg transition-all duration-700",
+        "mb-4 md:mb-6 overflow-hidden border-none shadow-lg transition-all duration-700",
         isUnlocked 
           ? "bg-amber-600 text-white" 
           : "bg-primary text-primary-foreground"
@@ -137,25 +136,27 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
         </CardContent>
       </Card>
 
-      <div className="bg-card rounded-xl shadow-sm border p-1 sticky top-20 z-40 mb-6 md:mb-8 overflow-x-auto scrollbar-hide">
-        <Tabs value={currentTab || ''} onValueChange={(val) => router.push(`/${slug}/${val}`)} className="w-full">
-          <TabsList className="bg-transparent h-auto p-1 flex w-full justify-start md:justify-center overflow-x-auto whitespace-nowrap scrollbar-hide">
-            {tabs.map(tab => (
-              <TabsTrigger 
-                key={tab.value} 
-                value={tab.value}
-                className={cn(
-                  "rounded-lg py-1.5 md:py-2.5 px-4 md:px-6 transition-all text-xs md:text-sm font-semibold",
-                  isUnlocked 
-                    ? "data-[state=active]:bg-amber-600 data-[state=active]:text-white" 
-                    : "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                )}
-              >
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+      <div className="sticky top-16 z-40 -mx-4 md:mx-0 mb-8">
+        <div className="bg-background/95 backdrop-blur-md border-y md:border-x md:rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] px-4 md:px-1 py-1">
+          <Tabs value={currentTab || ''} onValueChange={(val) => router.push(`/${slug}/${val}`)} className="w-full">
+            <TabsList className="bg-transparent h-auto p-1 flex w-full justify-start md:justify-center overflow-x-auto whitespace-nowrap scrollbar-hide">
+              {tabs.map(tab => (
+                <TabsTrigger 
+                  key={tab.value} 
+                  value={tab.value}
+                  className={cn(
+                    "rounded-lg py-1.5 md:py-2.5 px-4 md:px-6 transition-all text-[10px] md:text-sm font-bold tracking-tight",
+                    isUnlocked 
+                      ? "data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:shadow-md" 
+                      : "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
+                  )}
+                >
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
 
       <div className="min-h-[400px]">
