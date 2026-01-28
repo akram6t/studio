@@ -40,10 +40,27 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
           <div 
             key={test.id} 
             className={cn(
-              "flex flex-col md:flex-row items-center gap-6 p-5 bg-card border rounded-2xl shadow-sm hover:shadow-md transition-all group",
+              "relative flex flex-col md:flex-row items-center gap-6 p-5 pt-10 md:pt-5 bg-card border rounded-2xl shadow-sm hover:shadow-md transition-all group overflow-hidden",
               !canAccess && "opacity-50 grayscale-[0.3] hover:opacity-70 transition-opacity"
             )}
           >
+            {/* Absolute Badge at Top-Left */}
+            <div className="absolute top-0 left-0 z-10">
+              {test.isFree ? (
+                <div className="bg-emerald-500 text-white text-[9px] font-bold px-3 py-1.5 rounded-br-xl shadow-sm flex items-center gap-1 uppercase tracking-widest">
+                  Free Content
+                </div>
+              ) : (
+                <div className={cn(
+                  "text-white text-[9px] font-bold px-3 py-1.5 rounded-br-xl shadow-sm flex items-center gap-1 uppercase tracking-widest",
+                  isUnlocked ? "bg-amber-600" : "bg-amber-600"
+                )}>
+                  {isUnlocked ? <Play className="h-2.5 w-2.5 fill-current" /> : <Lock className="h-2.5 w-2.5" />} 
+                  {isUnlocked ? "Unlocked" : "Premium"}
+                </div>
+              )}
+            </div>
+
             <div className={cn(
               "h-16 w-16 hidden md:flex shrink-0 items-center justify-center rounded-2xl transition-colors",
               isUnlocked ? "bg-amber-100 text-amber-600 group-hover:bg-amber-600 group-hover:text-white" : "bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white"
@@ -52,19 +69,8 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
             </div>
             
             <div className="flex-grow space-y-2 text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-3">
+              <div className="flex items-center justify-center md:justify-start">
                 <h3 className="text-lg font-bold group-hover:text-primary transition-colors">{test.title}</h3>
-                {test.isFree ? (
-                  <Badge variant="outline" className="text-emerald-600 border-emerald-600 bg-emerald-50 text-[10px]">FREE</Badge>
-                ) : (
-                  <Badge variant="outline" className={cn(
-                    "text-[10px] flex gap-1",
-                    isUnlocked ? "text-amber-600 border-amber-600 bg-amber-50" : "text-amber-600 border-amber-600 bg-amber-50"
-                  )}>
-                    {isUnlocked ? <Play className="h-3 w-3 fill-current" /> : <Lock className="h-3 w-3" />} 
-                    {isUnlocked ? "UNLOCKED" : "PREM"}
-                  </Badge>
-                )}
               </div>
               
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-sm text-muted-foreground">
@@ -85,7 +91,7 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
 
             <div className="shrink-0 w-full md:w-auto">
               <Button className={cn(
-                "w-full md:w-auto gap-2 rounded-xl h-12 px-8",
+                "w-full md:w-auto gap-2 rounded-xl h-12 px-8 font-bold",
                 canAccess ? "" : "bg-amber-600 hover:bg-amber-700"
               )}>
                 {canAccess ? (
