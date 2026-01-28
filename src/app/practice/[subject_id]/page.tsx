@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useParams } from "next/navigation";
@@ -68,10 +67,10 @@ export default function SubjectPracticePage() {
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start mb-2">
                   <div className={cn(
-                    "p-2.5 rounded-xl transition-all duration-300",
+                    "p-2.5 rounded-xl transition-colors duration-200",
                     isCompleted 
-                      ? "bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white" 
-                      : "bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-white"
+                      ? "bg-emerald-100 text-emerald-600" 
+                      : "bg-muted text-muted-foreground"
                   )}>
                     {getTopicIcon(set.title)}
                   </div>
