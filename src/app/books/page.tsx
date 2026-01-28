@@ -20,6 +20,7 @@ export default function BooksPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredBooks = useMemo(() => {
+    if (!BOOKS) return [];
     return BOOKS.filter(book => {
       const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           book.author.toLowerCase().includes(searchQuery.toLowerCase());
@@ -39,7 +40,7 @@ export default function BooksPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const categories = ['All', ...BOOK_CATEGORIES];
+  const categories = ['All', ...(BOOK_CATEGORIES || [])];
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">

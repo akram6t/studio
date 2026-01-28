@@ -67,7 +67,10 @@ export interface TopicSet {
   isFree: boolean;
 }
 
-const getImage = (id: string) => PlaceHolderImages.find(img => img.id === id)?.imageUrl || `https://picsum.photos/seed/${id}/600/400`;
+const getImage = (id: string) => {
+  if (!PlaceHolderImages) return `https://picsum.photos/seed/${id}/600/400`;
+  return PlaceHolderImages.find(img => img.id === id)?.imageUrl || `https://picsum.photos/seed/${id}/600/400`;
+};
 
 export const EXAMS: Exam[] = [
   {
@@ -156,8 +159,8 @@ export const getQuizzes = (slug: string): QuizItem[] => [
 ];
 
 export const getContent = (slug: string): ContentItem[] => [
-  { id: 'c1', title: 'Preparation Strategy Guide', type: 'pdf', url: '#', thumbnail: PlaceHolderImages.find(img => img.id === 'book-cover-1')?.imageUrl },
-  { id: 'c2', title: 'Last 10 Year Analysis', type: 'ppt', url: '#', thumbnail: PlaceHolderImages.find(img => img.id === 'book-cover-2')?.imageUrl },
+  { id: 'c1', title: 'Preparation Strategy Guide', type: 'pdf', url: '#', thumbnail: getImage('book-cover-1') },
+  { id: 'c2', title: 'Last 10 Year Analysis', type: 'ppt', url: '#', thumbnail: getImage('book-cover-2') },
   { id: 'c3', title: 'How to score 90+ in English', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/blog-study/300/400' },
   { id: 'c4', title: 'Important Formulas Sheet', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/formulas/300/400' },
   { id: 'c5', title: 'Mathematics Shortcut Tricks', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/tricks/300/400' },
