@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useParams, usePathname, useRouter } from 'next/navigation';
@@ -48,38 +49,38 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <Link href="/exams" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-6 transition-colors">
-        <ArrowLeft className="mr-2 h-4 w-4" />
+      <Link href="/exams" className="inline-flex items-center text-[10px] md:text-sm font-medium text-muted-foreground hover:text-primary mb-4 md:mb-6 transition-colors">
+        <ArrowLeft className="mr-2 h-3 w-3 md:h-4 md:w-4" />
         Back to Exams
       </Link>
 
       <Card className={cn(
-        "mb-8 overflow-hidden border-none shadow-lg transition-all duration-700",
+        "mb-6 md:mb-8 overflow-hidden border-none shadow-lg transition-all duration-700",
         isUnlocked 
           ? "bg-amber-600 text-white" 
           : "bg-primary text-primary-foreground"
       )}>
-        <CardContent className="p-8 md:p-12 relative overflow-hidden">
+        <CardContent className="p-6 md:p-12 relative overflow-hidden">
           <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
               <Badge className={cn(
-                "bg-white/20 text-white border-none backdrop-blur-md",
+                "bg-white/20 text-white border-none backdrop-blur-md text-[9px] md:text-xs",
                 isUnlocked && "bg-white text-amber-600"
               )}>
                 {exam.category}
               </Badge>
               {isUnlocked && (
-                <Badge className="bg-white text-amber-600 border-none flex gap-1 items-center animate-bounce">
-                  <Crown className="h-3 w-3" /> ELITE PASS ACTIVE
+                <Badge className="bg-white text-amber-600 border-none flex gap-1 items-center animate-bounce text-[9px] md:text-xs">
+                  <Crown className="h-2 w-2 md:h-3 md:w-3" /> ELITE PASS ACTIVE
                 </Badge>
               )}
             </div>
             
-            <h1 className="text-3xl md:text-5xl font-headline font-bold mb-4">
+            <h1 className="text-xl md:text-3xl lg:text-5xl font-headline font-bold mb-3 md:mb-4 leading-tight">
               {exam.title} {isUnlocked ? 'Pro Dashboard' : 'Preparation'}
             </h1>
             <p className={cn(
-              "max-w-2xl mb-8 text-lg",
+              "max-w-2xl mb-6 md:mb-8 text-sm md:text-lg opacity-90",
               isUnlocked ? "text-white/90" : "text-primary-foreground/80"
             )}>
               {isUnlocked 
@@ -87,33 +88,33 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
                 : `${exam.description} Master your exam with our comprehensive test series and expert-curated materials.`}
             </p>
             
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase tracking-widest opacity-70 font-bold">Total Tests</span>
-                <div className="flex items-center gap-2">
-                  <Layout className="h-4 w-4" />
-                  <span className="text-xl font-bold">{totalTests}+</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6">
+              <div className="space-y-0.5 md:space-y-1">
+                <span className="text-[8px] md:text-[10px] uppercase tracking-widest opacity-70 font-bold">Total Tests</span>
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <Layout className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-base md:text-xl font-bold">{totalTests}+</span>
                 </div>
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase tracking-widest opacity-70 font-bold">Mock Exams</span>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span className="text-xl font-bold">{mockCount}</span>
+              <div className="space-y-0.5 md:space-y-1">
+                <span className="text-[8px] md:text-[10px] uppercase tracking-widest opacity-70 font-bold">Mock Exams</span>
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-base md:text-xl font-bold">{mockCount}</span>
                 </div>
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase tracking-widest opacity-70 font-bold">Students</span>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  <span className="text-xl font-bold">240k+</span>
+              <div className="space-y-0.5 md:space-y-1">
+                <span className="text-[8px] md:text-[10px] uppercase tracking-widest opacity-70 font-bold">Students</span>
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <Users className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-base md:text-xl font-bold">240k+</span>
                 </div>
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase tracking-widest opacity-70 font-bold">Last Updated</span>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span className="text-xl font-bold">2025</span>
+              <div className="space-y-0.5 md:space-y-1">
+                <span className="text-[8px] md:text-[10px] uppercase tracking-widest opacity-70 font-bold">Last Updated</span>
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <Calendar className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-base md:text-xl font-bold">2025</span>
                 </div>
               </div>
             </div>
@@ -136,7 +137,7 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
         </CardContent>
       </Card>
 
-      <div className="bg-card rounded-xl shadow-sm border p-1 sticky top-20 z-40 mb-8 overflow-x-auto scrollbar-hide">
+      <div className="bg-card rounded-xl shadow-sm border p-1 sticky top-20 z-40 mb-6 md:mb-8 overflow-x-auto scrollbar-hide">
         <Tabs value={currentTab || ''} onValueChange={(val) => router.push(`/${slug}/${val}`)} className="w-full">
           <TabsList className="bg-transparent h-auto p-1 flex w-full justify-start md:justify-center overflow-x-auto whitespace-nowrap scrollbar-hide">
             {tabs.map(tab => (
@@ -144,7 +145,7 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
                 key={tab.value} 
                 value={tab.value}
                 className={cn(
-                  "rounded-lg py-2.5 px-6 transition-all",
+                  "rounded-lg py-1.5 md:py-2.5 px-4 md:px-6 transition-all text-xs md:text-sm font-semibold",
                   isUnlocked 
                     ? "data-[state=active]:bg-amber-600 data-[state=active]:text-white" 
                     : "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"

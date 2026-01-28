@@ -73,44 +73,44 @@ const TOPICS = [
 export default function PracticePage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 md:mb-10">
         <div>
-          <h1 className="text-4xl font-headline font-bold mb-2">Practice Dashboard</h1>
-          <p className="text-muted-foreground">Focused subject-wise practice to master every topic.</p>
+          <h1 className="text-2xl md:text-4xl font-headline font-bold mb-1 md:mb-2">Practice Dashboard</h1>
+          <p className="text-xs md:text-base text-muted-foreground">Focused subject-wise practice to master every topic.</p>
         </div>
         <div className="flex gap-2">
-          <Badge variant="secondary" className="px-4 py-1 flex gap-2 items-center">
-            <Target className="h-4 w-4 text-primary" />
+          <Badge variant="secondary" className="px-3 py-0.5 md:px-4 md:py-1 flex gap-2 items-center text-[10px] md:text-xs">
+            <Target className="h-3 w-3 md:h-4 md:w-4 text-primary" />
             <span>Daily Goal: 80%</span>
           </Badge>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="lg:col-span-2 space-y-6 md:space-y-8">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {SUBJECTS.map((subject) => (
               <Card key={subject.id} className="group overflow-hidden border-none shadow-md hover:shadow-xl transition-all">
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  <div className={`${subject.color} p-3 rounded-2xl text-white shadow-lg`}>
+                <CardHeader className="flex flex-row items-center gap-3 md:gap-4 pb-2">
+                  <div className={`${subject.color} p-2 md:p-3 rounded-xl md:rounded-2xl text-white shadow-lg`}>
                     {subject.icon}
                   </div>
                   <div className="flex-grow">
-                    <CardTitle className="text-xl">{subject.title}</CardTitle>
-                    <CardDescription className="line-clamp-1">{subject.description}</CardDescription>
+                    <CardTitle className="text-lg md:text-xl">{subject.title}</CardTitle>
+                    <CardDescription className="line-clamp-1 text-[11px] md:text-sm">{subject.description}</CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-bold text-muted-foreground">
+                <CardContent className="space-y-3 md:space-y-4">
+                  <div className="space-y-1.5 md:space-y-2">
+                    <div className="flex justify-between text-[9px] md:text-xs font-bold text-muted-foreground">
                       <span>{subject.completed} / {subject.questions} SOLVED</span>
                       <span>{subject.progress}%</span>
                     </div>
-                    <Progress value={subject.progress} className="h-2" />
+                    <Progress value={subject.progress} className="h-1.5 md:h-2" />
                   </div>
                   <Link href={`/practice/${subject.id}`} className="block">
-                    <Button className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors" variant="outline">
-                      Start Practice <ArrowRight className="h-4 w-4" />
+                    <Button className="w-full gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors text-xs md:text-sm h-9 md:h-10" variant="outline">
+                      Start Practice <ArrowRight className="h-3.5 w-3.5 md:h-4 md:w-4" />
                     </Button>
                   </Link>
                 </CardContent>
@@ -119,13 +119,13 @@ export default function PracticePage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-headline font-bold mb-6">Recommended Topics</h2>
-            <div className="flex flex-wrap gap-3">
+            <h2 className="text-xl md:text-2xl font-headline font-bold mb-4 md:mb-6">Recommended Topics</h2>
+            <div className="flex flex-wrap gap-2 md:gap-3">
               {TOPICS.map((topic, i) => (
                 <Badge 
                   key={i} 
                   variant="outline" 
-                  className="px-4 py-2 text-sm cursor-default hover:border-primary hover:text-primary transition-colors"
+                  className="px-3 py-1 md:px-4 md:py-2 text-[11px] md:text-sm cursor-default hover:border-primary hover:text-primary transition-colors"
                 >
                   {topic}
                 </Badge>
@@ -134,28 +134,28 @@ export default function PracticePage() {
           </section>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6 md:space-y-8">
           <Card className="border-none shadow-md">
-            <CardHeader>
-              <CardTitle className="text-lg">Recent Activity</CardTitle>
+            <CardHeader className="p-4 md:p-6">
+              <CardTitle className="text-base md:text-lg">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y">
                 {RECENT_ACTIVITY.map((activity) => (
-                  <div key={activity.id} className="p-4 hover:bg-muted/30 transition-colors flex items-center justify-between">
+                  <div key={activity.id} className="p-3 md:p-4 hover:bg-muted/30 transition-colors flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-bold">{activity.title}</h4>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{activity.subject} • {activity.date}</p>
+                      <h4 className="text-xs md:text-sm font-bold">{activity.title}</h4>
+                      <p className="text-[9px] md:text-[10px] text-muted-foreground uppercase tracking-wider">{activity.subject} • {activity.date}</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-sm font-bold text-emerald-600">{activity.score}</span>
+                      <span className="text-xs md:text-sm font-bold text-emerald-600">{activity.score}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </CardContent>
-            <div className="p-4 border-t">
-              <Button variant="ghost" className="w-full text-xs text-muted-foreground" size="sm">
+            <div className="p-3 md:p-4 border-t">
+              <Button variant="ghost" className="w-full text-[10px] md:text-xs text-muted-foreground h-8 md:h-10" size="sm">
                 <Clock className="h-3 w-3 mr-2" /> View History
               </Button>
             </div>
