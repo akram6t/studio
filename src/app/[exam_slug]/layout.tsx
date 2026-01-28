@@ -48,7 +48,7 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="container mx-auto px-4 py-2 md:py-4 max-w-6xl">
-      <Link href="/exams" className="inline-flex items-center text-[10px] md:text-xs font-medium text-muted-foreground hover:text-primary mb-2 md:mb-3 transition-colors">
+      <Link href="/exams" className="inline-flex items-center text-xs font-medium text-muted-foreground hover:text-primary mb-2 md:mb-3 transition-colors">
         <ArrowLeft className="mr-1 h-3 w-3" />
         Back to Exams
       </Link>
@@ -59,27 +59,27 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
           ? "bg-amber-600 text-white" 
           : "bg-primary text-primary-foreground"
       )}>
-        <CardContent className="p-3 md:p-5 relative overflow-hidden">
+        <CardContent className="p-4 md:p-6 relative overflow-hidden">
           <div className="relative z-10">
-            <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2">
+            <div className="flex items-center gap-2 mb-2 md:mb-3">
               <Badge className={cn(
-                "bg-white/20 text-white border-none backdrop-blur-md text-[7px] md:text-[9px] px-1.5 py-0",
+                "bg-white/20 text-white border-none backdrop-blur-md text-[10px] md:text-xs px-2 py-0.5",
                 isUnlocked && "bg-white text-amber-600"
               )}>
                 {exam.category}
               </Badge>
               {isUnlocked && (
-                <Badge className="bg-white text-amber-600 border-none flex gap-1 items-center text-[7px] md:text-[9px] px-1.5 py-0">
-                  <Crown className="h-2 w-2" /> ELITE ACTIVE
+                <Badge className="bg-white text-amber-600 border-none flex gap-1 items-center text-[10px] md:text-xs px-2 py-0.5">
+                  <Crown className="h-3 w-3" /> ELITE ACTIVE
                 </Badge>
               )}
             </div>
             
-            <h1 className="text-sm md:text-xl font-headline font-bold mb-0.5 md:mb-1 leading-tight">
+            <h1 className="text-xl md:text-3xl font-headline font-bold mb-1 md:mb-2 leading-tight">
               {exam.title} {isUnlocked ? 'Pro' : 'Prep'}
             </h1>
             <p className={cn(
-              "max-w-xl mb-3 md:mb-4 text-[9px] md:text-xs opacity-90 line-clamp-1 md:line-clamp-2",
+              "max-w-2xl mb-4 md:mb-6 text-xs md:text-sm opacity-90 line-clamp-2",
               isUnlocked ? "text-white/90" : "text-primary-foreground/80"
             )}>
               {isUnlocked 
@@ -87,33 +87,33 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
                 : exam.description}
             </p>
             
-            <div className="flex items-center gap-4 md:gap-8">
-              <div className="space-y-0">
-                <span className="text-[6px] md:text-[8px] uppercase tracking-widest opacity-70 font-bold block">Tests</span>
-                <div className="flex items-center gap-1">
-                  <Layout className="h-2 w-2 md:h-3 md:w-3" />
-                  <span className="text-[9px] md:text-sm font-bold">{totalTests}+</span>
+            <div className="flex items-center gap-6 md:gap-10">
+              <div className="space-y-0.5">
+                <span className="text-[9px] md:text-[10px] uppercase tracking-widest opacity-70 font-bold block">Tests</span>
+                <div className="flex items-center gap-1.5">
+                  <Layout className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-xs md:text-lg font-bold">{totalTests}+</span>
                 </div>
               </div>
-              <div className="space-y-0">
-                <span className="text-[6px] md:text-[8px] uppercase tracking-widest opacity-70 font-bold block">Mock</span>
-                <div className="flex items-center gap-1">
-                  <CheckCircle2 className="h-2 w-2 md:h-3 md:w-3" />
-                  <span className="text-[9px] md:text-sm font-bold">{mockCount}</span>
+              <div className="space-y-0.5">
+                <span className="text-[9px] md:text-[10px] uppercase tracking-widest opacity-70 font-bold block">Mock</span>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-xs md:text-lg font-bold">{mockCount}</span>
                 </div>
               </div>
-              <div className="space-y-0">
-                <span className="text-[6px] md:text-[8px] uppercase tracking-widest opacity-70 font-bold block">Students</span>
-                <div className="flex items-center gap-1">
-                  <Users className="h-2 w-2 md:h-3 md:w-3" />
-                  <span className="text-[9px] md:text-sm font-bold">240k+</span>
+              <div className="space-y-0.5">
+                <span className="text-[9px] md:text-[10px] uppercase tracking-widest opacity-70 font-bold block">Students</span>
+                <div className="flex items-center gap-1.5">
+                  <Users className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-xs md:text-lg font-bold">240k+</span>
                 </div>
               </div>
-              <div className="space-y-0">
-                <span className="text-[6px] md:text-[8px] uppercase tracking-widest opacity-70 font-bold block">Year</span>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-2 w-2 md:h-3 md:w-3" />
-                  <span className="text-[9px] md:text-sm font-bold">2025</span>
+              <div className="space-y-0.5">
+                <span className="text-[9px] md:text-[10px] uppercase tracking-widest opacity-70 font-bold block">Year</span>
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-xs md:text-lg font-bold">2025</span>
                 </div>
               </div>
             </div>
@@ -121,7 +121,7 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
           
           {isUnlocked && (
             <div className="absolute -bottom-4 -right-4 opacity-10 rotate-12">
-              <Crown size={80} />
+              <Crown size={100} />
             </div>
           )}
         </CardContent>
