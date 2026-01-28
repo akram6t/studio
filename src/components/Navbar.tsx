@@ -9,6 +9,11 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from 
 
 export default function Navbar() {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -46,7 +51,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
-            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {!mounted ? <Moon className="h-5 w-5" /> : isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
           
           <div className="hidden md:flex items-center gap-2">
