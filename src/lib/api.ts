@@ -131,9 +131,10 @@ export const BOOKS: Book[] = [
 export const BOOK_CATEGORIES = Array.from(new Set(BOOKS.map(b => b.category)));
 
 export const getMockTests = (slug: string): TestItem[] => [
-  { id: 'm1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock' },
-  { id: 'm2', title: 'Full Length Mock Test 2', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: false, type: 'mock' },
-  { id: 'm3', title: 'Speed Test - Quantitative', durationInMinutes: 45, marks: 50, numberOfQuestions: 50, isFree: true, type: 'mock' },
+  { id: 'm1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length' },
+  { id: 'm2', title: 'Full Length Mock Test 2', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: false, type: 'mock', subject: 'Full Length' },
+  { id: 'm3', title: 'Speed Test - Quantitative', durationInMinutes: 45, marks: 50, numberOfQuestions: 50, isFree: true, type: 'mock', subject: 'Quantitative Aptitude' },
+  { id: 'm4', title: 'Mini Mock - Reasoning', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'mock', subject: 'Reasoning Ability' },
 ];
 
 export const getTests = (slug: string): TestItem[] => [
