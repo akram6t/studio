@@ -35,6 +35,7 @@ export interface ContentItem {
   type: 'pdf' | 'ppt' | 'blog';
   url: string;
   thumbnail?: string;
+  isFree: boolean;
 }
 
 export interface Book {
@@ -160,11 +161,11 @@ export const getQuizzes = (slug: string): QuizItem[] => [
 ];
 
 export const getContent = (slug: string): ContentItem[] => [
-  { id: 'c1', title: 'Preparation Strategy Guide', type: 'pdf', url: '#', thumbnail: getImage('book-cover-1') },
-  { id: 'c2', title: 'Last 10 Year Analysis', type: 'ppt', url: '#', thumbnail: getImage('book-cover-2') },
-  { id: 'c3', title: 'How to score 90+ in English', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/blog-study/300/400' },
-  { id: 'c4', title: 'Important Formulas Sheet', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/formulas/300/400' },
-  { id: 'c5', title: 'Mathematics Shortcut Tricks', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/tricks/300/400' },
+  { id: 'c1', title: 'Preparation Strategy Guide', type: 'pdf', url: '#', thumbnail: getImage('book-cover-1'), isFree: true },
+  { id: 'c2', title: 'Last 10 Year Analysis', type: 'ppt', url: '#', thumbnail: getImage('book-cover-2'), isFree: false },
+  { id: 'c3', title: 'How to score 90+ in English', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/blog-study/300/400', isFree: true },
+  { id: 'c4', title: 'Important Formulas Sheet', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/formulas/300/400', isFree: false },
+  { id: 'c5', title: 'Mathematics Shortcut Tricks', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/tricks/300/400', isFree: false },
 ];
 
 export const getPracticeSets = (subjectId: string): PracticeSet[] => {
