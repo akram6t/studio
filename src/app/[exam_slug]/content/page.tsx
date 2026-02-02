@@ -56,7 +56,7 @@ export default function ContentPage() {
                   ) : (
                     <div className={cn(
                       "text-white text-[8px] font-bold px-2 py-1 rounded-b-sm shadow-sm flex items-center gap-1 uppercase tracking-widest",
-                      isUnlocked ? "bg-amber-600" : "bg-primary"
+                      "bg-amber-600"
                     )}>
                       {isUnlocked ? <Unlock className="h-2 w-2" /> : <Lock className="h-2 w-2" />} 
                       {isUnlocked ? "Unlocked" : "Premium"}
