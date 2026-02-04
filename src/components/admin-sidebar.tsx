@@ -14,7 +14,8 @@ import {
   BookMarked,
   Trophy,
   Zap,
-  LibraryBig
+  LibraryBig,
+  LayoutGrid
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -38,6 +39,7 @@ import { Button } from "@/components/ui/button";
 const ADMIN_NAV = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/admin" },
   { title: "Users", icon: Users, url: "/admin/users" },
+  { title: "Exam Categories", icon: LayoutGrid, url: "/admin/categories" },
   { title: "Sectional Tests", icon: FileText, url: "/admin/tests" },
   { title: "Mock Tests", icon: Trophy, url: "/admin/mocks" },
   { title: "Study Content", icon: LibraryBig, url: "/admin/content" },
