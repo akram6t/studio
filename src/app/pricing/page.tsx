@@ -10,51 +10,50 @@ import { cn } from "@/lib/utils";
 
 const PLANS = [
   {
-    name: "Aspirant (Free)",
-    price: "₹0",
-    description: "Perfect for exploring our study materials and basic tests.",
+    name: "Monthly Pass",
+    price: "₹99",
+    period: "/30 days",
+    description: "Great for quick revision before your upcoming exam.",
     features: [
-      "Access to 50+ Free Practice Sets",
-      "Daily Current Affairs Quizzes",
-      "Limited PDF Resources",
-      "Basic Performance Analytics",
-      "Ad-supported Experience"
+      "Access to all Mock Tests",
+      "All Sectional Practice Sets",
+      "Previous Year Solved Papers",
+      "Detailed Performance Reports",
+      "No Advertisements"
     ],
-    buttonText: "Get Started",
+    buttonText: "Start 30 Days",
     variant: "outline",
     isPopular: false
   },
   {
-    name: "Prep Pro",
-    price: "₹499",
-    period: "/year",
-    description: "The complete toolkit for serious exam preparation.",
+    name: "Quarterly Pass",
+    price: "₹249",
+    period: "/90 days",
+    description: "The most balanced plan for consistent aspirants.",
     features: [
-      "Unlimited Mock Tests",
-      "Full Sectional Practice Sets",
-      "Previous Year Solved Papers",
-      "Detailed Performance Reports",
-      "No Advertisements",
-      "Priority Doubt Support"
+      "Everything in Monthly Pass",
+      "Additional Strategy Guides",
+      "Topic-wise Formula Sheets",
+      "Priority Doubt Support",
+      "Save 15% vs Monthly"
     ],
-    buttonText: "Unlock Pro",
+    buttonText: "Unlock Quarterly",
     variant: "default",
     isPopular: true
   },
   {
-    name: "Elite Member",
-    price: "₹999",
-    period: "/year",
-    description: "The ultimate preparation experience with exclusive benefits.",
+    name: "Yearly Pass",
+    price: "₹499",
+    period: "/365 days",
+    description: "The ultimate value for year-round preparation.",
     features: [
-      "Everything in Prep Pro",
+      "Everything in Quarterly Pass",
       "Exclusive Expert Strategy Blogs",
       "Personalized Mentorship Sessions",
       "Early Access to New Mocks",
-      "Printable Formula Sheets",
-      "Dedicated WhatsApp Support"
+      "Save 50% vs Monthly"
     ],
-    buttonText: "Join Elite",
+    buttonText: "Get Yearly Access",
     variant: "accent",
     isPopular: false
   }
@@ -62,20 +61,20 @@ const PLANS = [
 
 const FAQS = [
   {
-    question: "How long is the premium validity?",
-    answer: "All our paid plans (Pro and Elite) come with a 365-day validity from the date of purchase. You can renew your plan at a discounted rate before it expires."
+    question: "Which plan should I choose?",
+    answer: "If your exam is in the next month, the Monthly Pass is ideal. For those just starting their journey or targeting multiple exams throughout the year, the Yearly Pass offers the best value and continuity."
   },
   {
-    question: "Can I access tests on multiple devices?",
-    answer: "Yes! You can log in to your account on any device (Web, Mobile App, or Tablet). Your progress and analytics are automatically synced across all platforms."
+    question: "Can I upgrade my plan later?",
+    answer: "Yes! You can upgrade from a Monthly or Quarterly plan to a Yearly plan at any time. The remaining validity of your current plan will be adjusted or added to the new duration."
   },
   {
-    question: "Is there a refund policy?",
-    answer: "We offer a 24-hour 'no questions asked' refund policy if you haven't attempted more than 2 premium mock tests. Please contact support@examprep.com for assistance."
+    question: "Is there a free trial available?",
+    answer: "We offer a 'Freemium' model where certain tests and resources are always free. You can try those first to experience the platform quality before committing to a paid pass."
   },
   {
-    question: "Are offline downloads supported?",
-    answer: "PDF resources and study materials can be downloaded for offline viewing. Mock tests require an active internet connection to ensure real-time analytics and rank calculation."
+    question: "How do I renew my pass?",
+    answer: "Your pass will not auto-renew. We believe in transparency, so we'll notify you 7 days before your pass expires so you can manually choose to renew if you wish."
   }
 ];
 
@@ -87,11 +86,11 @@ export default function PricingPage() {
         <div className="container mx-auto px-4 relative z-10">
           <Badge variant="outline" className="px-4 py-1.5 border-amber-600/20 bg-amber-50 text-amber-600 font-bold uppercase tracking-widest text-[10px] mb-6">
             <Star className="h-3 w-3 mr-2 fill-current" />
-            Invest in your future
+            Pick Your Preparation Pace
           </Badge>
-          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-6">Simple, Transparent <span className="text-primary">Pricing</span></h1>
+          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-6">Simple, Duration-Based <span className="text-primary">Plans</span></h1>
           <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
-            Unlock premium mock tests, expert guidance, and smart analytics to accelerate your journey to success.
+            Choose a pass that fits your exam timeline. Unlock premium mock tests, expert guidance, and smart analytics instantly.
           </p>
         </div>
         
@@ -146,7 +145,7 @@ export default function PricingPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">What's included:</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Plan Benefits:</p>
                   <ul className="space-y-3">
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-3 text-sm">
@@ -164,7 +163,7 @@ export default function PricingPage() {
               </CardContent>
 
               <CardFooter className="p-8 pt-0 mt-auto">
-                <Link href={plan.name.includes('Free') ? '/signup' : '/login'} className="w-full">
+                <Link href="/login" className="w-full">
                   <Button 
                     className={cn(
                       "w-full h-12 rounded-xl font-bold text-base shadow-lg",
@@ -216,7 +215,7 @@ export default function PricingPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-headline font-bold mb-4">Common Questions</h2>
-            <p className="text-muted-foreground">Everything you need to know about our plans and features.</p>
+            <p className="text-muted-foreground">Everything you need to know about our passes and validity.</p>
           </div>
 
           <Card className="border-none shadow-lg overflow-hidden">
@@ -257,7 +256,7 @@ export default function PricingPage() {
               </Link>
               <Link href="/pricing">
                 <Button size="lg" variant="outline" className="border-white/20 hover:bg-white/10 text-white h-14 px-10 rounded-2xl font-bold text-lg">
-                  Compare Plans <ArrowRight className="ml-2 h-5 w-5" />
+                  Compare Passes <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
             </div>
