@@ -23,12 +23,11 @@ import {
   CheckCircle2,
   XCircle,
   Crown,
-  ChevronLeft,
-  ChevronRight,
   ShieldAlert,
   Edit2,
   Trash2,
-  Save
+  Save,
+  Check
 } from "lucide-react";
 import { 
   Sheet, 
@@ -59,6 +58,9 @@ export default function AdminUsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
+  // Deletion Confirmation State
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
       const matchesSearch = user.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -74,7 +76,14 @@ export default function AdminUsersPage() {
   };
 
   const handleDelete = (id: string) => {
-    setUsers(users.filter(u => u.id !== id));
+    if (confirmDeleteId === id) {
+      setUsers(users.filter(u => u.id !== id));
+      setConfirmDeleteId(null);
+    } else {
+      setConfirmDeleteId(id);
+      // Auto-reset after 3 seconds if not confirmed
+      setTimeout(() => setConfirmDeleteId(prev => prev === id ? null : prev), 3000);
+    }
   };
 
   const handleSave = () => {
@@ -217,9 +226,14 @@ export default function AdminUsersPage() {
                           variant="ghost" 
                           size="icon" 
                           onClick={() => handleDelete(user.id)}
-                          className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                          className={cn(
+                            "h-8 w-8 rounded-lg transition-all",
+                            confirmDeleteId === user.id 
+                              ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 w-16 px-2" 
+                              : "hover:bg-destructive/10 hover:text-destructive"
+                          )}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {confirmDeleteId === user.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
                         </Button>
                       </div>
                     </TableCell>

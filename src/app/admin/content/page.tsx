@@ -19,12 +19,9 @@ import {
   Save,
   CheckCircle2,
   Download,
-  Eye,
-  ChevronLeft,
-  ChevronRight,
   ShieldCheck,
-  Zap,
-  LibraryBig
+  LibraryBig,
+  Check
 } from "lucide-react";
 import { 
   Sheet, 
@@ -54,6 +51,9 @@ export default function AdminContentPage() {
   const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
+  // Deletion Confirmation State
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const filteredContent = useMemo(() => {
     return content.filter(item => item.title.toLowerCase().includes(search.toLowerCase()));
   }, [content, search]);
@@ -64,7 +64,13 @@ export default function AdminContentPage() {
   };
 
   const handleDelete = (id: string) => {
-    setContent(content.filter(c => c.id !== id));
+    if (confirmDeleteId === id) {
+      setContent(content.filter(c => c.id !== id));
+      setConfirmDeleteId(null);
+    } else {
+      setConfirmDeleteId(id);
+      setTimeout(() => setConfirmDeleteId(prev => prev === id ? null : prev), 3000);
+    }
   };
 
   const handleSave = () => {
@@ -98,7 +104,7 @@ export default function AdminContentPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         {[
           { label: "Total Assets", value: content.length.toString(), icon: LibraryBig, color: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Premium Items", value: content.filter(c => !c.isFree).length.toString(), icon: Zap, color: "text-amber-600", bg: "bg-amber-50" },
+          { label: "Premium Items", value: content.filter(c => !c.isFree).length.toString(), icon: ShieldCheck, color: "text-amber-600", bg: "bg-amber-50" },
           { label: "Verified", value: "98%", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50" },
           { label: "Downloads", value: "84k", icon: Download, color: "text-purple-600", bg: "bg-purple-50" },
         ].map((stat) => (
@@ -194,9 +200,14 @@ export default function AdminContentPage() {
                           variant="ghost" 
                           size="icon" 
                           onClick={() => handleDelete(item.id)}
-                          className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                          className={cn(
+                            "h-8 w-8 rounded-lg transition-all",
+                            confirmDeleteId === item.id 
+                              ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 w-16 px-2" 
+                              : "hover:bg-destructive/10 hover:text-destructive"
+                          )}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {confirmDeleteId === item.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
                         </Button>
                       </div>
                     </TableCell>

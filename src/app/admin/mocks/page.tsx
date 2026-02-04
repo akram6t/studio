@@ -17,10 +17,7 @@ import {
   Edit2,
   Trash2,
   Save,
-  CheckCircle2,
-  ExternalLink,
-  ChevronLeft,
-  ChevronRight
+  Check
 } from "lucide-react";
 import { 
   Sheet, 
@@ -50,6 +47,9 @@ export default function AdminMocksPage() {
   const [editingMock, setEditingMock] = useState<TestItem | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
+  // Deletion Confirmation State
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const filteredMocks = useMemo(() => {
     return mocks.filter(mock => mock.title.toLowerCase().includes(search.toLowerCase()));
   }, [mocks, search]);
@@ -60,7 +60,13 @@ export default function AdminMocksPage() {
   };
 
   const handleDelete = (id: string) => {
-    setMocks(mocks.filter(m => m.id !== id));
+    if (confirmDeleteId === id) {
+      setMocks(mocks.filter(m => m.id !== id));
+      setConfirmDeleteId(null);
+    } else {
+      setConfirmDeleteId(id);
+      setTimeout(() => setConfirmDeleteId(prev => prev === id ? null : prev), 3000);
+    }
   };
 
   const handleSave = () => {
@@ -176,9 +182,14 @@ export default function AdminMocksPage() {
                           variant="ghost" 
                           size="icon" 
                           onClick={() => handleDelete(mock.id)}
-                          className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                          className={cn(
+                            "h-8 w-8 rounded-lg transition-all",
+                            confirmDeleteId === mock.id 
+                              ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 w-16 px-2" 
+                              : "hover:bg-destructive/10 hover:text-destructive"
+                          )}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {confirmDeleteId === mock.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
                         </Button>
                       </div>
                     </TableCell>

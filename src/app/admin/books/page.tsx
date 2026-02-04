@@ -17,7 +17,8 @@ import {
   Trash2,
   Save,
   TrendingUp,
-  Tag
+  Tag,
+  Check
 } from "lucide-react";
 import { 
   Sheet, 
@@ -39,6 +40,9 @@ export default function AdminBooksPage() {
   const [editingBook, setEditingBook] = useState<Book | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
+  // Deletion Confirmation State
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const filteredBooks = useMemo(() => {
     return books.filter(book => 
       book.title.toLowerCase().includes(search.toLowerCase()) || 
@@ -52,7 +56,13 @@ export default function AdminBooksPage() {
   };
 
   const handleDelete = (id: string) => {
-    setBooks(books.filter(b => b.id !== id));
+    if (confirmDeleteId === id) {
+      setBooks(books.filter(b => b.id !== id));
+      setConfirmDeleteId(null);
+    } else {
+      setConfirmDeleteId(id);
+      setTimeout(() => setConfirmDeleteId(prev => prev === id ? null : prev), 3000);
+    }
   };
 
   const handleSave = () => {
@@ -163,9 +173,14 @@ export default function AdminBooksPage() {
                           variant="ghost" 
                           size="icon" 
                           onClick={() => handleDelete(book.id)}
-                          className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                          className={cn(
+                            "h-8 w-8 rounded-lg transition-all",
+                            confirmDeleteId === book.id 
+                              ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 w-16 px-2" 
+                              : "hover:bg-destructive/10 hover:text-destructive"
+                          )}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {confirmDeleteId === book.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
                         </Button>
                       </div>
                     </TableCell>

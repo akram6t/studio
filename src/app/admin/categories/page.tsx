@@ -15,12 +15,11 @@ import {
   TrendingUp, 
   Layers, 
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   BookOpen,
   Edit2,
   Trash2,
-  Save
+  Save,
+  Check
 } from "lucide-react";
 import { 
   Sheet, 
@@ -58,6 +57,9 @@ export default function AdminCategoriesPage() {
   const [editingCategory, setEditingCategory] = useState<CategoryData | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
+  // Deletion Confirmation State
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const filteredCategories = useMemo(() => {
     return categories.filter(cat => cat.name.toLowerCase().includes(search.toLowerCase()));
   }, [categories, search]);
@@ -68,7 +70,13 @@ export default function AdminCategoriesPage() {
   };
 
   const handleDelete = (id: string) => {
-    setCategories(categories.filter(c => c.id !== id));
+    if (confirmDeleteId === id) {
+      setCategories(categories.filter(c => c.id !== id));
+      setConfirmDeleteId(null);
+    } else {
+      setConfirmDeleteId(id);
+      setTimeout(() => setConfirmDeleteId(prev => prev === id ? null : prev), 3000);
+    }
   };
 
   const handleSave = () => {
@@ -184,9 +192,14 @@ export default function AdminCategoriesPage() {
                           variant="ghost" 
                           size="icon" 
                           onClick={() => handleDelete(category.id)}
-                          className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                          className={cn(
+                            "h-8 w-8 rounded-lg transition-all",
+                            confirmDeleteId === category.id 
+                              ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 w-16 px-2" 
+                              : "hover:bg-destructive/10 hover:text-destructive"
+                          )}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {confirmDeleteId === category.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
                         </Button>
                       </div>
                     </TableCell>
