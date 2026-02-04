@@ -1,4 +1,3 @@
-
 import type {Metadata} from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
@@ -27,7 +26,7 @@ export default function RootLayout({
         </main>
         <footer className="py-8 border-t bg-card mt-12">
           <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
-            © {new Date().getFullYear()} ExamPrep. All rights reserved.
+            © 2025 ExamPrep. All rights reserved.
           </div>
         </footer>
       </body>

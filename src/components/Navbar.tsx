@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -14,12 +13,17 @@ export default function Navbar() {
 
   useEffect(() => {
     setMounted(true);
+    // Sync initial theme state if needed
+    if (typeof window !== 'undefined' && document.documentElement.classList.contains('dark')) {
+      setIsDarkMode(true);
+    }
   }, []);
 
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
     if (typeof window !== 'undefined') {
-      document.documentElement.classList.toggle('dark');
+      document.documentElement.classList.toggle('dark', newMode);
     }
   };
 
@@ -52,7 +56,13 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
-            {!mounted ? <Moon className="h-5 w-5" /> : isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {!mounted ? (
+              <Moon className="h-5 w-5" />
+            ) : isDarkMode ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
           </Button>
           
           <div className="hidden md:flex items-center gap-2">
