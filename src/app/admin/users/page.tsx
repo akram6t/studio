@@ -9,13 +9,12 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
   Search, 
-  Filter, 
   MoreVertical, 
   UserPlus, 
   Mail, 
@@ -24,7 +23,9 @@ import {
   XCircle,
   Crown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ShieldAlert,
+  Edit2
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -69,7 +70,7 @@ export default function AdminUsersPage() {
               />
             </div>
             <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
-              {["all", "student", "premium", "admin"].map((role) => (
+              {["all", "user", "creator", "admin"].map((role) => (
                 <button
                   key={role}
                   onClick={() => setRoleFilter(role)}
@@ -93,6 +94,7 @@ export default function AdminUsersPage() {
                 <TableRow className="hover:bg-transparent border-b">
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Student</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest">Role</TableHead>
+                  <TableHead className="font-bold text-[10px] uppercase tracking-widest text-center">Premium</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest">Status</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest">Activity</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest text-right pr-6">Actions</TableHead>
@@ -116,20 +118,29 @@ export default function AdminUsersPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5">
-                        {user.role === 'premium' ? (
-                          <Badge className="bg-amber-600 text-white border-none gap-1 px-2 py-0.5 text-[10px] font-bold">
-                            <Crown className="h-2.5 w-2.5" /> ELITE
-                          </Badge>
-                        ) : user.role === 'admin' ? (
+                        {user.role === 'admin' ? (
                           <Badge className="bg-slate-800 text-white border-none gap-1 px-2 py-0.5 text-[10px] font-bold">
-                            STAFF
+                            <ShieldAlert className="h-2.5 w-2.5" /> ADMIN
+                          </Badge>
+                        ) : user.role === 'creator' ? (
+                          <Badge className="bg-purple-600 text-white border-none gap-1 px-2 py-0.5 text-[10px] font-bold uppercase">
+                            CREATOR
                           </Badge>
                         ) : (
                           <Badge variant="secondary" className="bg-muted text-muted-foreground border-none px-2 py-0.5 text-[10px] font-bold uppercase">
-                            Basic
+                            USER
                           </Badge>
                         )}
                       </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {user.isPremium ? (
+                        <div className="flex items-center justify-center text-amber-600">
+                          <Crown className="h-4 w-4" />
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-[10px] font-bold">NO</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5">
@@ -153,9 +164,14 @@ export default function AdminUsersPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right pr-6">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary">
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
