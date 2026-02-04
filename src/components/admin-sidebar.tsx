@@ -78,7 +78,7 @@ export function AdminSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r shadow-sm">
-      <SidebarHeader className="p-4 border-b bg-primary/5">
+      <SidebarHeader className="p-4 border-b bg-transparent">
         <Link href="/admin" className="flex items-center gap-2 overflow-hidden">
           <div className="bg-primary text-primary-foreground p-2 rounded-xl shrink-0">
             <Zap className="h-5 w-5 fill-current" />
@@ -190,7 +190,7 @@ export function AdminSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t bg-muted/30">
+      <SidebarFooter className="p-4 border-t bg-transparent">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="hover:bg-destructive/10 hover:text-destructive h-10 px-4">
