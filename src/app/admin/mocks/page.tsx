@@ -1,3 +1,4 @@
+
 "use client";
 
 import { getMockTests, TestItem, EXAMS } from "@/lib/api";
@@ -78,12 +79,20 @@ export default function AdminMocksPage() {
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+  // Dynamic Sections based on selected exam
+  const availableSections = useMemo(() => {
+    const relevantTests = examFilter === "all" 
+      ? mocks 
+      : mocks.filter(m => m.examSlug === examFilter);
+    return Array.from(new Set(relevantTests.map(m => m.subject))).filter(Boolean) as string[];
+  }, [mocks, examFilter]);
+
   const filteredMocks = useMemo(() => {
     return mocks.filter(mock => {
       const matchesSearch = mock.title.toLowerCase().includes(search.toLowerCase());
-      const matchesSection = sectionFilter === "all" || mock.subject === sectionFilter;
       const matchesExam = examFilter === "all" || mock.examSlug === examFilter;
-      return matchesSearch && matchesSection && matchesExam;
+      const matchesSection = sectionFilter === "all" || mock.subject === sectionFilter;
+      return matchesSearch && matchesExam && matchesSection;
     });
   }, [mocks, search, sectionFilter, examFilter]);
 
@@ -114,8 +123,6 @@ export default function AdminMocksPage() {
       setIsSheetOpen(false);
     }
   };
-
-  const sections = Array.from(new Set(mocksData.map(m => m.subject))).filter(Boolean);
 
   return (
     <div className="space-y-6">
@@ -178,36 +185,51 @@ export default function AdminMocksPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
-                <GraduationCap className="h-3 w-3 text-muted-foreground ml-2" />
-                <select 
-                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none pr-2"
-                  value={examFilter}
-                  onChange={(e) => {
-                    setExamFilter(e.target.value);
+              <div className="w-[200px]">
+                <Select 
+                  value={examFilter} 
+                  onValueChange={(val) => {
+                    setExamFilter(val);
+                    setSectionFilter("all"); // Reset section filter when exam changes
                     setCurrentPage(1);
                   }}
                 >
-                  <option value="all">All Exams</option>
-                  {EXAMS.map(exam => (
-                    <option key={exam.id} value={exam.slug}>{exam.title}</option>
-                  ))}
-                </select>
+                  <SelectTrigger className="h-11 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="h-3 w-3 text-muted-foreground" />
+                      <SelectValue placeholder="All Exams" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Exams</SelectItem>
+                    {EXAMS.map(exam => (
+                      <SelectItem key={exam.id} value={exam.slug}>{exam.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
-                <Filter className="h-3 w-3 text-muted-foreground ml-2" />
-                <select 
-                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none pr-2"
-                  value={sectionFilter}
-                  onChange={(e) => {
-                    setSectionFilter(e.target.value);
+              <div className="w-[200px]">
+                <Select 
+                  value={sectionFilter} 
+                  onValueChange={(val) => {
+                    setSectionFilter(val);
                     setCurrentPage(1);
                   }}
                 >
-                  <option value="all">All Sections</option>
-                  {sections.map(s => <option key={s} value={s as string}>{s as string}</option>)}
-                </select>
+                  <SelectTrigger className="h-11 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-3 w-3 text-muted-foreground" />
+                      <SelectValue placeholder="All Sections" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sections</SelectItem>
+                    {availableSections.map(s => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -430,3 +452,4 @@ export default function AdminMocksPage() {
     </div>
   );
 }
+
