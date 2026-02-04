@@ -15,7 +15,8 @@ import {
   BookMarked,
   CheckCircle2,
   MessageSquare,
-  GraduationCap
+  GraduationCap,
+  Image as ImageIcon
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -48,6 +49,7 @@ const ADMIN_NAV = [
   { title: "Mock Tests", icon: Trophy, url: "/admin/mocks" },
   { title: "Study Content", icon: LibraryBig, url: "/admin/content" },
   { title: "Books", icon: BookMarked, url: "/admin/books" },
+  { title: "Media Library", icon: ImageIcon, url: "/admin/media" },
 ];
 
 const SECONDARY_NAV = [

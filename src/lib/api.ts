@@ -82,6 +82,15 @@ export interface User {
   testsTaken: number;
 }
 
+export interface MediaItem {
+  id: string;
+  name: string;
+  url: string;
+  type: 'image' | 'pdf' | 'video' | 'other';
+  size: string;
+  createdAt: string;
+}
+
 const getImage = (id: string) => {
   if (!PlaceHolderImages) return `https://picsum.photos/seed/${id}/600/400`;
   return PlaceHolderImages.find(img => img.id === id)?.imageUrl || `https://picsum.photos/seed/${id}/600/400`;
@@ -247,4 +256,14 @@ export const getUsers = (): User[] => [
   { id: 'u6', name: 'Ananya Iyer', email: 'ananya@example.com', role: 'user', isPremium: false, joinedDate: '2024-03-12', status: 'active', testsTaken: 5 },
   { id: 'u7', name: 'Karan Malhotra', email: 'karan@example.com', role: 'creator', isPremium: true, joinedDate: '2024-01-30', status: 'active', testsTaken: 32 },
   { id: 'u8', name: 'Meera Gupta', email: 'meera@example.com', role: 'user', isPremium: false, joinedDate: '2024-02-28', status: 'inactive', testsTaken: 1 },
+];
+
+export const getMediaItems = (): MediaItem[] => [
+  { id: 'm1', name: 'ssc-banner.jpg', type: 'image', url: getImage('exam-ssc'), size: '1.2MB', createdAt: '2024-03-15' },
+  { id: 'm2', name: 'gate-logo.png', type: 'image', url: getImage('exam-gate'), size: '450KB', createdAt: '2024-03-14' },
+  { id: 'm3', name: 'upsc-syllabus.pdf', type: 'pdf', url: '#', size: '2.4MB', createdAt: '2024-03-13' },
+  { id: 'm4', name: 'it-software-bg.jpg', type: 'image', url: getImage('exam-cat'), size: '1.8MB', createdAt: '2024-03-12' },
+  { id: 'm5', name: 'user-default.png', type: 'image', url: getImage('user-avatar'), size: '120KB', createdAt: '2024-03-11' },
+  { id: 'm6', name: 'book-cover-1.jpg', type: 'image', url: getImage('book-cover-1'), size: '800KB', createdAt: '2024-03-10' },
+  { id: 'm7', name: 'book-cover-2.jpg', type: 'image', url: getImage('book-cover-2'), size: '750KB', createdAt: '2024-03-09' },
 ];

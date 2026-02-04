@@ -41,6 +41,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { MediaLibraryDialog } from "@/components/MediaLibraryDialog";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
@@ -54,6 +55,9 @@ export default function AdminExamsPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [newStage, setNewStage] = useState("");
   const [newSubject, setNewSubject] = useState("");
+
+  // Media Selection State
+  const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -139,12 +143,11 @@ export default function AdminExamsPage() {
     }
   };
 
-  const handleUpdateIcon = () => {
+  const handleSelectMedia = (item: any) => {
     if (editingExam) {
-      const randomSeed = Math.floor(Math.random() * 1000);
       setEditingExam({
         ...editingExam,
-        image: `https://picsum.photos/seed/${randomSeed}/600/400`
+        image: item.url
       });
     }
   };
@@ -302,12 +305,12 @@ export default function AdminExamsPage() {
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-2">
                       <Button 
-                        onClick={handleUpdateIcon}
+                        onClick={() => setIsMediaDialogOpen(true)}
                         variant="outline" 
                         size="sm" 
                         className="h-9 rounded-xl text-[11px] font-bold uppercase tracking-wider border-primary/20 hover:bg-primary/5"
                       >
-                        <ImageIcon className="h-3.5 w-3.5 mr-2 text-primary" /> Change Image
+                        <ImageIcon className="h-3.5 w-3.5 mr-2 text-primary" /> Select from Library
                       </Button>
                       <Button 
                         variant="ghost" 
@@ -477,6 +480,14 @@ export default function AdminExamsPage() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      {/* Media Picker Dialog */}
+      <MediaLibraryDialog 
+        open={isMediaDialogOpen} 
+        onOpenChange={setIsMediaDialogOpen} 
+        onSelect={handleSelectMedia}
+        allowedTypes={['image']}
+      />
     </div>
   );
 }
