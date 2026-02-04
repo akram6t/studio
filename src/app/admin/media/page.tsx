@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { getMediaItems, MediaItem } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const ITEMS_PER_PAGE = 12;
+// Set to a smaller number like 6 so pagination is visible with mock data (7 items)
+const ITEMS_PER_PAGE = 6;
 
 export default function AdminMediaPage() {
   const [media, setMedia] = useState<MediaItem[]>(getMediaItems());
@@ -51,7 +52,7 @@ export default function AdminMediaPage() {
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  // Pagination
+  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredMedia = useMemo(() => {
@@ -63,10 +64,11 @@ export default function AdminMediaPage() {
   }, [media, search, filterType]);
 
   const totalPages = Math.ceil(filteredMedia.length / ITEMS_PER_PAGE);
-  const paginatedMedia = filteredMedia.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  
+  const paginatedMedia = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredMedia.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredMedia, currentPage]);
 
   const handleDelete = (id: string) => {
     if (confirmDeleteId === id) {
@@ -111,7 +113,7 @@ export default function AdminMediaPage() {
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value);
-                    setCurrentPage(1);
+                    setCurrentPage(1); // Reset to first page on search
                   }}
                 />
               </div>
@@ -140,7 +142,13 @@ export default function AdminMediaPage() {
 
             <div className="flex flex-wrap items-center gap-3">
               <div className="w-[200px]">
-                <Select value={filterType} onValueChange={(val) => { setFilterType(val); setCurrentPage(1); }}>
+                <Select 
+                  value={filterType} 
+                  onValueChange={(val) => { 
+                    setFilterType(val); 
+                    setCurrentPage(1); // Reset to first page on filter
+                  }}
+                >
                   <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4 ring-offset-background">
                     <div className="flex items-center gap-2">
                       <Filter className="h-3 w-3 text-muted-foreground" />
@@ -176,7 +184,6 @@ export default function AdminMediaPage() {
                       </div>
                     )}
                     
-                    {/* Floating Direct Actions */}
                     <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0">
                       <TooltipProvider>
                         <Tooltip>
@@ -301,24 +308,44 @@ export default function AdminMediaPage() {
             </div>
           )}
 
-          {/* Pagination */}
+          {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className="p-4 bg-muted/10 border-t flex items-center justify-between">
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredMedia.length)}</span> of <span className="font-bold text-foreground">{filteredMedia.length}</span> assets
+                Showing <span className="font-bold text-foreground">{Math.min(filteredMedia.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredMedia.length)}</span> of <span className="font-bold text-foreground">{filteredMedia.length}</span> assets
               </p>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-8 w-8 rounded-lg" 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+                  disabled={currentPage === 1}
+                >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <Button key={page} variant={currentPage === page ? "default" : "outline"} className={cn("h-8 w-8 rounded-lg text-xs font-bold", currentPage === page && "shadow-lg shadow-primary/20 border-primary")} onClick={() => setCurrentPage(page)}>
+                    <Button 
+                      key={page} 
+                      variant={currentPage === page ? "default" : "outline"} 
+                      className={cn(
+                        "h-8 w-8 rounded-lg text-xs font-bold", 
+                        currentPage === page && "shadow-lg shadow-primary/20 border-primary"
+                      )} 
+                      onClick={() => setCurrentPage(page)}
+                    >
                       {page}
                     </Button>
                   ))}
                 </div>
-                <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-8 w-8 rounded-lg" 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
+                  disabled={currentPage === totalPages}
+                >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
