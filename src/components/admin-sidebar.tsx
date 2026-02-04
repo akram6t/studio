@@ -85,11 +85,13 @@ export function AdminSidebar() {
                       tooltip={item.title}
                       className={cn(
                         "transition-all duration-200 h-10 px-4",
-                        isActive ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "hover:bg-muted"
+                        isActive 
+                          ? "bg-primary/10 text-primary shadow-sm" 
+                          : "hover:bg-muted text-muted-foreground"
                       )}
                     >
                       <Link href={item.url}>
-                        <item.icon className={cn("h-4 w-4", isActive ? "text-white" : "text-muted-foreground")} />
+                        <item.icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")} />
                         <span className="font-semibold text-sm">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -114,11 +116,13 @@ export function AdminSidebar() {
                       tooltip={item.title}
                       className={cn(
                         "transition-all duration-200 h-10 px-4",
-                        isActive ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "hover:bg-muted"
+                        isActive 
+                          ? "bg-primary/10 text-primary shadow-sm" 
+                          : "hover:bg-muted text-muted-foreground"
                       )}
                     >
                       <Link href={item.url}>
-                        <item.icon className={cn("h-4 w-4", isActive ? "text-white" : "text-muted-foreground")} />
+                        <item.icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")} />
                         <span className="font-semibold text-sm">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
