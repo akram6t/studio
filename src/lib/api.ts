@@ -19,6 +19,7 @@ export interface TestItem {
   isFree: boolean;
   type: 'mock' | 'test' | 'previous';
   subject?: string;
+  status?: 'published' | 'draft';
 }
 
 export interface QuizItem {
@@ -65,6 +66,16 @@ export interface TopicSet {
   timeLimit: number;
   isCompleted: boolean;
   isFree: boolean;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'student' | 'premium';
+  joinedDate: string;
+  status: 'active' | 'inactive';
+  testsTaken: number;
 }
 
 const getImage = (id: string) => {
@@ -131,27 +142,27 @@ export const BOOKS: Book[] = [
 export const BOOK_CATEGORIES = Array.from(new Set(BOOKS.map(b => b.category)));
 
 export const getMockTests = (slug: string): TestItem[] => [
-  { id: 'm1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length' },
-  { id: 'm2', title: 'CDAC Section A: English/Math', durationInMinutes: 60, marks: 150, numberOfQuestions: 50, isFree: false, type: 'mock', subject: 'Section A' },
-  { id: 'm3', title: 'CDAC Section B: OS/DS/C++', durationInMinutes: 60, marks: 150, numberOfQuestions: 50, isFree: true, type: 'mock', subject: 'Section B' },
-  { id: 'm4', title: 'CTET Level 1 (Primary)', durationInMinutes: 150, marks: 150, numberOfQuestions: 150, isFree: false, type: 'mock', subject: 'Level 1 (Primary)' },
-  { id: 'm5', title: 'CTET Level 2 (Upper Primary)', durationInMinutes: 150, marks: 150, numberOfQuestions: 150, isFree: true, type: 'mock', subject: 'Level 2 (Upper Primary)' },
+  { id: 'm1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length', status: 'published' },
+  { id: 'm2', title: 'CDAC Section A: English/Math', durationInMinutes: 60, marks: 150, numberOfQuestions: 50, isFree: false, type: 'mock', subject: 'Section A', status: 'published' },
+  { id: 'm3', title: 'CDAC Section B: OS/DS/C++', durationInMinutes: 60, marks: 150, numberOfQuestions: 50, isFree: true, type: 'mock', subject: 'Section B', status: 'published' },
+  { id: 'm4', title: 'CTET Level 1 (Primary)', durationInMinutes: 150, marks: 150, numberOfQuestions: 150, isFree: false, type: 'mock', subject: 'Level 1 (Primary)', status: 'published' },
+  { id: 'm5', title: 'CTET Level 2 (Upper Primary)', durationInMinutes: 150, marks: 150, numberOfQuestions: 150, isFree: true, type: 'mock', subject: 'Level 2 (Upper Primary)', status: 'published' },
 ];
 
 export const getTests = (slug: string): TestItem[] => [
-  { id: 't1', title: 'Percentage & Fractions', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude' },
-  { id: 't2', title: 'Profit, Loss & Discount', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude' },
-  { id: 't3', title: 'Direct & Indirect Speech', durationInMinutes: 20, marks: 20, numberOfQuestions: 20, isFree: true, type: 'test', subject: 'English Language' },
-  { id: 't4', title: 'Reading Comprehension Master', durationInMinutes: 40, marks: 30, numberOfQuestions: 15, isFree: false, type: 'test', subject: 'English Language' },
-  { id: 't5', title: 'Coding Decoding Advanced', durationInMinutes: 25, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Reasoning Ability' },
-  { id: 't6', title: 'Syllogism Specialist', durationInMinutes: 15, marks: 10, numberOfQuestions: 10, isFree: true, type: 'test', subject: 'Reasoning Ability' },
-  { id: 't7', title: 'Indian Constitution & Polity', durationInMinutes: 30, marks: 50, numberOfQuestions: 50, isFree: false, type: 'test', subject: 'General Awareness' },
-  { id: 't8', title: 'Modern Indian History', durationInMinutes: 30, marks: 50, numberOfQuestions: 50, isFree: true, type: 'test', subject: 'General Awareness' },
+  { id: 't1', title: 'Percentage & Fractions', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude', status: 'published' },
+  { id: 't2', title: 'Profit, Loss & Discount', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude', status: 'published' },
+  { id: 't3', title: 'Direct & Indirect Speech', durationInMinutes: 20, marks: 20, numberOfQuestions: 20, isFree: true, type: 'test', subject: 'English Language', status: 'published' },
+  { id: 't4', title: 'Reading Comprehension Master', durationInMinutes: 40, marks: 30, numberOfQuestions: 15, isFree: false, type: 'test', subject: 'English Language', status: 'published' },
+  { id: 't5', title: 'Coding Decoding Advanced', durationInMinutes: 25, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Reasoning Ability', status: 'published' },
+  { id: 't6', title: 'Syllogism Specialist', durationInMinutes: 15, marks: 10, numberOfQuestions: 10, isFree: true, type: 'test', subject: 'Reasoning Ability', status: 'published' },
+  { id: 't7', title: 'Indian Constitution & Polity', durationInMinutes: 30, marks: 50, numberOfQuestions: 50, isFree: false, type: 'test', subject: 'General Awareness', status: 'published' },
+  { id: 't8', title: 'Modern Indian History', durationInMinutes: 30, marks: 50, numberOfQuestions: 50, isFree: true, type: 'test', subject: 'General Awareness', status: 'published' },
 ];
 
 export const getPrevPapers = (slug: string): TestItem[] => [
-  { id: 'p1', title: 'SSC GD 2022 Official Paper (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous' },
-  { id: 'p2', title: 'SSC GD 2021 Official Paper', durationInMinutes: 90, marks: 100, numberOfQuestions: 100, isFree: true, type: 'previous' },
+  { id: 'p1', title: 'SSC GD 2022 Official Paper (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', status: 'published' },
+  { id: 'p2', title: 'SSC GD 2021 Official Paper', durationInMinutes: 90, marks: 100, numberOfQuestions: 100, isFree: true, type: 'previous', status: 'published' },
 ];
 
 export const getQuizzes = (slug: string): QuizItem[] => [
@@ -210,4 +221,15 @@ export const getTopicSets = (topicId: string): TopicSet[] => [
   { id: 's3', title: 'Practice Set 3: Advanced Concepts', questions: 20, timeLimit: 20, isCompleted: false, isFree: false },
   { id: 's4', title: 'Practice Set 4: Mix Bag', questions: 25, timeLimit: 25, isCompleted: false, isFree: false },
   { id: 's5', title: 'Practice Set 5: Speed Test', questions: 15, timeLimit: 10, isCompleted: false, isFree: false },
+];
+
+export const getUsers = (): User[] => [
+  { id: 'u1', name: 'Rahul Sharma', email: 'rahul@example.com', role: 'student', joinedDate: '2024-01-15', status: 'active', testsTaken: 12 },
+  { id: 'u2', name: 'Priya Singh', email: 'priya@example.com', role: 'premium', joinedDate: '2024-02-10', status: 'active', testsTaken: 45 },
+  { id: 'u3', name: 'Amit Patel', email: 'amit@example.com', role: 'student', joinedDate: '2024-03-05', status: 'inactive', testsTaken: 2 },
+  { id: 'u4', name: 'Sneha Reddy', email: 'sneha@example.com', role: 'premium', joinedDate: '2023-12-20', status: 'active', testsTaken: 89 },
+  { id: 'u5', name: 'Vikram Das', email: 'vikram@example.com', role: 'admin', joinedDate: '2023-11-01', status: 'active', testsTaken: 0 },
+  { id: 'u6', name: 'Ananya Iyer', email: 'ananya@example.com', role: 'student', joinedDate: '2024-03-12', status: 'active', testsTaken: 5 },
+  { id: 'u7', name: 'Karan Malhotra', email: 'karan@example.com', role: 'premium', joinedDate: '2024-01-30', status: 'active', testsTaken: 32 },
+  { id: 'u8', name: 'Meera Gupta', email: 'meera@example.com', role: 'student', joinedDate: '2024-02-28', status: 'inactive', testsTaken: 1 },
 ];
