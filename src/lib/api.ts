@@ -77,6 +77,7 @@ export interface User {
   email: string;
   role: 'admin' | 'creator' | 'user';
   isPremium: boolean;
+  premiumExpiry?: string;
   joinedDate: string;
   status: 'active' | 'inactive';
   testsTaken: number;
@@ -249,12 +250,12 @@ export const getTopicSets = (topicId: string): TopicSet[] => [
 
 export const getUsers = (): User[] => [
   { id: 'u1', name: 'Rahul Sharma', email: 'rahul@example.com', role: 'user', isPremium: false, joinedDate: '2024-01-15', status: 'active', testsTaken: 12 },
-  { id: 'u2', name: 'Priya Singh', email: 'priya@example.com', role: 'creator', isPremium: true, joinedDate: '2024-02-10', status: 'active', testsTaken: 45 },
+  { id: 'u2', name: 'Priya Singh', email: 'priya@example.com', role: 'creator', isPremium: true, premiumExpiry: '2025-02-10', joinedDate: '2024-02-10', status: 'active', testsTaken: 45 },
   { id: 'u3', name: 'Amit Patel', email: 'amit@example.com', role: 'user', isPremium: false, joinedDate: '2024-03-05', status: 'inactive', testsTaken: 2 },
-  { id: 'u4', name: 'Sneha Reddy', email: 'sneha@example.com', role: 'creator', isPremium: true, joinedDate: '2023-12-20', status: 'active', testsTaken: 89 },
-  { id: 'u5', name: 'Vikram Das', email: 'vikram@example.com', role: 'admin', isPremium: true, joinedDate: '2023-11-01', status: 'active', testsTaken: 0 },
+  { id: 'u4', name: 'Sneha Reddy', email: 'sneha@example.com', role: 'creator', isPremium: true, premiumExpiry: '2025-12-20', joinedDate: '2023-12-20', status: 'active', testsTaken: 89 },
+  { id: 'u5', name: 'Vikram Das', email: 'vikram@example.com', role: 'admin', isPremium: true, premiumExpiry: '2026-01-01', joinedDate: '2023-11-01', status: 'active', testsTaken: 0 },
   { id: 'u6', name: 'Ananya Iyer', email: 'ananya@example.com', role: 'user', isPremium: false, joinedDate: '2024-03-12', status: 'active', testsTaken: 5 },
-  { id: 'u7', name: 'Karan Malhotra', email: 'karan@example.com', role: 'creator', isPremium: true, joinedDate: '2024-01-30', status: 'active', testsTaken: 32 },
+  { id: 'u7', name: 'Karan Malhotra', email: 'karan@example.com', role: 'creator', isPremium: true, premiumExpiry: '2025-06-30', joinedDate: '2024-01-30', status: 'active', testsTaken: 32 },
   { id: 'u8', name: 'Meera Gupta', email: 'meera@example.com', role: 'user', isPremium: false, joinedDate: '2024-02-28', status: 'inactive', testsTaken: 1 },
 ];
 
