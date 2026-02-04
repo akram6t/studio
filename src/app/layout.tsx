@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: 'ExamPrep - Your Path to Success',
@@ -24,11 +25,7 @@ export default function RootLayout({
         <main className="flex-grow">
           {children}
         </main>
-        <footer className="py-8 border-t bg-card mt-12">
-          <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
-            © 2025 ExamPrep. All rights reserved.
-          </div>
-        </footer>
+        <Footer />
       </body>
     </html>
   );
