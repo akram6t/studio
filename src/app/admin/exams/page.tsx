@@ -11,17 +11,19 @@ import {
   Search, 
   Plus, 
   TrendingUp, 
-  Edit2,
-  Trash2,
-  Save,
-  Check,
-  ChevronRight,
-  Filter,
-  GraduationCap,
-  Layers,
-  X,
-  BookOpen,
-  Layout
+  Edit2, 
+  Trash2, 
+  Save, 
+  Check, 
+  ChevronRight, 
+  Filter, 
+  GraduationCap, 
+  Layers, 
+  X, 
+  BookOpen, 
+  Layout,
+  Image as ImageIcon,
+  Upload
 } from "lucide-react";
 import { 
   Sheet, 
@@ -41,7 +43,6 @@ import {
 } from "@/components/ui/select";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 export default function AdminExamsPage() {
   const [exams, setExams] = useState<Exam[]>(EXAMS);
@@ -135,6 +136,16 @@ export default function AdminExamsPage() {
         updated.splice(index, 1);
         setEditingExam({ ...editingExam, subjects: updated });
       }
+    }
+  };
+
+  const handleUpdateIcon = () => {
+    if (editingExam) {
+      const randomSeed = Math.floor(Math.random() * 1000);
+      setEditingExam({
+        ...editingExam,
+        image: `https://picsum.photos/seed/${randomSeed}/600/400`
+      });
     }
   };
 
@@ -281,15 +292,47 @@ export default function AdminExamsPage() {
           
           {editingExam && (
             <div className="space-y-8 py-4">
-              {/* Core Info */}
+              {/* Exam Icon Section */}
               <div className="space-y-4">
+                <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Exam Icon / Banner</Label>
+                <div className="flex items-center gap-6 p-6 bg-muted/30 rounded-2xl border border-dashed border-muted-foreground/30 group">
+                  <div className="relative h-24 w-24 shrink-0 rounded-2xl overflow-hidden bg-background shadow-inner ring-1 ring-border group-hover:ring-primary/50 transition-all">
+                    <img src={editingExam.image} alt="" className="object-cover w-full h-full" />
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      <Button 
+                        onClick={handleUpdateIcon}
+                        variant="outline" 
+                        size="sm" 
+                        className="h-9 rounded-xl text-[11px] font-bold uppercase tracking-wider border-primary/20 hover:bg-primary/5"
+                      >
+                        <ImageIcon className="h-3.5 w-3.5 mr-2 text-primary" /> Change Image
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-9 rounded-xl text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+                      >
+                        <Upload className="h-3.5 w-3.5 mr-2" /> Upload New
+                      </Button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">
+                      Recommended: High resolution square or 16:10 aspect ratio image. Max 2MB.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Core Info */}
+              <div className="space-y-4 pt-6 border-t">
                 <div className="space-y-2">
                   <Label htmlFor="edit-exam-title">Exam Title</Label>
                   <Input 
                     id="edit-exam-title" 
                     value={editingExam.title} 
                     onChange={(e) => setEditingExam({...editingExam, title: e.target.value})}
-                    className="rounded-xl"
+                    className="rounded-xl h-11"
                   />
                 </div>
                 
@@ -299,7 +342,7 @@ export default function AdminExamsPage() {
                     <Input 
                       value={editingExam.slug} 
                       onChange={(e) => setEditingExam({...editingExam, slug: e.target.value})}
-                      className="rounded-xl font-mono text-xs"
+                      className="rounded-xl h-11 font-mono text-xs"
                     />
                   </div>
                   <div className="space-y-2">
@@ -308,7 +351,7 @@ export default function AdminExamsPage() {
                       value={editingExam.category} 
                       onValueChange={(val) => setEditingExam({...editingExam, category: val})}
                     >
-                      <SelectTrigger className="rounded-xl">
+                      <SelectTrigger className="rounded-xl h-11">
                         <SelectValue placeholder="Select Category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -325,7 +368,7 @@ export default function AdminExamsPage() {
                   <Input 
                     value={editingExam.description} 
                     onChange={(e) => setEditingExam({...editingExam, description: e.target.value})}
-                    className="rounded-xl"
+                    className="rounded-xl h-11"
                   />
                 </div>
 
@@ -358,9 +401,9 @@ export default function AdminExamsPage() {
                     value={newStage}
                     onChange={(e) => setNewStage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addItem('stage')}
-                    className="rounded-xl"
+                    className="rounded-xl h-11"
                   />
-                  <Button onClick={() => addItem('stage')} type="button" size="icon" className="shrink-0 rounded-xl">
+                  <Button onClick={() => addItem('stage')} type="button" size="icon" className="shrink-0 h-11 w-11 rounded-xl">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -399,9 +442,9 @@ export default function AdminExamsPage() {
                     value={newSubject}
                     onChange={(e) => setNewSubject(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addItem('subject')}
-                    className="rounded-xl"
+                    className="rounded-xl h-11"
                   />
-                  <Button onClick={() => addItem('subject')} type="button" size="icon" className="shrink-0 rounded-xl">
+                  <Button onClick={() => addItem('subject')} type="button" size="icon" className="shrink-0 h-11 w-11 rounded-xl">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -425,9 +468,9 @@ export default function AdminExamsPage() {
 
           <SheetFooter className="mt-8 gap-2 pb-8">
             <SheetClose asChild>
-              <Button variant="outline" className="w-full rounded-xl">Cancel</Button>
+              <Button variant="outline" className="w-full rounded-xl h-11 font-bold">Cancel</Button>
             </SheetClose>
-            <Button onClick={handleSave} className="w-full gap-2 rounded-xl shadow-lg">
+            <Button onClick={handleSave} className="w-full gap-2 rounded-xl h-11 font-bold shadow-lg shadow-primary/20">
               <Save className="h-4 w-4" />
               Save Exam Configuration
             </Button>
