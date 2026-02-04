@@ -14,7 +14,6 @@ import {
   FileText, 
   ImageIcon, 
   File, 
-  MoreVertical,
   Check,
   Filter,
   Grid,
@@ -23,13 +22,6 @@ import {
   ChevronRight,
   Info
 } from "lucide-react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger,
-  DropdownMenuSeparator
-} from "@/components/ui/dropdown-menu";
 import { 
   Select, 
   SelectContent, 
@@ -46,8 +38,9 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 12;
 
 export default function AdminMediaPage() {
   const [media, setMedia] = useState<MediaItem[]>(getMediaItems());
@@ -97,17 +90,17 @@ export default function AdminMediaPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-headline font-bold">Media Library</h1>
-          <p className="text-muted-foreground text-sm">Upload and manage platform assets, icons, and documents.</p>
+          <h1 className="text-2xl font-headline font-bold text-foreground">Media Library</h1>
+          <p className="text-muted-foreground text-sm font-medium">Upload and manage platform assets, icons, and documents.</p>
         </div>
-        <Button className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20">
+        <Button className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20 font-bold">
           <Upload className="h-4 w-4" />
           Upload Assets
         </Button>
       </div>
 
-      <Card className="border-none shadow-sm overflow-hidden">
-        <CardHeader className="bg-muted/30 pb-4">
+      <Card className="border-none shadow-sm overflow-hidden bg-card">
+        <CardHeader className="bg-muted/30 pb-4 border-b">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="relative w-full md:w-96">
@@ -129,7 +122,7 @@ export default function AdminMediaPage() {
                     variant="ghost" 
                     size="icon" 
                     onClick={() => setViewMode('grid')}
-                    className={cn("h-8 w-8 rounded-lg", viewMode === 'grid' && "bg-primary/10 text-primary")}
+                    className={cn("h-8 w-8 rounded-lg", viewMode === 'grid' && "bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
                     <Grid className="h-4 w-4" />
                   </Button>
@@ -137,7 +130,7 @@ export default function AdminMediaPage() {
                     variant="ghost" 
                     size="icon" 
                     onClick={() => setViewMode('list')}
-                    className={cn("h-8 w-8 rounded-lg", viewMode === 'list' && "bg-primary/10 text-primary")}
+                    className={cn("h-8 w-8 rounded-lg", viewMode === 'list' && "bg-primary text-primary-foreground hover:bg-primary/90")}
                   >
                     <List className="h-4 w-4" />
                   </Button>
@@ -148,7 +141,7 @@ export default function AdminMediaPage() {
             <div className="flex flex-wrap items-center gap-3">
               <div className="w-[200px]">
                 <Select value={filterType} onValueChange={(val) => { setFilterType(val); setCurrentPage(1); }}>
-                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4 ring-offset-background">
                     <div className="flex items-center gap-2">
                       <Filter className="h-3 w-3 text-muted-foreground" />
                       <SelectValue placeholder="All Types" />
@@ -183,36 +176,51 @@ export default function AdminMediaPage() {
                       </div>
                     )}
                     
-                    {/* Floating Actions */}
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button size="icon" className="h-8 w-8 rounded-lg bg-white/90 text-foreground border shadow-sm backdrop-blur-md hover:bg-white">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem className="gap-2 text-xs font-bold uppercase"><Info className="h-3.5 w-3.5" /> Details</DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2 text-xs font-bold uppercase"><Download className="h-3.5 w-3.5" /> Download</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            onClick={() => handleDelete(item.id)}
-                            className={cn(
-                              "gap-2 text-xs font-bold uppercase transition-colors",
-                              confirmDeleteId === item.id ? "text-destructive bg-destructive/10" : "text-destructive"
-                            )}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            {confirmDeleteId === item.id ? "Confirm Delete?" : "Delete File"}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    {/* Floating Direct Actions */}
+                    <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size="icon" className="h-8 w-8 rounded-lg bg-background/90 text-foreground border shadow-sm backdrop-blur-md hover:bg-background">
+                              <Info className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left"><p className="text-xs font-bold">Details</p></TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size="icon" className="h-8 w-8 rounded-lg bg-background/90 text-foreground border shadow-sm backdrop-blur-md hover:bg-background">
+                              <Download className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left"><p className="text-xs font-bold">Download</p></TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              onClick={() => handleDelete(item.id)}
+                              size="icon" 
+                              className={cn(
+                                "h-8 w-8 rounded-lg border shadow-sm backdrop-blur-md transition-all",
+                                confirmDeleteId === item.id 
+                                  ? "bg-destructive text-destructive-foreground hover:bg-destructive w-14" 
+                                  : "bg-background/90 text-destructive hover:bg-destructive hover:text-white"
+                              )}
+                            >
+                              {confirmDeleteId === item.id ? <span className="text-[9px] font-black uppercase">YES</span> : <Trash2 className="h-3.5 w-3.5" />}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left"><p className="text-xs font-bold">{confirmDeleteId === item.id ? "Confirm?" : "Delete"}</p></TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                   <div className="px-1">
-                    <p className="text-xs font-bold truncate">{item.name}</p>
+                    <p className="text-xs font-bold truncate text-foreground">{item.name}</p>
                     <div className="flex items-center justify-between mt-0.5">
-                      <span className="text-[10px] text-muted-foreground font-semibold uppercase">{item.size}</span>
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{item.size}</span>
                       <span className="text-[10px] text-muted-foreground font-semibold">{item.createdAt}</span>
                     </div>
                   </div>
@@ -245,19 +253,22 @@ export default function AdminMediaPage() {
                               </div>
                             )}
                           </div>
-                          <span className="font-bold text-xs">{item.name}</span>
+                          <span className="font-bold text-xs text-foreground">{item.name}</span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-[10px] font-bold uppercase text-muted-foreground">
+                        <Badge variant="outline" className="text-[10px] font-bold uppercase text-muted-foreground border-muted-foreground/20">
                           {item.type}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-[11px] font-semibold text-muted-foreground">{item.size}</TableCell>
+                      <TableCell className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{item.size}</TableCell>
                       <TableCell className="text-[11px] font-semibold text-muted-foreground">{item.createdAt}</TableCell>
                       <TableCell className="text-right pr-6">
                         <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary">
+                            <Info className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary">
                             <Download className="h-4 w-4" />
                           </Button>
                           <Button 
@@ -271,7 +282,7 @@ export default function AdminMediaPage() {
                                 : "hover:bg-destructive/10 hover:text-destructive"
                             )}
                           >
-                            {confirmDeleteId === item.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
+                            {confirmDeleteId === item.id ? <div className="flex items-center gap-1 text-[10px] font-black uppercase"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
                           </Button>
                         </div>
                       </TableCell>
@@ -283,17 +294,17 @@ export default function AdminMediaPage() {
           )}
 
           {filteredMedia.length === 0 && (
-            <div className="text-center py-20">
-              <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
+            <div className="text-center py-24 bg-muted/5 rounded-3xl border-2 border-dashed mx-6 my-6">
+              <ImageIcon className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-20" />
               <h3 className="text-xl font-bold mb-2">No assets found</h3>
-              <p className="text-muted-foreground">Upload your first image or document to get started.</p>
+              <p className="text-muted-foreground max-w-xs mx-auto">Upload your first image or document to get started with your content library.</p>
             </div>
           )}
 
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="p-4 bg-muted/10 border-t flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                 Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredMedia.length)}</span> of <span className="font-bold text-foreground">{filteredMedia.length}</span> assets
               </p>
               <div className="flex items-center gap-2">
@@ -302,7 +313,7 @@ export default function AdminMediaPage() {
                 </Button>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <Button key={page} variant={currentPage === page ? "default" : "outline"} className={cn("h-8 w-8 rounded-lg text-xs font-bold", currentPage === page && "shadow-lg")} onClick={() => setCurrentPage(page)}>
+                    <Button key={page} variant={currentPage === page ? "default" : "outline"} className={cn("h-8 w-8 rounded-lg text-xs font-bold", currentPage === page && "shadow-lg shadow-primary/20 border-primary")} onClick={() => setCurrentPage(page)}>
                       {page}
                     </Button>
                   ))}
