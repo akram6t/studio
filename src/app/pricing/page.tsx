@@ -1,112 +1,108 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, Star, ArrowRight, HelpCircle, User } from "lucide-react";
+import { Check, Crown, Zap, Star, ArrowRight, HelpCircle, BookOpen, ClipboardCheck, History, Layout, Trophy } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const PLANS = [
+const PREMIUM_FEATURES = [
   {
-    name: "Free Pass",
-    price: "₹0",
-    period: "/forever",
-    description: "Perfect for exploring the platform and starting your journey.",
-    features: [
-      "Access to 2 Mock Tests per Exam",
-      "Daily Current Affairs Quizzes",
-      "Limited Sectional Practice Sets",
-      "Basic Performance Tracking",
-      "Community Forum Access"
-    ],
-    buttonText: "Start for Free",
-    variant: "ghost",
-    isPopular: false
+    title: "10,000+ Mock Tests",
+    description: "Full-length official pattern mock tests for all major exams.",
+    icon: <Trophy className="h-6 w-6 text-amber-500" />,
   },
   {
+    title: "Sectional Practice Sets",
+    description: "Topic-wise focused practice to master every subject area.",
+    icon: <ClipboardCheck className="h-6 w-6 text-blue-500" />,
+  },
+  {
+    title: "Previous Year Papers",
+    description: "10+ years of solved official papers with detailed explanations.",
+    icon: <History className="h-6 w-6 text-emerald-500" />,
+  },
+  {
+    title: "Study Content (PDF/PPT)",
+    description: "Curated strategy guides, formula sheets, and expert notes.",
+    icon: <BookOpen className="h-6 w-6 text-purple-500" />,
+  },
+  {
+    title: "Daily Practice Quizzes",
+    description: "Short boosters for current affairs and mental ability.",
+    icon: <Layout className="h-6 w-6 text-orange-500" />,
+  },
+];
+
+const PLANS = [
+  {
     name: "Monthly Pass",
-    price: "₹99",
-    period: "/30 days",
-    description: "Great for quick revision before your upcoming exam.",
-    features: [
-      "Access to All 10,000+ Mock Tests",
-      "All Sectional Practice Sets",
-      "Previous Year Solved Papers",
-      "Detailed Performance Reports",
-      "Ad-free Experience"
-    ],
-    buttonText: "Get 30 Days",
-    variant: "outline",
-    isPopular: false
+    duration: "30 Days",
+    price: "199",
+    savings: "",
+    isPopular: false,
+    icon: <Zap className="h-5 w-5" />
   },
   {
     name: "Quarterly Pass",
-    price: "₹249",
-    period: "/90 days",
-    description: "The most balanced plan for consistent aspirants.",
-    features: [
-      "Everything in Monthly Pass",
-      "Additional Strategy Guides",
-      "Topic-wise Formula Sheets",
-      "Priority Doubt Support",
-      "Save 15% vs Monthly"
-    ],
-    buttonText: "Unlock Quarterly",
-    variant: "default",
-    isPopular: true
+    duration: "90 Days",
+    price: "399",
+    savings: "Save 33%",
+    isPopular: true,
+    icon: <Star className="h-5 w-5" />
+  },
+  {
+    name: "Semi-Yearly Pass",
+    duration: "180 Days",
+    price: "599",
+    savings: "Best Balance",
+    isPopular: false,
+    icon: <Trophy className="h-5 w-5" />
   },
   {
     name: "Yearly Pass",
-    price: "₹499",
-    period: "/365 days",
-    description: "The ultimate value for year-round preparation.",
-    features: [
-      "Everything in Quarterly Pass",
-      "Exclusive Expert Strategy Blogs",
-      "Personalized Mentorship Sessions",
-      "Early Access to New Mocks",
-      "Save 50% vs Monthly"
-    ],
-    buttonText: "Get Yearly Access",
-    variant: "accent",
-    isPopular: false
+    duration: "365 Days",
+    price: "999",
+    savings: "Save 50%",
+    isPopular: false,
+    icon: <Crown className="h-5 w-5" />
   }
 ];
 
 const FAQS = [
   {
-    question: "What exactly is included in the Free Pass?",
-    answer: "The Free Pass gives you a taste of everything. You get access to a limited number of mock tests (usually the first two for every exam), all daily current affairs quizzes, and basic practice sets. It's designed to help you evaluate our content quality before you buy."
+    question: "How instantly is my pass activated?",
+    answer: "Your pass is activated immediately upon successful payment. You will get instant access to all premium tests and materials across the platform."
   },
   {
-    question: "Which paid plan should I choose?",
-    answer: "If your exam is in the next month, the Monthly Pass is ideal. For those just starting their journey or targeting multiple exams throughout the year, the Yearly Pass offers the best value and continuity."
+    question: "Is there a limit on how many tests I can take?",
+    answer: "No! Once you have a pass, you can attempt any number of mock tests, sectional tests, or quizzes as many times as you like during your validity period."
   },
   {
-    question: "Can I upgrade my plan later?",
-    answer: "Yes! You can upgrade from a Monthly or Quarterly plan to a Yearly plan at any time. The remaining validity of your current plan will be adjusted or added to the new duration."
+    question: "Can I use the same pass for different exams?",
+    answer: "Yes! A single pass unlocks premium content for all exams listed on our platform, including SSC, Engineering, UPSC, and more."
   },
   {
-    question: "How do I renew my pass?",
-    answer: "Your pass will not auto-renew. We believe in transparency, so we'll notify you 7 days before your pass expires so you can manually choose to renew if you wish."
+    question: "Will my plan auto-renew?",
+    answer: "No, we do not auto-charge. We will send you a reminder before your pass expires, and you can choose to renew it manually."
   }
 ];
 
 export default function PricingPage() {
   return (
-    <div className="flex flex-col gap-20 pb-20">
+    <div className="flex flex-col gap-16 pb-20">
       {/* Hero Section */}
       <section className="relative pt-16 md:pt-24 overflow-hidden text-center">
         <div className="container mx-auto px-4 relative z-10">
-          <Badge variant="outline" className="px-4 py-1.5 border-amber-600/20 bg-amber-50 text-amber-600 font-bold uppercase tracking-widest text-[10px] mb-6">
-            <Star className="h-3 w-3 mr-2 fill-current" />
-            Pick Your Preparation Pace
+          <Badge variant="outline" className="px-4 py-1.5 border-primary/20 bg-primary/5 text-primary font-bold uppercase tracking-widest text-[10px] mb-6">
+            <Crown className="h-3 w-3 mr-2 fill-current" />
+            Premium Preparation Access
           </Badge>
-          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-6">Simple, Duration-Based <span className="text-primary">Plans</span></h1>
+          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-6">Unlock Your <span className="text-primary">Success</span></h1>
           <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
-            Choose a pass that fits your exam timeline. Unlock premium mock tests, expert guidance, and smart analytics instantly.
+            Choose a preparation pass that fits your goal. Get unrestricted access to India's most comprehensive test series.
           </p>
         </div>
         
@@ -117,148 +113,150 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Pricing Cards */}
+      {/* Main Pricing Section */}
       <section className="container mx-auto px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-          {PLANS.map((plan) => (
-            <Card 
-              key={plan.name} 
-              className={cn(
-                "relative flex flex-col border-none shadow-xl transition-all duration-500 hover:-translate-y-2",
-                plan.isPopular ? "ring-2 ring-primary scale-105 z-20" : "bg-card"
-              )}
-            >
-              {plan.isPopular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest px-4 py-1 rounded-full shadow-lg">
-                  Most Popular
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          
+          {/* Left Side: Features */}
+          <div className="lg:col-span-7 space-y-8">
+            <div>
+              <h2 className="text-3xl font-headline font-bold mb-4">Elite Benefits</h2>
+              <p className="text-muted-foreground">Everything you need to crack your exam is included in every premium pass.</p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              {PREMIUM_FEATURES.map((feature, i) => (
+                <div key={i} className="flex gap-5 p-6 bg-card border rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
+                  <div className="h-12 w-12 shrink-0 rounded-xl bg-muted flex items-center justify-center group-hover:scale-110 transition-transform">
+                    {feature.icon}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-1">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+                  </div>
                 </div>
-              )}
-              
-              <CardHeader className="p-6 pb-4">
-                <div className="flex items-center justify-between mb-4">
-                  {plan.variant === 'accent' ? (
-                    <div className="p-3 bg-amber-100 text-amber-600 rounded-2xl">
-                      <Crown className="h-6 w-6" />
-                    </div>
-                  ) : plan.variant === 'default' ? (
-                    <div className="p-3 bg-primary/10 text-primary rounded-2xl">
-                      <Zap className="h-6 w-6" />
-                    </div>
-                  ) : plan.variant === 'outline' ? (
-                    <div className="p-3 bg-muted text-muted-foreground rounded-2xl">
-                      <Star className="h-6 w-6" />
-                    </div>
-                  ) : (
-                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
-                      <User className="h-6 w-6" />
+              ))}
+            </div>
+
+            <div className="p-6 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900 rounded-2xl flex items-center gap-4">
+              <div className="h-10 w-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                <Check className="h-6 w-6" />
+              </div>
+              <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                All features listed above are <span className="font-bold">UNLOCKED</span> for any duration pass you choose.
+              </p>
+            </div>
+          </div>
+
+          {/* Right Side: Vertical Plans */}
+          <div className="lg:col-span-5 space-y-4">
+            <div className="mb-6">
+              <h2 className="text-2xl font-headline font-bold">Pick a Plan</h2>
+              <p className="text-sm text-muted-foreground">Select duration based on your exam date.</p>
+            </div>
+
+            <div className="space-y-4">
+              {PLANS.map((plan) => (
+                <Card 
+                  key={plan.name} 
+                  className={cn(
+                    "relative overflow-hidden cursor-pointer transition-all duration-300 border-2",
+                    plan.isPopular 
+                      ? "border-primary shadow-lg ring-4 ring-primary/5" 
+                      : "border-border hover:border-primary/50 bg-card"
+                  )}
+                >
+                  {plan.isPopular && (
+                    <div className="absolute top-0 right-0">
+                      <div className="bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-bl-lg">
+                        Recommended
+                      </div>
                     </div>
                   )}
-                </div>
-                <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
-                <CardDescription className="mt-2 text-xs line-clamp-2 h-10">{plan.description}</CardDescription>
-              </CardHeader>
-
-              <CardContent className="p-6 pt-0 flex-grow">
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  {plan.period && <span className="text-muted-foreground text-xs font-semibold">{plan.period}</span>}
-                </div>
-
-                <div className="space-y-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Plan Benefits:</p>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3 text-xs">
+                  
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
                         <div className={cn(
-                          "mt-0.5 p-0.5 rounded-full",
+                          "h-10 w-10 rounded-xl flex items-center justify-center",
                           plan.isPopular ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                         )}>
-                          <Check className="h-2.5 w-2.5" />
+                          {plan.icon}
                         </div>
-                        <span className="text-muted-foreground font-medium">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
+                        <div>
+                          <h3 className="font-bold text-lg leading-none">{plan.name}</h3>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{plan.duration}</span>
+                            {plan.savings && (
+                              <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[9px] font-bold py-0 h-4">
+                                {plan.savings}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-right">
+                        <div className="flex items-baseline justify-end gap-0.5">
+                          <span className="text-xs font-bold">₹</span>
+                          <span className="text-2xl font-bold tracking-tight">{plan.price}</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground font-semibold mt-0.5 uppercase">One-time payment</p>
+                      </div>
+                    </div>
+                    
+                    <Link href="/login" className="block mt-6">
+                      <Button 
+                        className={cn(
+                          "w-full h-11 rounded-xl font-bold shadow-md gap-2",
+                          plan.isPopular ? "bg-primary text-primary-foreground" : "variant-outline"
+                        )}
+                        variant={plan.isPopular ? "default" : "outline"}
+                      >
+                        Buy This Pass <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
-              <CardFooter className="p-6 pt-0 mt-auto">
-                <Link href={plan.price === '₹0' ? "/signup" : "/login"} className="w-full">
-                  <Button 
-                    variant={plan.variant === 'ghost' ? "outline" : "default"}
-                    className={cn(
-                      "w-full h-11 rounded-xl font-bold text-sm shadow-md",
-                      plan.variant === 'accent' ? "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-200" :
-                      plan.variant === 'default' ? "bg-primary text-primary-foreground shadow-primary/20" :
-                      plan.variant === 'outline' ? "bg-white border-2 border-primary/20 text-primary hover:bg-primary/5" :
-                      "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                    )}
-                  >
-                    {plan.buttonText}
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
+            <p className="text-[11px] text-center text-muted-foreground italic px-4 mt-4">
+              All plans include 24/7 priority support and real-time performance analytics. Prices are inclusive of all taxes.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Trust Section */}
+      {/* Trust & FAQ Section */}
       <section className="bg-muted/30 py-20 border-y">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-12 text-center md:text-left">
-            <div className="space-y-2">
-              <h3 className="text-3xl font-bold">1M+</h3>
-              <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Active Aspirants</p>
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-headline font-bold mb-4">Frequently Asked Questions</h2>
+              <p className="text-muted-foreground">Clear your doubts about our premium preparation passes.</p>
             </div>
-            <div className="h-12 w-px bg-border hidden md:block" />
-            <div className="space-y-2">
-              <h3 className="text-3xl font-bold">500+</h3>
-              <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Exams Covered</p>
-            </div>
-            <div className="h-12 w-px bg-border hidden md:block" />
-            <div className="space-y-2">
-              <h3 className="text-3xl font-bold">4.8/5</h3>
-              <div className="flex items-center justify-center md:justify-start gap-1 text-amber-500">
-                <Star className="h-4 w-4 fill-current" />
-                <Star className="h-4 w-4 fill-current" />
-                <Star className="h-4 w-4 fill-current" />
-                <Star className="h-4 w-4 fill-current" />
-                <Star className="h-4 w-4 fill-current" />
-              </div>
-              <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">App Rating</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Comparison Section */}
-      <section className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-headline font-bold mb-4">Common Questions</h2>
-            <p className="text-muted-foreground">Everything you need to know about our passes and validity.</p>
+            <Card className="border-none shadow-lg overflow-hidden">
+              <CardContent className="p-0">
+                <Accordion type="single" collapsible className="w-full">
+                  {FAQS.map((faq, i) => (
+                    <AccordionItem key={i} value={`faq-${i}`} className="px-8 border-b last:border-0 hover:bg-muted/5 transition-colors">
+                      <AccordionTrigger className="text-base font-bold py-6 hover:no-underline">
+                        <div className="flex items-center gap-3 text-left">
+                          <HelpCircle className="h-5 w-5 text-primary shrink-0" />
+                          {faq.question}
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground pb-6 leading-relaxed">
+                        {faq.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
           </div>
-
-          <Card className="border-none shadow-lg overflow-hidden">
-            <CardContent className="p-0">
-              <Accordion type="single" collapsible className="w-full">
-                {FAQS.map((faq, i) => (
-                  <AccordionItem key={i} value={`faq-${i}`} className="px-8 border-b last:border-0 hover:bg-muted/5 transition-colors">
-                    <AccordionTrigger className="text-base font-bold py-6 hover:no-underline">
-                      <div className="flex items-center gap-3 text-left">
-                        <HelpCircle className="h-5 w-5 text-primary shrink-0" />
-                        {faq.question}
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground pb-6 leading-relaxed">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
         </div>
       </section>
 
@@ -266,19 +264,19 @@ export default function PricingPage() {
       <section className="container mx-auto px-4">
         <Card className="bg-primary text-primary-foreground rounded-[40px] overflow-hidden border-none shadow-2xl relative">
           <div className="p-12 md:p-20 text-center relative z-10">
-            <h2 className="text-3xl md:text-5xl font-headline font-bold mb-6">Ready to transform your preparation?</h2>
+            <h2 className="text-3xl md:text-5xl font-headline font-bold mb-6">Ready to crack your dream exam?</h2>
             <p className="text-primary-foreground/80 text-lg mb-10 max-w-2xl mx-auto">
-              Join thousands of successful candidates who used our platform to crack their dream competitive exams.
+              Join 1M+ aspirants who trust our platform for their daily preparation and official pattern mock tests.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/signup">
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90 h-14 px-10 rounded-2xl font-bold text-lg">
-                  Sign Up for Free
+                  Join for Free
                 </Button>
               </Link>
-              <Link href="/pricing">
+              <Link href="/exams">
                 <Button size="lg" variant="outline" className="border-white/20 hover:bg-white/10 text-white h-14 px-10 rounded-2xl font-bold text-lg">
-                  Compare Passes <ArrowRight className="ml-2 h-5 w-5" />
+                  Explore Exams <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
             </div>
