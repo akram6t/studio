@@ -3,11 +3,30 @@
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search, User, Sun, Moon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== 'undefined' && document.documentElement.classList.contains('dark')) {
+      setIsDarkMode(true);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    if (typeof window !== 'undefined') {
+      document.documentElement.classList.toggle('dark', newMode);
+    }
+  };
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
@@ -26,11 +45,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
 
             <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
+                {!mounted ? (
+                  <Moon className="h-5 w-5" />
+                ) : isDarkMode ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </Button>
+
               <Button variant="ghost" size="icon" className="relative rounded-full">
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-destructive" />
               </Button>
+              
               <div className="h-8 w-px bg-border mx-1" />
+              
               <div className="flex items-center gap-3 pl-1">
                 <div className="hidden lg:flex flex-col text-right">
                   <span className="text-xs font-bold leading-none">Admin Vikram</span>
