@@ -20,6 +20,7 @@ import {
   Trash2,
   Save,
   Check,
+  Image as ImageIcon,
   ChevronRight,
   Settings
 } from "lucide-react";
@@ -39,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MediaLibraryDialog } from "@/components/MediaLibraryDialog";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +49,7 @@ interface CategoryData {
   name: string;
   examCount: number;
   status: string;
+  iconUrl?: string;
 }
 
 export default function AdminCategoriesPage() {
@@ -54,15 +57,17 @@ export default function AdminCategoriesPage() {
     id: `cat-${index + 1}`,
     name: cat,
     examCount: EXAMS.filter(e => e.category === cat).length,
-    status: 'active'
+    status: 'active',
+    iconUrl: undefined
   }));
 
   const [categories, setCategories] = useState<CategoryData[]>(initialData);
   const [search, setSearch] = useState("");
   
-  // Drawer State
+  // Drawer & Media State
   const [editingCategory, setEditingCategory] = useState<CategoryData | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -93,11 +98,20 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const handleSelectMedia = (item: any) => {
+    if (editingCategory) {
+      setEditingCategory({
+        ...editingCategory,
+        iconUrl: item.url
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-headline font-bold">Exam Categories</h1>
+          <h1 className="text-2xl font-headline font-bold text-foreground">Exam Categories</h1>
           <p className="text-muted-foreground text-sm font-medium">Manage high-level exam sectors, groupings, and their availability.</p>
         </div>
         <Button className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20 font-bold">
@@ -153,8 +167,12 @@ export default function AdminCategoriesPage() {
                   <TableRow key={category.id} className="group border-b last:border-0 hover:bg-muted/5 transition-colors">
                     <TableCell className="py-4 pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center ring-1 ring-primary/20 shadow-sm">
-                          <Layers className="h-5 w-5" />
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center ring-1 ring-primary/20 shadow-sm overflow-hidden shrink-0">
+                          {category.iconUrl ? (
+                            <img src={category.iconUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <Layers className="h-5 w-5" />
+                          )}
                         </div>
                         <div className="flex flex-col">
                           <span className="font-bold text-sm leading-tight text-foreground">{category.name}</span>
@@ -217,12 +235,36 @@ export default function AdminCategoriesPage() {
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent side="right" className="sm:max-w-md">
           <SheetHeader className="mb-6 border-b pb-4">
-            <SheetTitle className="text-xl font-headline font-bold">Category Configuration</SheetTitle>
-            <SheetDescription className="font-medium">Update the naming and system visibility for this exam sector.</SheetDescription>
+            <SheetTitle className="text-xl font-headline font-bold text-foreground">Category Configuration</SheetTitle>
+            <SheetDescription className="font-medium">Update the naming, icon, and system visibility for this exam sector.</SheetDescription>
           </SheetHeader>
           
           {editingCategory && (
             <div className="space-y-6 py-4">
+              <div className="space-y-4 pb-6 border-b">
+                <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Category Icon</Label>
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 rounded-xl bg-muted border flex items-center justify-center overflow-hidden shadow-inner shrink-0">
+                    {editingCategory.iconUrl ? (
+                      <img src={editingCategory.iconUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setIsMediaDialogOpen(true)}
+                      className="rounded-xl font-bold h-10 px-4 border-primary/20 text-primary hover:bg-primary/5"
+                    >
+                      Change Icon
+                    </Button>
+                    <p className="text-[10px] text-muted-foreground">Select a square icon from library</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="edit-cat-name" className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Category Name</Label>
                 <Input 
@@ -259,13 +301,10 @@ export default function AdminCategoriesPage() {
                     <div className="bg-background p-2 rounded-lg shadow-sm border">
                       <BookOpen className="h-4 w-4 text-primary" />
                     </div>
-                    <span className="text-sm font-bold">Associated Exams</span>
+                    <span className="text-sm font-bold text-foreground">Associated Exams</span>
                   </div>
-                  <span className="text-lg font-black">{editingCategory.examCount}</span>
+                  <span className="text-lg font-black text-foreground">{editingCategory.examCount}</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground italic text-center pt-2">
-                  Exams are managed in the <span className="font-bold">Exams</span> section.
-                </p>
               </div>
             </div>
           )}
@@ -281,6 +320,14 @@ export default function AdminCategoriesPage() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      {/* Media Picker for Icon */}
+      <MediaLibraryDialog 
+        open={isMediaDialogOpen} 
+        onOpenChange={setIsMediaDialogOpen} 
+        onSelect={handleSelectMedia}
+        allowedTypes={['image']}
+      />
     </div>
   );
 }
