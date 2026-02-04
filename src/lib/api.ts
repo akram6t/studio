@@ -161,8 +161,11 @@ export const getTests = (slug: string): TestItem[] => [
 ];
 
 export const getPrevPapers = (slug: string): TestItem[] => [
-  { id: 'p1', title: 'SSC GD 2022 Official Paper (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', status: 'published' },
-  { id: 'p2', title: 'SSC GD 2021 Official Paper', durationInMinutes: 90, marks: 100, numberOfQuestions: 100, isFree: true, type: 'previous', status: 'published' },
+  { id: 'p1', title: 'Official Paper 2024 (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', subject: '2024', status: 'published' },
+  { id: 'p2', title: 'Official Paper 2024 (Shift 2)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', subject: '2024', status: 'published' },
+  { id: 'p3', title: 'Official Paper 2023 (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', subject: '2023', status: 'published' },
+  { id: 'p4', title: 'Official Paper 2022 (Shift 1)', durationInMinutes: 90, marks: 100, numberOfQuestions: 100, isFree: true, type: 'previous', subject: '2022', status: 'published' },
+  { id: 'p5', title: 'Official Paper 2021 (All shifts)', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'previous', subject: '2021', status: 'published' },
 ];
 
 export const getQuizzes = (slug: string): QuizItem[] => [
