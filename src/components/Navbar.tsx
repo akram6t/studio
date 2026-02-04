@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -26,7 +27,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 flex h-16 items-center justify-between gap-4">
         <div className="flex items-center gap-6">
-          <Link href="/exams" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div className="bg-primary text-primary-foreground p-1.5 rounded-lg">
               <BookOpen className="h-6 w-6" />
             </div>
@@ -34,10 +35,10 @@ export default function Navbar() {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/exams" className="transition-colors hover:text-accent">Exams</Link>
-            <Link href="/practice" className="transition-colors hover:text-accent">Practice</Link>
-            <Link href="/books" className="transition-colors hover:text-accent">Books</Link>
-            <Link href="/about" className="transition-colors hover:text-accent">About</Link>
+            <Link href="/exams" className="transition-colors hover:text-accent font-semibold">Exams</Link>
+            <Link href="/practice" className="transition-colors hover:text-accent font-semibold">Practice</Link>
+            <Link href="/books" className="transition-colors hover:text-accent font-semibold">Books</Link>
+            <Link href="/about" className="transition-colors hover:text-accent font-semibold">About</Link>
           </nav>
         </div>
 
@@ -56,10 +57,10 @@ export default function Navbar() {
           
           <div className="hidden md:flex items-center gap-2">
             <Link href="/login">
-              <Button variant="ghost">Log In</Button>
+              <Button variant="ghost" className="font-bold">Log In</Button>
             </Link>
             <Link href="/signup">
-              <Button>Sign Up</Button>
+              <Button className="font-bold">Sign Up</Button>
             </Link>
           </div>
 
@@ -75,13 +76,14 @@ export default function Navbar() {
                 Navigation links for exams, practice materials, and account management.
               </SheetDescription>
               <div className="flex flex-col gap-6 mt-10">
-                <Link href="/exams" className="text-lg font-medium">Exams</Link>
-                <Link href="/practice" className="text-lg font-medium">Practice</Link>
-                <Link href="/books" className="text-lg font-medium">Books</Link>
-                <Link href="/about" className="text-lg font-medium">About</Link>
-                <hr />
-                <Link href="/login" className="text-lg font-medium">Log In</Link>
-                <Link href="/signup" className="text-lg font-medium">Sign Up</Link>
+                <Link href="/" className="text-lg font-bold">Home</Link>
+                <Link href="/exams" className="text-lg font-bold">Exams</Link>
+                <Link href="/practice" className="text-lg font-bold">Practice</Link>
+                <Link href="/books" className="text-lg font-bold">Books</Link>
+                <Link href="/about" className="text-lg font-bold">About</Link>
+                <hr className="opacity-20" />
+                <Link href="/login" className="text-lg font-bold">Log In</Link>
+                <Link href="/signup" className="text-lg font-bold text-accent">Sign Up</Link>
               </div>
             </SheetContent>
           </Sheet>
