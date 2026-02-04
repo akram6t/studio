@@ -19,7 +19,11 @@ import {
   Edit2,
   Trash2,
   Save,
-  Check
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Settings2,
+  Filter
 } from "lucide-react";
 import { 
   Sheet, 
@@ -37,13 +41,36 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { 
+  DropdownMenu, 
+  DropdownMenuCheckboxItem, 
+  DropdownMenuContent, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+
+const ITEMS_PER_PAGE = 5;
 
 export default function AdminTestsPage() {
   const testsData = getTests('all');
   const [tests, setTests] = useState<TestItem[]>(testsData);
   const [search, setSearch] = useState("");
+  const [subjectFilter, setSubjectFilter] = useState("all");
+  const [accessFilter, setAccessFilter] = useState("all");
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Column Selector
+  const [visibleColumns, setVisibleColumns] = useState({
+    category: true,
+    stats: true,
+    access: true,
+    status: true
+  });
 
   // Drawer State
   const [editingTest, setEditingTest] = useState<TestItem | null>(null);
@@ -53,8 +80,19 @@ export default function AdminTestsPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const filteredTests = useMemo(() => {
-    return tests.filter(test => test.title.toLowerCase().includes(search.toLowerCase()));
-  }, [tests, search]);
+    return tests.filter(test => {
+      const matchesSearch = test.title.toLowerCase().includes(search.toLowerCase());
+      const matchesSubject = subjectFilter === "all" || test.subject === subjectFilter;
+      const matchesAccess = accessFilter === "all" || (accessFilter === "free" ? test.isFree : !test.isFree);
+      return matchesSearch && matchesSubject && matchesAccess;
+    });
+  }, [tests, search, subjectFilter, accessFilter]);
+
+  const totalPages = Math.ceil(filteredTests.length / ITEMS_PER_PAGE);
+  const paginatedTests = filteredTests.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const handleEdit = (test: TestItem) => {
     setEditingTest(test);
@@ -78,6 +116,8 @@ export default function AdminTestsPage() {
     }
   };
 
+  const subjects = Array.from(new Set(testsData.map(t => t.subject))).filter(Boolean);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -91,36 +131,81 @@ export default function AdminTestsPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {[
-          { label: "Total Questions", value: tests.reduce((a, b) => a + b.numberOfQuestions, 0).toLocaleString() + "+", icon: HelpCircle, color: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Avg. Accuracy", value: "72.4%", icon: Award, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Completion Rate", value: "85%", icon: CheckCircle2, color: "text-purple-600", bg: "bg-purple-50" },
-        ].map((stat) => (
-          <Card key={stat.label} className="border-none shadow-sm">
-            <CardContent className="p-5 flex items-center gap-4">
-              <div className={cn("p-3 rounded-xl", stat.bg)}>
-                <stat.icon className={cn("h-5 w-5", stat.color)} />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</p>
-                <p className="text-xl font-bold">{stat.value}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       <Card className="border-none shadow-sm overflow-hidden">
         <CardHeader className="bg-muted/30 pb-4">
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Filter by test title..." 
-              className="pl-10 rounded-xl bg-background border-none shadow-sm h-11"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div className="relative w-full md:w-96">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Search tests..." 
+                  className="pl-10 rounded-xl bg-background border-none shadow-sm h-11"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-2 h-11 rounded-xl">
+                      <Settings2 className="h-4 w-4" />
+                      Columns
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel>Visible Columns</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuCheckboxItem checked={visibleColumns.category} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, category: v }))}>
+                      Category
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={visibleColumns.stats} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, stats: v }))}>
+                      Stats (Qs/Time)
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={visibleColumns.access} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, access: v }))}>
+                      Access Level
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={visibleColumns.status} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, status: v }))}>
+                      Status
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
+                <Filter className="h-3 w-3 text-muted-foreground ml-2" />
+                <select 
+                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none pr-2"
+                  value={subjectFilter}
+                  onChange={(e) => {
+                    setSubjectFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value="all">All Subjects</option>
+                  {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
+                <select 
+                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none px-2"
+                  value={accessFilter}
+                  onChange={(e) => {
+                    setAccessFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value="all">All Access</option>
+                  <option value="free">Free</option>
+                  <option value="premium">Premium</option>
+                </select>
+              </div>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -129,15 +214,15 @@ export default function AdminTestsPage() {
               <TableHeader className="bg-muted/10">
                 <TableRow className="hover:bg-transparent border-b">
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Test Details</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Category</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Stats</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Access</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Status</TableHead>
+                  {visibleColumns.category && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Category</TableHead>}
+                  {visibleColumns.stats && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Stats</TableHead>}
+                  {visibleColumns.access && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Access</TableHead>}
+                  {visibleColumns.status && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Status</TableHead>}
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest text-right pr-6">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTests.map((test) => (
+                {paginatedTests.map((test) => (
                   <TableRow key={test.id} className="group border-b last:border-0 hover:bg-muted/5 transition-colors">
                     <TableCell className="py-4 pl-6">
                       <div className="flex items-center gap-3">
@@ -152,33 +237,41 @@ export default function AdminTestsPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-bold">
-                        {test.subject}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1 text-[11px] font-semibold text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <HelpCircle className="h-3 w-3" /> {test.numberOfQuestions} Qs
+                    {visibleColumns.category && (
+                      <TableCell>
+                        <Badge variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-bold">
+                          {test.subject}
+                        </Badge>
+                      </TableCell>
+                    )}
+                    {visibleColumns.stats && (
+                      <TableCell>
+                        <div className="flex flex-col gap-1 text-[11px] font-semibold text-muted-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <HelpCircle className="h-3 w-3" /> {test.numberOfQuestions} Qs
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Timer className="h-3 w-3" /> {test.durationInMinutes}m
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <Timer className="h-3 w-3" /> {test.durationInMinutes}m
+                      </TableCell>
+                    )}
+                    {visibleColumns.access && (
+                      <TableCell>
+                        {test.isFree ? (
+                          <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[10px] font-bold">FREE</Badge>
+                        ) : (
+                          <Badge className="bg-amber-600/10 text-amber-600 border-none text-[10px] font-bold">PREMIUM</Badge>
+                        )}
+                      </TableCell>
+                    )}
+                    {visibleColumns.status && (
+                      <TableCell>
+                        <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
+                          <CheckCircle2 className="h-3 w-3" /> Published
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {test.isFree ? (
-                        <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[10px] font-bold">FREE</Badge>
-                      ) : (
-                        <Badge className="bg-amber-600/10 text-amber-600 border-none text-[10px] font-bold">PREMIUM</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
-                        <CheckCircle2 className="h-3 w-3" /> Published
-                      </div>
-                    </TableCell>
+                      </TableCell>
+                    )}
                     <TableCell className="text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
                         <Button 
@@ -208,6 +301,27 @@ export default function AdminTestsPage() {
                 ))}
               </TableBody>
             </Table>
+          </div>
+
+          <div className="p-4 bg-muted/10 border-t flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredTests.length)}</span> of <span className="font-bold text-foreground">{filteredTests.length}</span> tests
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <Button key={page} variant={currentPage === page ? "default" : "outline"} className={cn("h-8 w-8 rounded-lg text-xs font-bold", currentPage === page && "shadow-lg")} onClick={() => setCurrentPage(page)}>
+                    {page}
+                  </Button>
+                ))}
+              </div>
+              <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

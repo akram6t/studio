@@ -17,7 +17,11 @@ import {
   Edit2,
   Trash2,
   Save,
-  Check
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Settings2,
+  Filter
 } from "lucide-react";
 import { 
   Sheet, 
@@ -35,13 +39,35 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { 
+  DropdownMenu, 
+  DropdownMenuCheckboxItem, 
+  DropdownMenuContent, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+
+const ITEMS_PER_PAGE = 5;
 
 export default function AdminMocksPage() {
   const mocksData = getMockTests('all');
   const [mocks, setMocks] = useState<TestItem[]>(mocksData);
   const [search, setSearch] = useState("");
+  const [sectionFilter, setSectionFilter] = useState("all");
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Column Selector
+  const [visibleColumns, setVisibleColumns] = useState({
+    section: true,
+    questions: true,
+    time: true,
+    access: true
+  });
 
   // Drawer State
   const [editingMock, setEditingMock] = useState<TestItem | null>(null);
@@ -51,8 +77,18 @@ export default function AdminMocksPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const filteredMocks = useMemo(() => {
-    return mocks.filter(mock => mock.title.toLowerCase().includes(search.toLowerCase()));
-  }, [mocks, search]);
+    return mocks.filter(mock => {
+      const matchesSearch = mock.title.toLowerCase().includes(search.toLowerCase());
+      const matchesSection = sectionFilter === "all" || mock.subject === sectionFilter;
+      return matchesSearch && matchesSection;
+    });
+  }, [mocks, search, sectionFilter]);
+
+  const totalPages = Math.ceil(filteredMocks.length / ITEMS_PER_PAGE);
+  const paginatedMocks = filteredMocks.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const handleEdit = (mock: TestItem) => {
     setEditingMock(mock);
@@ -76,6 +112,8 @@ export default function AdminMocksPage() {
     }
   };
 
+  const sections = Array.from(new Set(mocksData.map(m => m.subject))).filter(Boolean);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -89,36 +127,64 @@ export default function AdminMocksPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {[
-          { label: "Active Mocks", value: mocks.length.toString(), icon: Trophy, color: "text-amber-600", bg: "bg-amber-50" },
-          { label: "Total Attempts", value: "4.2M", icon: Award, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Avg. Duration", value: "110m", icon: Timer, color: "text-blue-600", bg: "bg-blue-50" },
-        ].map((stat) => (
-          <Card key={stat.label} className="border-none shadow-sm">
-            <CardContent className="p-5 flex items-center gap-4">
-              <div className={cn("p-3 rounded-xl", stat.bg)}>
-                <stat.icon className={cn("h-5 w-5", stat.color)} />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</p>
-                <p className="text-xl font-bold">{stat.value}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       <Card className="border-none shadow-sm overflow-hidden">
         <CardHeader className="bg-muted/30 pb-4">
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Filter by mock title..." 
-              className="pl-10 rounded-xl bg-background border-none shadow-sm h-11"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div className="relative w-full md:w-96">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Search mocks..." 
+                  className="pl-10 rounded-xl bg-background border-none shadow-sm h-11"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-2 h-11 rounded-xl">
+                      <Settings2 className="h-4 w-4" />
+                      Columns
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel>Visible Columns</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuCheckboxItem checked={visibleColumns.section} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, section: v }))}>
+                      Section
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={visibleColumns.questions} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, questions: v }))}>
+                      Questions
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={visibleColumns.time} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, time: v }))}>
+                      Time
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={visibleColumns.access} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, access: v }))}>
+                      Access
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border w-fit">
+              <Filter className="h-3 w-3 text-muted-foreground ml-2" />
+              <select 
+                className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none pr-2"
+                value={sectionFilter}
+                onChange={(e) => {
+                  setSectionFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="all">All Sections</option>
+                {sections.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -127,15 +193,15 @@ export default function AdminMocksPage() {
               <TableHeader className="bg-muted/10">
                 <TableRow className="hover:bg-transparent border-b">
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Mock Details</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Section</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Questions</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Time</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Access</TableHead>
+                  {visibleColumns.section && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Section</TableHead>}
+                  {visibleColumns.questions && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Questions</TableHead>}
+                  {visibleColumns.time && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Time</TableHead>}
+                  {visibleColumns.access && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Access</TableHead>}
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest text-right pr-6">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredMocks.map((mock) => (
+                {paginatedMocks.map((mock) => (
                   <TableRow key={mock.id} className="group border-b last:border-0 hover:bg-muted/5 transition-colors">
                     <TableCell className="py-4 pl-6">
                       <div className="flex items-center gap-3">
@@ -150,24 +216,32 @@ export default function AdminMocksPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-bold">
-                        {mock.subject}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-bold text-sm">{mock.numberOfQuestions} Qs</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-bold text-sm">{mock.durationInMinutes}m</span>
-                    </TableCell>
-                    <TableCell>
-                      {mock.isFree ? (
-                        <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[10px] font-bold px-2 py-0.5">FREE</Badge>
-                      ) : (
-                        <Badge className="bg-amber-600/10 text-amber-600 border-none text-[10px] font-bold px-2 py-0.5">PREMIUM</Badge>
-                      )}
-                    </TableCell>
+                    {visibleColumns.section && (
+                      <TableCell>
+                        <Badge variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-bold">
+                          {mock.subject}
+                        </Badge>
+                      </TableCell>
+                    )}
+                    {visibleColumns.questions && (
+                      <TableCell>
+                        <span className="font-bold text-sm">{mock.numberOfQuestions} Qs</span>
+                      </TableCell>
+                    )}
+                    {visibleColumns.time && (
+                      <TableCell>
+                        <span className="font-bold text-sm">{mock.durationInMinutes}m</span>
+                      </TableCell>
+                    )}
+                    {visibleColumns.access && (
+                      <TableCell>
+                        {mock.isFree ? (
+                          <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[10px] font-bold px-2 py-0.5">FREE</Badge>
+                        ) : (
+                          <Badge className="bg-amber-600/10 text-amber-600 border-none text-[10px] font-bold px-2 py-0.5">PREMIUM</Badge>
+                        )}
+                      </TableCell>
+                    )}
                     <TableCell className="text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
                         <Button 
@@ -197,6 +271,27 @@ export default function AdminMocksPage() {
                 ))}
               </TableBody>
             </Table>
+          </div>
+
+          <div className="p-4 bg-muted/10 border-t flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredMocks.length)}</span> of <span className="font-bold text-foreground">{filteredMocks.length}</span> mocks
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <Button key={page} variant={currentPage === page ? "default" : "outline"} className={cn("h-8 w-8 rounded-lg text-xs font-bold", currentPage === page && "shadow-lg")} onClick={() => setCurrentPage(page)}>
+                    {page}
+                  </Button>
+                ))}
+              </div>
+              <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

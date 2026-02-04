@@ -27,7 +27,11 @@ import {
   Edit2,
   Trash2,
   Save,
-  Check
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Settings2,
+  Filter
 } from "lucide-react";
 import { 
   Sheet, 
@@ -45,15 +49,38 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { 
+  DropdownMenu, 
+  DropdownMenuCheckboxItem, 
+  DropdownMenuContent, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+
+const ITEMS_PER_PAGE = 5;
 
 export default function AdminUsersPage() {
   const usersData = getUsers();
   const [users, setUsers] = useState<User[]>(usersData);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [premiumFilter, setPremiumFilter] = useState<string>("all");
   
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Column Selection State
+  const [visibleColumns, setVisibleColumns] = useState({
+    role: true,
+    premium: true,
+    status: true,
+    activity: true
+  });
+
   // Edit Drawer State
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -66,9 +93,17 @@ export default function AdminUsersPage() {
       const matchesSearch = user.name.toLowerCase().includes(search.toLowerCase()) || 
                           user.email.toLowerCase().includes(search.toLowerCase());
       const matchesRole = roleFilter === "all" || user.role === roleFilter;
-      return matchesSearch && matchesRole;
+      const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+      const matchesPremium = premiumFilter === "all" || (premiumFilter === "premium" ? user.isPremium : !user.isPremium);
+      return matchesSearch && matchesRole && matchesStatus && matchesPremium;
     });
-  }, [users, search, roleFilter]);
+  }, [users, search, roleFilter, statusFilter, premiumFilter]);
+
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
@@ -81,7 +116,6 @@ export default function AdminUsersPage() {
       setConfirmDeleteId(null);
     } else {
       setConfirmDeleteId(id);
-      // Auto-reset after 3 seconds if not confirmed
       setTimeout(() => setConfirmDeleteId(prev => prev === id ? null : prev), 3000);
     }
   };
@@ -108,31 +142,107 @@ export default function AdminUsersPage() {
 
       <Card className="border-none shadow-sm overflow-hidden">
         <CardHeader className="bg-muted/30 pb-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="relative w-full md:w-96">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search users by name or email..." 
-                className="pl-10 rounded-xl bg-background border-none shadow-sm h-11"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div className="relative w-full md:w-96">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Search users..." 
+                  className="pl-10 rounded-xl bg-background border-none shadow-sm h-11"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-2 h-11 rounded-xl">
+                      <Settings2 className="h-4 w-4" />
+                      Columns
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuCheckboxItem 
+                      checked={visibleColumns.role} 
+                      onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, role: v }))}
+                    >
+                      Role
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem 
+                      checked={visibleColumns.premium} 
+                      onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, premium: v }))}
+                    >
+                      Premium Status
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem 
+                      checked={visibleColumns.status} 
+                      onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, status: v }))}
+                    >
+                      Status
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem 
+                      checked={visibleColumns.activity} 
+                      onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, activity: v }))}
+                    >
+                      Activity
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
-            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
-              {["all", "user", "creator", "admin"].map((role) => (
-                <button
-                  key={role}
-                  onClick={() => setRoleFilter(role)}
-                  className={cn(
-                    "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap",
-                    roleFilter === role 
-                      ? "bg-primary text-primary-foreground shadow-md" 
-                      : "bg-background text-muted-foreground border hover:bg-muted"
-                  )}
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
+                <Filter className="h-3 w-3 text-muted-foreground ml-2" />
+                <select 
+                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none pr-2"
+                  value={roleFilter}
+                  onChange={(e) => {
+                    setRoleFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
                 >
-                  {role}s
-                </button>
-              ))}
+                  <option value="all">All Roles</option>
+                  <option value="user">Users</option>
+                  <option value="creator">Creators</option>
+                  <option value="admin">Admins</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
+                <select 
+                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none px-2"
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
+                <select 
+                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none px-2"
+                  value={premiumFilter}
+                  onChange={(e) => {
+                    setPremiumFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value="all">All Access</option>
+                  <option value="premium">Premium</option>
+                  <option value="free">Free</option>
+                </select>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -142,15 +252,15 @@ export default function AdminUsersPage() {
               <TableHeader className="bg-muted/10">
                 <TableRow className="hover:bg-transparent border-b">
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Student</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Role</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest text-center">Premium</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Status</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Activity</TableHead>
+                  {visibleColumns.role && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Role</TableHead>}
+                  {visibleColumns.premium && <TableHead className="font-bold text-[10px] uppercase tracking-widest text-center">Premium</TableHead>}
+                  {visibleColumns.status && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Status</TableHead>}
+                  {visibleColumns.activity && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Activity</TableHead>}
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest text-right pr-6">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
+                {paginatedUsers.map((user) => (
                   <TableRow key={user.id} className="group border-b last:border-0 hover:bg-muted/5 transition-colors">
                     <TableCell className="py-4 pl-6">
                       <div className="flex items-center gap-3">
@@ -165,53 +275,61 @@ export default function AdminUsersPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        {user.role === 'admin' ? (
-                          <Badge className="bg-slate-800 text-white border-none gap-1 px-2 py-0.5 text-[10px] font-bold">
-                            <ShieldAlert className="h-2.5 w-2.5" /> ADMIN
-                          </Badge>
-                        ) : user.role === 'creator' ? (
-                          <Badge className="bg-purple-600 text-white border-none gap-1 px-2 py-0.5 text-[10px] font-bold uppercase">
-                            CREATOR
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="bg-muted text-muted-foreground border-none px-2 py-0.5 text-[10px] font-bold uppercase">
-                            USER
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {user.isPremium ? (
-                        <div className="flex items-center justify-center text-amber-600">
-                          <Crown className="h-4 w-4" />
+                    {visibleColumns.role && (
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          {user.role === 'admin' ? (
+                            <Badge className="bg-slate-800 text-white border-none gap-1 px-2 py-0.5 text-[10px] font-bold">
+                              <ShieldAlert className="h-2.5 w-2.5" /> ADMIN
+                            </Badge>
+                          ) : user.role === 'creator' ? (
+                            <Badge className="bg-purple-600 text-white border-none gap-1 px-2 py-0.5 text-[10px] font-bold uppercase">
+                              CREATOR
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-muted text-muted-foreground border-none px-2 py-0.5 text-[10px] font-bold uppercase">
+                              USER
+                            </Badge>
+                          )}
                         </div>
-                      ) : (
-                        <span className="text-muted-foreground text-[10px] font-bold">NO</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        {user.status === 'active' ? (
-                          <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
-                            <CheckCircle2 className="h-3 w-3" /> Active
+                      </TableCell>
+                    )}
+                    {visibleColumns.premium && (
+                      <TableCell className="text-center">
+                        {user.isPremium ? (
+                          <div className="flex items-center justify-center text-amber-600">
+                            <Crown className="h-4 w-4" />
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1.5 text-muted-foreground font-bold text-[11px]">
-                            <XCircle className="h-3 w-3" /> Inactive
-                          </div>
+                          <span className="text-muted-foreground text-[10px] font-bold">NO</span>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[11px] font-bold">{user.testsTaken} tests taken</span>
-                        <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-2.5 w-2.5" /> Joined {user.joinedDate}
+                      </TableCell>
+                    )}
+                    {visibleColumns.status && (
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          {user.status === 'active' ? (
+                            <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
+                              <CheckCircle2 className="h-3 w-3" /> Active
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 text-muted-foreground font-bold text-[11px]">
+                              <XCircle className="h-3 w-3" /> Inactive
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    </TableCell>
+                      </TableCell>
+                    )}
+                    {visibleColumns.activity && (
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[11px] font-bold">{user.testsTaken} tests taken</span>
+                          <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-2.5 w-2.5" /> Joined {user.joinedDate}
+                          </div>
+                        </div>
+                      </TableCell>
+                    )}
                     <TableCell className="text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
                         <Button 
@@ -241,6 +359,45 @@ export default function AdminUsersPage() {
                 ))}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="p-4 bg-muted/10 border-t flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)}</span> of <span className="font-bold text-foreground">{filteredUsers.length}</span> users
+            </p>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8 w-8 rounded-lg"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <Button 
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    className={cn("h-8 w-8 rounded-lg text-xs font-bold", currentPage === page && "shadow-lg")}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8 w-8 rounded-lg"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
