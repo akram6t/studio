@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { 
   Search, 
-  Plus, 
   Upload, 
   Trash2, 
   Download, 
@@ -31,6 +30,21 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 10;
@@ -132,21 +146,21 @@ export default function AdminMediaPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
-                <Filter className="h-3 w-3 text-muted-foreground ml-2" />
-                <select 
-                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none pr-2"
-                  value={filterType}
-                  onChange={(e) => {
-                    setFilterType(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="all">All Files</option>
-                  <option value="image">Images Only</option>
-                  <option value="pdf">PDF Documents</option>
-                  <option value="other">Other Files</option>
-                </select>
+              <div className="w-[200px]">
+                <Select value={filterType} onValueChange={(val) => { setFilterType(val); setCurrentPage(1); }}>
+                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-3 w-3 text-muted-foreground" />
+                      <SelectValue placeholder="All Types" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Files</SelectItem>
+                    <SelectItem value="image">Images Only</SelectItem>
+                    <SelectItem value="pdf">PDF Documents</SelectItem>
+                    <SelectItem value="other">Other Files</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -207,20 +221,20 @@ export default function AdminMediaPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/10 border-b">
-                  <tr>
-                    <th className="text-left font-bold text-[10px] uppercase tracking-widest p-4 pl-6">Filename</th>
-                    <th className="text-left font-bold text-[10px] uppercase tracking-widest p-4">Type</th>
-                    <th className="text-left font-bold text-[10px] uppercase tracking-widest p-4">Size</th>
-                    <th className="text-left font-bold text-[10px] uppercase tracking-widest p-4">Uploaded</th>
-                    <th className="text-right font-bold text-[10px] uppercase tracking-widest p-4 pr-6">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
+              <Table>
+                <TableHeader className="bg-muted/10">
+                  <TableRow className="hover:bg-transparent border-b">
+                    <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Filename</TableHead>
+                    <TableHead className="font-bold text-[10px] uppercase tracking-widest">Type</TableHead>
+                    <TableHead className="font-bold text-[10px] uppercase tracking-widest">Size</TableHead>
+                    <TableHead className="font-bold text-[10px] uppercase tracking-widest">Uploaded</TableHead>
+                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-right pr-6">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {paginatedMedia.map((item) => (
-                    <tr key={item.id} className="group hover:bg-muted/5 transition-colors">
-                      <td className="p-4 pl-6">
+                    <TableRow key={item.id} className="group border-b last:border-0 hover:bg-muted/5 transition-colors">
+                      <TableCell className="py-4 pl-6">
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-lg overflow-hidden bg-muted/30 border shrink-0">
                             {item.type === 'image' ? (
@@ -233,15 +247,15 @@ export default function AdminMediaPage() {
                           </div>
                           <span className="font-bold text-xs">{item.name}</span>
                         </div>
-                      </td>
-                      <td className="p-4">
+                      </TableCell>
+                      <TableCell>
                         <Badge variant="outline" className="text-[10px] font-bold uppercase text-muted-foreground">
                           {item.type}
                         </Badge>
-                      </td>
-                      <td className="p-4 text-[11px] font-semibold text-muted-foreground">{item.size}</td>
-                      <td className="p-4 text-[11px] font-semibold text-muted-foreground">{item.createdAt}</td>
-                      <td className="p-4 pr-6 text-right">
+                      </TableCell>
+                      <TableCell className="text-[11px] font-semibold text-muted-foreground">{item.size}</TableCell>
+                      <TableCell className="text-[11px] font-semibold text-muted-foreground">{item.createdAt}</TableCell>
+                      <TableCell className="text-right pr-6">
                         <div className="flex items-center justify-end gap-1">
                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10">
                             <Download className="h-4 w-4" />
@@ -260,11 +274,11 @@ export default function AdminMediaPage() {
                             {confirmDeleteId === item.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
                           </Button>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
 

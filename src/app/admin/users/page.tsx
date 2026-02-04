@@ -1,4 +1,3 @@
-
 "use client";
 
 import { getUsers, User } from "@/lib/api";
@@ -197,51 +196,47 @@ export default function AdminUsersPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
-                <Filter className="h-3 w-3 text-muted-foreground ml-2" />
-                <select 
-                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none pr-2"
-                  value={roleFilter}
-                  onChange={(e) => {
-                    setRoleFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="all">All Roles</option>
-                  <option value="user">Users</option>
-                  <option value="creator">Creators</option>
-                  <option value="admin">Admins</option>
-                </select>
+              <div className="w-[180px]">
+                <Select value={roleFilter} onValueChange={(val) => { setRoleFilter(val); setCurrentPage(1); }}>
+                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-3 w-3 text-muted-foreground" />
+                      <SelectValue placeholder="All Roles" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Roles</SelectItem>
+                    <SelectItem value="user">Users</SelectItem>
+                    <SelectItem value="creator">Creators</SelectItem>
+                    <SelectItem value="admin">Admins</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
-                <select 
-                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none px-2"
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="all">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
+              <div className="w-[180px]">
+                <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}>
+                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
-                <select 
-                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none px-2"
-                  value={premiumFilter}
-                  onChange={(e) => {
-                    setPremiumFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="all">All Access</option>
-                  <option value="premium">Premium</option>
-                  <option value="free">Free</option>
-                </select>
+              <div className="w-[180px]">
+                <Select value={premiumFilter} onValueChange={(val) => { setPremiumFilter(val); setCurrentPage(1); }}>
+                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                    <SelectValue placeholder="All Access" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Access</SelectItem>
+                    <SelectItem value="premium">Premium</SelectItem>
+                    <SelectItem value="free">Free</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

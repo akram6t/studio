@@ -1,4 +1,3 @@
-
 "use client";
 
 import { getContent, ContentItem } from "@/lib/api";
@@ -180,36 +179,34 @@ export default function AdminContentPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
-                <Filter className="h-3 w-3 text-muted-foreground ml-2" />
-                <select 
-                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none pr-2"
-                  value={typeFilter}
-                  onChange={(e) => {
-                    setTypeFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="all">All Types</option>
-                  <option value="pdf">PDFs</option>
-                  <option value="ppt">Slides</option>
-                  <option value="blog">Articles</option>
-                </select>
+              <div className="w-[180px]">
+                <Select value={typeFilter} onValueChange={(val) => { setTypeFilter(val); setCurrentPage(1); }}>
+                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-3 w-3 text-muted-foreground" />
+                      <SelectValue placeholder="All Types" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="pdf">PDFs</SelectItem>
+                    <SelectItem value="ppt">Slides</SelectItem>
+                    <SelectItem value="blog">Articles</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
-                <select 
-                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none px-2"
-                  value={accessFilter}
-                  onChange={(e) => {
-                    setAccessFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="all">All Access</option>
-                  <option value="free">Free</option>
-                  <option value="premium">Premium</option>
-                </select>
+              <div className="w-[180px]">
+                <Select value={accessFilter} onValueChange={(val) => { setAccessFilter(val); setCurrentPage(1); }}>
+                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                    <SelectValue placeholder="All Access" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Access</SelectItem>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="premium">Premium</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
