@@ -1,7 +1,6 @@
-
 "use client";
 
-import { getMockTests, TestItem } from "@/lib/api";
+import { getMockTests, TestItem, EXAMS } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +20,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings2,
-  Filter
+  Filter,
+  GraduationCap
 } from "lucide-react";
 import { 
   Sheet, 
@@ -57,12 +57,14 @@ export default function AdminMocksPage() {
   const [mocks, setMocks] = useState<TestItem[]>(mocksData);
   const [search, setSearch] = useState("");
   const [sectionFilter, setSectionFilter] = useState("all");
+  const [examFilter, setExamFilter] = useState("all");
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
 
   // Column Selector
   const [visibleColumns, setVisibleColumns] = useState({
+    exam: true,
     section: true,
     questions: true,
     time: true,
@@ -80,9 +82,10 @@ export default function AdminMocksPage() {
     return mocks.filter(mock => {
       const matchesSearch = mock.title.toLowerCase().includes(search.toLowerCase());
       const matchesSection = sectionFilter === "all" || mock.subject === sectionFilter;
-      return matchesSearch && matchesSection;
+      const matchesExam = examFilter === "all" || mock.examSlug === examFilter;
+      return matchesSearch && matchesSection && matchesExam;
     });
-  }, [mocks, search, sectionFilter]);
+  }, [mocks, search, sectionFilter, examFilter]);
 
   const totalPages = Math.ceil(filteredMocks.length / ITEMS_PER_PAGE);
   const paginatedMocks = filteredMocks.slice(
@@ -154,6 +157,9 @@ export default function AdminMocksPage() {
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuLabel>Visible Columns</DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    <DropdownMenuCheckboxItem checked={visibleColumns.exam} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, exam: v }))}>
+                      Exam
+                    </DropdownMenuCheckboxItem>
                     <DropdownMenuCheckboxItem checked={visibleColumns.section} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, section: v }))}>
                       Section
                     </DropdownMenuCheckboxItem>
@@ -171,19 +177,38 @@ export default function AdminMocksPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border w-fit">
-              <Filter className="h-3 w-3 text-muted-foreground ml-2" />
-              <select 
-                className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none pr-2"
-                value={sectionFilter}
-                onChange={(e) => {
-                  setSectionFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-              >
-                <option value="all">All Sections</option>
-                {sections.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
+                <GraduationCap className="h-3 w-3 text-muted-foreground ml-2" />
+                <select 
+                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none pr-2"
+                  value={examFilter}
+                  onChange={(e) => {
+                    setExamFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value="all">All Exams</option>
+                  {EXAMS.map(exam => (
+                    <option key={exam.id} value={exam.slug}>{exam.title}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 bg-background p-1.5 rounded-xl border">
+                <Filter className="h-3 w-3 text-muted-foreground ml-2" />
+                <select 
+                  className="text-xs font-bold uppercase tracking-wider bg-transparent outline-none pr-2"
+                  value={sectionFilter}
+                  onChange={(e) => {
+                    setSectionFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value="all">All Sections</option>
+                  {sections.map(s => <option key={s} value={s as string}>{s as string}</option>)}
+                </select>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -193,6 +218,7 @@ export default function AdminMocksPage() {
               <TableHeader className="bg-muted/10">
                 <TableRow className="hover:bg-transparent border-b">
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Mock Details</TableHead>
+                  {visibleColumns.exam && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Associated Exam</TableHead>}
                   {visibleColumns.section && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Section</TableHead>}
                   {visibleColumns.questions && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Questions</TableHead>}
                   {visibleColumns.time && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Time</TableHead>}
@@ -216,6 +242,13 @@ export default function AdminMocksPage() {
                         </div>
                       </div>
                     </TableCell>
+                    {visibleColumns.exam && (
+                      <TableCell>
+                        <span className="text-xs font-bold text-primary">
+                          {EXAMS.find(e => e.slug === mock.examSlug)?.title || "General"}
+                        </span>
+                      </TableCell>
+                    )}
                     {visibleColumns.section && (
                       <TableCell>
                         <Badge variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-bold">
@@ -314,6 +347,24 @@ export default function AdminMocksPage() {
                   onChange={(e) => setEditingMock({...editingMock, title: e.target.value})}
                   className="rounded-xl"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Associated Exam</Label>
+                <Select 
+                  value={editingMock.examSlug || "none"} 
+                  onValueChange={(val: any) => setEditingMock({...editingMock, examSlug: val === "none" ? undefined : val})}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select associated exam" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None (General)</SelectItem>
+                    {EXAMS.map(exam => (
+                      <SelectItem key={exam.id} value={exam.slug}>{exam.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

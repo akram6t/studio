@@ -20,6 +20,7 @@ export interface TestItem {
   type: 'mock' | 'test' | 'previous';
   subject?: string;
   status?: 'published' | 'draft';
+  examSlug?: string;
 }
 
 export interface QuizItem {
@@ -143,11 +144,11 @@ export const BOOKS: Book[] = [
 export const BOOK_CATEGORIES = Array.from(new Set(BOOKS.map(b => b.category)));
 
 export const getMockTests = (slug: string): TestItem[] => [
-  { id: 'm1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length', status: 'published' },
-  { id: 'm2', title: 'CDAC Section A: English/Math', durationInMinutes: 60, marks: 150, numberOfQuestions: 50, isFree: false, type: 'mock', subject: 'Section A', status: 'published' },
-  { id: 'm3', title: 'CDAC Section B: OS/DS/C++', durationInMinutes: 60, marks: 150, numberOfQuestions: 50, isFree: true, type: 'mock', subject: 'Section B', status: 'published' },
-  { id: 'm4', title: 'CTET Level 1 (Primary)', durationInMinutes: 150, marks: 150, numberOfQuestions: 150, isFree: false, type: 'mock', subject: 'Level 1 (Primary)', status: 'published' },
-  { id: 'm5', title: 'CTET Level 2 (Upper Primary)', durationInMinutes: 150, marks: 150, numberOfQuestions: 150, isFree: true, type: 'mock', subject: 'Level 2 (Upper Primary)', status: 'published' },
+  { id: 'm1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length', status: 'published', examSlug: 'ssc-gd-constable' },
+  { id: 'm2', title: 'CDAC Section A: English/Math', durationInMinutes: 60, marks: 150, numberOfQuestions: 50, isFree: false, type: 'mock', subject: 'Section A', status: 'published', examSlug: 'ccat-exam' },
+  { id: 'm3', title: 'CDAC Section B: OS/DS/C++', durationInMinutes: 60, marks: 150, numberOfQuestions: 50, isFree: true, type: 'mock', subject: 'Section B', status: 'published', examSlug: 'ccat-exam' },
+  { id: 'm4', title: 'CTET Level 1 (Primary)', durationInMinutes: 150, marks: 150, numberOfQuestions: 150, isFree: false, type: 'mock', subject: 'Level 1 (Primary)', status: 'published', examSlug: 'upsc-civil-services' },
+  { id: 'm5', title: 'CTET Level 2 (Upper Primary)', durationInMinutes: 150, marks: 150, numberOfQuestions: 150, isFree: true, type: 'mock', subject: 'Level 2 (Upper Primary)', status: 'published', examSlug: 'upsc-civil-services' },
 ];
 
 export const getTests = (slug: string): TestItem[] => [
