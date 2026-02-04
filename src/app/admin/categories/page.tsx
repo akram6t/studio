@@ -13,12 +13,12 @@ import {
   LayoutGrid, 
   Layers, 
   CheckCircle2,
+  XCircle,
   BookOpen,
   Edit2,
   Trash2,
   Save,
-  Check,
-  Activity
+  Check
 } from "lucide-react";
 import { 
   Sheet, 
@@ -29,6 +29,13 @@ import {
   SheetFooter,
   SheetClose
 } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
@@ -132,7 +139,7 @@ export default function AdminCategoriesPage() {
             <Table>
               <TableHeader className="bg-muted/10">
                 <TableRow className="hover:bg-transparent border-b">
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Category Name</TableHead>
+                  <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Category</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest">Active Exams</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest">Status</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest text-right pr-6">Actions</TableHead>
@@ -143,14 +150,11 @@ export default function AdminCategoriesPage() {
                   <TableRow key={category.id} className="group border-b last:border-0 hover:bg-muted/5 transition-colors">
                     <TableCell className="py-4 pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center ring-1 ring-primary/20">
                           <Layers className="h-5 w-5" />
                         </div>
                         <div className="flex flex-col">
                           <span className="font-bold text-sm leading-tight">{category.name}</span>
-                          <span className="text-[10px] text-muted-foreground font-semibold mt-0.5">
-                            ID: {category.id}
-                          </span>
                         </div>
                       </div>
                     </TableCell>
@@ -158,9 +162,15 @@ export default function AdminCategoriesPage() {
                       <span className="font-bold text-sm">{category.examCount} Exams</span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
-                        <CheckCircle2 className="h-3 w-3" /> Live
-                      </div>
+                      {category.status === 'active' ? (
+                        <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Active
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-muted-foreground font-bold text-[11px]">
+                          <XCircle className="h-3.5 w-3.5" /> Inactive
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
@@ -216,13 +226,30 @@ export default function AdminCategoriesPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Exam Count</Label>
+                <Label>Availability Status</Label>
+                <Select 
+                  value={editingCategory.status} 
+                  onValueChange={(val) => setEditingCategory({...editingCategory, status: val})}
+                >
+                  <SelectTrigger className="rounded-xl h-11">
+                    <SelectValue placeholder="Select Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active (Visible to students)</SelectItem>
+                    <SelectItem value="inactive">Inactive (Hidden)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Active Exam Count</Label>
                 <Input 
                   type="number"
                   disabled
                   value={editingCategory.examCount} 
                   className="rounded-xl bg-muted"
                 />
+                <p className="text-[10px] text-muted-foreground italic">Calculated automatically based on published exams.</p>
               </div>
             </div>
           )}
