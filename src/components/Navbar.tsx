@@ -39,10 +39,11 @@ export default function Navbar() {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/exams" className="transition-colors hover:text-accent font-semibold">Exams</Link>
-            <Link href="/practice" className="transition-colors hover:text-accent font-semibold">Practice</Link>
-            <Link href="/books" className="transition-colors hover:text-accent font-semibold">Books</Link>
-            <Link href="/about" className="transition-colors hover:text-accent font-semibold">About</Link>
+            <Link href="/exams" className="transition-colors hover:text-accent font-semibold text-foreground/80 hover:text-foreground">Exams</Link>
+            <Link href="/practice" className="transition-colors hover:text-accent font-semibold text-foreground/80 hover:text-foreground">Practice</Link>
+            <Link href="/books" className="transition-colors hover:text-accent font-semibold text-foreground/80 hover:text-foreground">Books</Link>
+            <Link href="/pricing" className="transition-colors hover:text-accent font-semibold text-foreground/80 hover:text-foreground">Pricing</Link>
+            <Link href="/about" className="transition-colors hover:text-accent font-semibold text-foreground/80 hover:text-foreground">About</Link>
           </nav>
         </div>
 
@@ -70,7 +71,7 @@ export default function Navbar() {
               <Button variant="ghost" className="font-bold">Log In</Button>
             </Link>
             <Link href="/signup">
-              <Button className="font-bold">Sign Up</Button>
+              <Button className="font-bold shadow-lg shadow-primary/20">Sign Up</Button>
             </Link>
           </div>
 
@@ -83,13 +84,14 @@ export default function Navbar() {
             <SheetContent side="right">
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <SheetDescription className="sr-only">
-                Navigation links for exams, practice materials, and account management.
+                Navigation links for exams, practice materials, pricing, and account management.
               </SheetDescription>
               <div className="flex flex-col gap-6 mt-10">
                 <Link href="/" className="text-lg font-bold">Home</Link>
                 <Link href="/exams" className="text-lg font-bold">Exams</Link>
                 <Link href="/practice" className="text-lg font-bold">Practice</Link>
                 <Link href="/books" className="text-lg font-bold">Books</Link>
+                <Link href="/pricing" className="text-lg font-bold">Pricing</Link>
                 <Link href="/about" className="text-lg font-bold">About</Link>
                 <hr className="opacity-20" />
                 <Link href="/login" className="text-lg font-bold">Log In</Link>
