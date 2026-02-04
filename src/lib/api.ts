@@ -8,7 +8,8 @@ export interface Exam {
   description: string;
   trending: boolean;
   image: string;
-  sections: string[];
+  stages: string[];
+  subjects: string[];
 }
 
 export interface TestItem {
@@ -95,7 +96,8 @@ export const EXAMS: Exam[] = [
     description: 'Staff Selection Commission - General Duty Constable Exam Preparation.',
     trending: true,
     image: getImage('exam-ssc'),
-    sections: ['General Intelligence', 'English Language', 'Quantitative Aptitude', 'General Awareness']
+    stages: ['Full Length'],
+    subjects: ['General Intelligence', 'English Language', 'Quantitative Aptitude', 'General Awareness']
   },
   {
     id: '2',
@@ -105,7 +107,8 @@ export const EXAMS: Exam[] = [
     description: 'Graduate Aptitude Test in Engineering for engineering graduates.',
     trending: true,
     image: getImage('exam-gate'),
-    sections: ['Engineering Mathematics', 'Technical Subject', 'General Aptitude']
+    stages: ['Technical Paper'],
+    subjects: ['Engineering Mathematics', 'Technical Subject', 'General Aptitude']
   },
   {
     id: '3',
@@ -115,7 +118,8 @@ export const EXAMS: Exam[] = [
     description: 'CDAC Common Admission Test for PG Diploma courses.',
     trending: false,
     image: getImage('exam-cat'),
-    sections: ['Section A', 'Section B', 'Section C']
+    stages: ['Section A', 'Section B', 'Section C'],
+    subjects: ['English', 'Mathematics', 'Reasoning', 'Computer Fundamentals', 'Data Structures', 'C Programming', 'OS']
   },
   {
     id: '4',
@@ -125,7 +129,8 @@ export const EXAMS: Exam[] = [
     description: 'The premier exam for IAS, IPS, and IFS services in India.',
     trending: true,
     image: getImage('exam-upsc'),
-    sections: ['History', 'Geography', 'Polity', 'Economics', 'Science', 'Current Affairs']
+    stages: ['Prelims Paper I', 'Prelims Paper II (CSAT)'],
+    subjects: ['History', 'Geography', 'Polity', 'Economics', 'Science', 'Current Affairs']
   }
 ];
 

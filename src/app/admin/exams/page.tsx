@@ -19,7 +19,9 @@ import {
   Filter,
   GraduationCap,
   Layers,
-  X
+  X,
+  BookOpen,
+  Layout
 } from "lucide-react";
 import { 
   Sheet, 
@@ -49,7 +51,8 @@ export default function AdminExamsPage() {
   // Drawer State
   const [editingExam, setEditingExam] = useState<Exam | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [newSection, setNewSection] = useState("");
+  const [newStage, setNewStage] = useState("");
+  const [newSubject, setNewSubject] = useState("");
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -63,7 +66,11 @@ export default function AdminExamsPage() {
   }, [exams, search, categoryFilter]);
 
   const handleEdit = (exam: Exam) => {
-    setEditingExam({ ...exam, sections: exam.sections || [] });
+    setEditingExam({ 
+      ...exam, 
+      stages: exam.stages || [], 
+      subjects: exam.subjects || [] 
+    });
     setIsSheetOpen(true);
   };
 
@@ -77,7 +84,8 @@ export default function AdminExamsPage() {
       description: "Brief description of the exam.",
       trending: false,
       image: `https://picsum.photos/seed/${newId}/600/400`,
-      sections: []
+      stages: [],
+      subjects: []
     };
     setExams([...exams, newExam]);
     handleEdit(newExam);
@@ -100,21 +108,33 @@ export default function AdminExamsPage() {
     }
   };
 
-  const addSection = () => {
-    if (newSection.trim() && editingExam) {
+  const addItem = (type: 'stage' | 'subject') => {
+    if (type === 'stage' && newStage.trim() && editingExam) {
       setEditingExam({
         ...editingExam,
-        sections: [...(editingExam.sections || []), newSection.trim()]
+        stages: [...(editingExam.stages || []), newStage.trim()]
       });
-      setNewSection("");
+      setNewStage("");
+    } else if (type === 'subject' && newSubject.trim() && editingExam) {
+      setEditingExam({
+        ...editingExam,
+        subjects: [...(editingExam.subjects || []), newSubject.trim()]
+      });
+      setNewSubject("");
     }
   };
 
-  const removeSection = (index: number) => {
+  const removeItem = (type: 'stage' | 'subject', index: number) => {
     if (editingExam) {
-      const updatedSections = [...editingExam.sections];
-      updatedSections.splice(index, 1);
-      setEditingExam({ ...editingExam, sections: updatedSections });
+      if (type === 'stage') {
+        const updated = [...editingExam.stages];
+        updated.splice(index, 1);
+        setEditingExam({ ...editingExam, stages: updated });
+      } else {
+        const updated = [...editingExam.subjects];
+        updated.splice(index, 1);
+        setEditingExam({ ...editingExam, subjects: updated });
+      }
     }
   };
 
@@ -123,7 +143,7 @@ export default function AdminExamsPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-headline font-bold">Exam Management</h1>
-          <p className="text-muted-foreground text-sm">Add new exams, define sections, and assign categories.</p>
+          <p className="text-muted-foreground text-sm">Add new exams, define stages (levels/sections), and assign subjects.</p>
         </div>
         <Button onClick={handleAddExam} className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20">
           <Plus className="h-4 w-4" />
@@ -181,18 +201,36 @@ export default function AdminExamsPage() {
               <h3 className="font-bold text-base leading-tight group-hover:text-primary transition-colors">{exam.title}</h3>
               <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{exam.description}</p>
             </CardHeader>
-            <CardContent className="p-4 pt-2 flex-grow">
-              <div className="flex flex-wrap gap-1 mt-2">
-                {exam.sections?.slice(0, 3).map((sec, i) => (
-                  <Badge key={i} variant="secondary" className="bg-muted text-[9px] font-bold text-muted-foreground">
-                    {sec}
-                  </Badge>
-                ))}
-                {(exam.sections?.length || 0) > 3 && (
-                  <Badge variant="secondary" className="bg-muted text-[9px] font-bold text-muted-foreground">
-                    +{(exam.sections?.length || 0) - 3} more
-                  </Badge>
-                )}
+            <CardContent className="p-4 pt-2 flex-grow space-y-3">
+              <div>
+                <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-widest block mb-1">Stages / Levels</span>
+                <div className="flex flex-wrap gap-1">
+                  {exam.stages?.slice(0, 2).map((st, i) => (
+                    <Badge key={i} variant="secondary" className="bg-primary/5 text-primary border-none text-[9px] font-bold">
+                      {st}
+                    </Badge>
+                  ))}
+                  {(exam.stages?.length || 0) > 2 && (
+                    <Badge variant="secondary" className="bg-muted text-[9px] font-bold text-muted-foreground">
+                      +{(exam.stages?.length || 0) - 2} more
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <div>
+                <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-widest block mb-1">Key Subjects</span>
+                <div className="flex flex-wrap gap-1">
+                  {exam.subjects?.slice(0, 3).map((sub, i) => (
+                    <Badge key={i} variant="outline" className="text-[9px] font-bold text-muted-foreground border-muted-foreground/20">
+                      {sub}
+                    </Badge>
+                  ))}
+                  {(exam.subjects?.length || 0) > 3 && (
+                    <Badge variant="outline" className="text-[9px] font-bold text-muted-foreground border-muted-foreground/20">
+                      +{(exam.subjects?.length || 0) - 3} more
+                    </Badge>
+                  )}
+                </div>
               </div>
             </CardContent>
             <CardFooter className="p-4 pt-0 flex items-center justify-between border-t bg-muted/5 mt-auto">
@@ -219,7 +257,7 @@ export default function AdminExamsPage() {
                   {confirmDeleteId === exam.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
                 </Button>
               </div>
-              <span className="text-[10px] text-muted-foreground font-bold">SLUG: {exam.slug}</span>
+              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">ID: {exam.id}</span>
             </CardFooter>
           </Card>
         ))}
@@ -238,11 +276,12 @@ export default function AdminExamsPage() {
         <SheetContent side="right" className="sm:max-w-xl overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle className="text-xl">Manage Exam Details</SheetTitle>
-            <SheetDescription>Configure exam metadata, categories, and core sections.</SheetDescription>
+            <SheetDescription>Configure metadata, hierarchical stages (sections/levels), and curriculum subjects.</SheetDescription>
           </SheetHeader>
           
           {editingExam && (
-            <div className="space-y-6 py-4">
+            <div className="space-y-8 py-4">
+              {/* Core Info */}
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-exam-title">Exam Title</Label>
@@ -293,63 +332,104 @@ export default function AdminExamsPage() {
                 <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border">
                   <div className="space-y-0.5">
                     <p className="text-sm font-bold">Trending Status</p>
-                    <p className="text-xs text-muted-foreground">Promote this exam on the home page trending section.</p>
+                    <p className="text-xs text-muted-foreground">Showcase this exam on the home page trending section.</p>
                   </div>
                   <Switch 
                     checked={editingExam.trending} 
                     onCheckedChange={(val) => setEditingExam({...editingExam, trending: val})} 
                   />
                 </div>
+              </div>
 
-                <div className="space-y-4 pt-4 border-t">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-base font-bold">Exam Sections</Label>
-                    <Badge variant="secondary" className="bg-primary/10 text-primary">{editingExam.sections?.length || 0} Total</Badge>
+              {/* Stages Management */}
+              <div className="space-y-4 pt-6 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Layout className="h-4 w-4 text-primary" />
+                    <Label className="text-base font-bold">Exam Stages / Levels</Label>
                   </div>
-                  
-                  <div className="flex gap-2">
-                    <Input 
-                      placeholder="Add a section name (e.g. Reasoning)" 
-                      value={newSection}
-                      onChange={(e) => setNewSection(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addSection()}
-                      className="rounded-xl"
-                    />
-                    <Button onClick={addSection} type="button" size="icon" className="shrink-0 rounded-xl">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Badge variant="secondary" className="bg-primary/10 text-primary uppercase text-[9px] font-bold">{editingExam.stages?.length || 0} Defined</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">Add sections like "Section A", "Prelims", or "Level 1".</p>
+                
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="e.g. Section A" 
+                    value={newStage}
+                    onChange={(e) => setNewStage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addItem('stage')}
+                    className="rounded-xl"
+                  />
+                  <Button onClick={() => addItem('stage')} type="button" size="icon" className="shrink-0 rounded-xl">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
 
-                  <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 scrollbar-hide">
-                    {editingExam.sections?.map((section, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg group">
-                        <span className="text-sm font-medium">{section}</span>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => removeSection(index)}
-                          className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10"
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    ))}
-                    {(!editingExam.sections || editingExam.sections.length === 0) && (
-                      <p className="text-xs text-center text-muted-foreground italic py-4">No sections added yet.</p>
-                    )}
+                <div className="grid grid-cols-2 gap-2">
+                  {editingExam.stages?.map((stage, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg group">
+                      <span className="text-xs font-bold">{stage}</span>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => removeItem('stage', index)}
+                        className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Subjects Management */}
+              <div className="space-y-4 pt-6 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <Label className="text-base font-bold">Exam Subjects</Label>
                   </div>
+                  <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 uppercase text-[9px] font-bold">{editingExam.subjects?.length || 0} Added</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">Define subjects like "Mathematics", "Logical Reasoning", etc.</p>
+                
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="e.g. Quantitative Aptitude" 
+                    value={newSubject}
+                    onChange={(e) => setNewSubject(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addItem('subject')}
+                    className="rounded-xl"
+                  />
+                  <Button onClick={() => addItem('subject')} type="button" size="icon" className="shrink-0 rounded-xl">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {editingExam.subjects?.map((subject, index) => (
+                    <div key={index} className="flex items-center gap-2 px-3 py-1.5 bg-background border rounded-full group transition-colors hover:border-primary">
+                      <span className="text-[11px] font-bold">{subject}</span>
+                      <button 
+                        onClick={() => removeItem('subject', index)}
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           )}
 
-          <SheetFooter className="mt-8 gap-2">
+          <SheetFooter className="mt-8 gap-2 pb-8">
             <SheetClose asChild>
               <Button variant="outline" className="w-full rounded-xl">Cancel</Button>
             </SheetClose>
             <Button onClick={handleSave} className="w-full gap-2 rounded-xl shadow-lg">
               <Save className="h-4 w-4" />
-              Save Exam
+              Save Exam Configuration
             </Button>
           </SheetFooter>
         </SheetContent>
