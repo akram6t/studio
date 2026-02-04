@@ -1,4 +1,3 @@
-
 "use client";
 
 import { CATEGORIES, EXAMS } from "@/lib/api";
@@ -12,14 +11,14 @@ import {
   Search, 
   Plus, 
   LayoutGrid, 
-  TrendingUp, 
   Layers, 
   CheckCircle2,
   BookOpen,
   Edit2,
   Trash2,
   Save,
-  Check
+  Check,
+  Activity
 } from "lucide-react";
 import { 
   Sheet, 
@@ -38,7 +37,6 @@ interface CategoryData {
   name: string;
   examCount: number;
   status: string;
-  trendingCount: number;
 }
 
 export default function AdminCategoriesPage() {
@@ -46,8 +44,7 @@ export default function AdminCategoriesPage() {
     id: `cat-${index + 1}`,
     name: cat,
     examCount: EXAMS.filter(e => e.category === cat).length,
-    status: 'active',
-    trendingCount: EXAMS.filter(e => e.category === cat && e.trending).length
+    status: 'active'
   }));
 
   const [categories, setCategories] = useState<CategoryData[]>(initialData);
@@ -99,11 +96,10 @@ export default function AdminCategoriesPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {[
           { label: "Total Sectors", value: categories.length.toString(), icon: LayoutGrid, color: "text-blue-600", bg: "bg-blue-50" },
           { label: "Total Exams", value: categories.reduce((acc, curr) => acc + curr.examCount, 0).toString(), icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Trending Now", value: categories.reduce((acc, curr) => acc + curr.trendingCount, 0).toString(), icon: TrendingUp, color: "text-amber-600", bg: "bg-amber-50" },
         ].map((stat) => (
           <Card key={stat.label} className="border-none shadow-sm">
             <CardContent className="p-5 flex items-center gap-4">
@@ -138,7 +134,6 @@ export default function AdminCategoriesPage() {
                 <TableRow className="hover:bg-transparent border-b">
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Category Name</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest">Active Exams</TableHead>
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Trending Tags</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest">Status</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest text-right pr-6">Actions</TableHead>
                 </TableRow>
@@ -161,17 +156,6 @@ export default function AdminCategoriesPage() {
                     </TableCell>
                     <TableCell>
                       <span className="font-bold text-sm">{category.examCount} Exams</span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        {category.trendingCount > 0 ? (
-                          <Badge className="bg-amber-600/10 text-amber-600 border-none text-[10px] font-bold">
-                            {category.trendingCount} TRENDING
-                          </Badge>
-                        ) : (
-                          <span className="text-[10px] text-muted-foreground font-semibold">None</span>
-                        )}
-                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
@@ -231,25 +215,14 @@ export default function AdminCategoriesPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Trending Exams</Label>
-                  <Input 
-                    type="number"
-                    value={editingCategory.trendingCount} 
-                    onChange={(e) => setEditingCategory({...editingCategory, trendingCount: parseInt(e.target.value) || 0})}
-                    className="rounded-xl"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Exam Count</Label>
-                  <Input 
-                    type="number"
-                    disabled
-                    value={editingCategory.examCount} 
-                    className="rounded-xl bg-muted"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label>Exam Count</Label>
+                <Input 
+                  type="number"
+                  disabled
+                  value={editingCategory.examCount} 
+                  className="rounded-xl bg-muted"
+                />
               </div>
             </div>
           )}
