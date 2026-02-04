@@ -8,6 +8,7 @@ export interface Exam {
   description: string;
   trending: boolean;
   image: string;
+  sections: string[];
 }
 
 export interface TestItem {
@@ -93,7 +94,8 @@ export const EXAMS: Exam[] = [
     category: 'SSC Exams',
     description: 'Staff Selection Commission - General Duty Constable Exam Preparation.',
     trending: true,
-    image: getImage('exam-ssc')
+    image: getImage('exam-ssc'),
+    sections: ['General Intelligence', 'English Language', 'Quantitative Aptitude', 'General Awareness']
   },
   {
     id: '2',
@@ -102,7 +104,8 @@ export const EXAMS: Exam[] = [
     category: 'Engineering',
     description: 'Graduate Aptitude Test in Engineering for engineering graduates.',
     trending: true,
-    image: getImage('exam-gate')
+    image: getImage('exam-gate'),
+    sections: ['Engineering Mathematics', 'Technical Subject', 'General Aptitude']
   },
   {
     id: '3',
@@ -111,7 +114,8 @@ export const EXAMS: Exam[] = [
     category: 'IT/Software',
     description: 'CDAC Common Admission Test for PG Diploma courses.',
     trending: false,
-    image: getImage('exam-cat')
+    image: getImage('exam-cat'),
+    sections: ['Section A', 'Section B', 'Section C']
   },
   {
     id: '4',
@@ -120,7 +124,8 @@ export const EXAMS: Exam[] = [
     category: 'Civil Services',
     description: 'The premier exam for IAS, IPS, and IFS services in India.',
     trending: true,
-    image: getImage('exam-upsc')
+    image: getImage('exam-upsc'),
+    sections: ['History', 'Geography', 'Polity', 'Economics', 'Science', 'Current Affairs']
   }
 ];
 
