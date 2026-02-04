@@ -3,25 +3,41 @@
 import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, Star, ArrowRight, HelpCircle } from "lucide-react";
+import { Check, Crown, Zap, Star, ArrowRight, HelpCircle, User } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const PLANS = [
   {
+    name: "Free Pass",
+    price: "₹0",
+    period: "/forever",
+    description: "Perfect for exploring the platform and starting your journey.",
+    features: [
+      "Access to 2 Mock Tests per Exam",
+      "Daily Current Affairs Quizzes",
+      "Limited Sectional Practice Sets",
+      "Basic Performance Tracking",
+      "Community Forum Access"
+    ],
+    buttonText: "Start for Free",
+    variant: "ghost",
+    isPopular: false
+  },
+  {
     name: "Monthly Pass",
     price: "₹99",
     period: "/30 days",
     description: "Great for quick revision before your upcoming exam.",
     features: [
-      "Access to all Mock Tests",
+      "Access to All 10,000+ Mock Tests",
       "All Sectional Practice Sets",
       "Previous Year Solved Papers",
       "Detailed Performance Reports",
-      "No Advertisements"
+      "Ad-free Experience"
     ],
-    buttonText: "Start 30 Days",
+    buttonText: "Get 30 Days",
     variant: "outline",
     isPopular: false
   },
@@ -61,16 +77,16 @@ const PLANS = [
 
 const FAQS = [
   {
-    question: "Which plan should I choose?",
+    question: "What exactly is included in the Free Pass?",
+    answer: "The Free Pass gives you a taste of everything. You get access to a limited number of mock tests (usually the first two for every exam), all daily current affairs quizzes, and basic practice sets. It's designed to help you evaluate our content quality before you buy."
+  },
+  {
+    question: "Which paid plan should I choose?",
     answer: "If your exam is in the next month, the Monthly Pass is ideal. For those just starting their journey or targeting multiple exams throughout the year, the Yearly Pass offers the best value and continuity."
   },
   {
     question: "Can I upgrade my plan later?",
     answer: "Yes! You can upgrade from a Monthly or Quarterly plan to a Yearly plan at any time. The remaining validity of your current plan will be adjusted or added to the new duration."
-  },
-  {
-    question: "Is there a free trial available?",
-    answer: "We offer a 'Freemium' model where certain tests and resources are always free. You can try those first to experience the platform quality before committing to a paid pass."
   },
   {
     question: "How do I renew my pass?",
@@ -103,7 +119,7 @@ export default function PricingPage() {
 
       {/* Pricing Cards */}
       <section className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {PLANS.map((plan) => (
             <Card 
               key={plan.name} 
@@ -118,7 +134,7 @@ export default function PricingPage() {
                 </div>
               )}
               
-              <CardHeader className="p-8 pb-4">
+              <CardHeader className="p-6 pb-4">
                 <div className="flex items-center justify-between mb-4">
                   {plan.variant === 'accent' ? (
                     <div className="p-3 bg-amber-100 text-amber-600 rounded-2xl">
@@ -128,32 +144,36 @@ export default function PricingPage() {
                     <div className="p-3 bg-primary/10 text-primary rounded-2xl">
                       <Zap className="h-6 w-6" />
                     </div>
-                  ) : (
+                  ) : plan.variant === 'outline' ? (
                     <div className="p-3 bg-muted text-muted-foreground rounded-2xl">
                       <Star className="h-6 w-6" />
                     </div>
+                  ) : (
+                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                      <User className="h-6 w-6" />
+                    </div>
                   )}
                 </div>
-                <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                <CardDescription className="mt-2 text-sm">{plan.description}</CardDescription>
+                <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
+                <CardDescription className="mt-2 text-xs line-clamp-2 h-10">{plan.description}</CardDescription>
               </CardHeader>
 
-              <CardContent className="p-8 pt-0 flex-grow">
-                <div className="flex items-baseline gap-1 mb-8">
-                  <span className="text-5xl font-bold">{plan.price}</span>
-                  {plan.period && <span className="text-muted-foreground font-semibold">{plan.period}</span>}
+              <CardContent className="p-6 pt-0 flex-grow">
+                <div className="flex items-baseline gap-1 mb-6">
+                  <span className="text-4xl font-bold">{plan.price}</span>
+                  {plan.period && <span className="text-muted-foreground text-xs font-semibold">{plan.period}</span>}
                 </div>
 
                 <div className="space-y-4">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Plan Benefits:</p>
                   <ul className="space-y-3">
                     {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3 text-sm">
+                      <li key={feature} className="flex items-start gap-3 text-xs">
                         <div className={cn(
                           "mt-0.5 p-0.5 rounded-full",
                           plan.isPopular ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                         )}>
-                          <Check className="h-3 w-3" />
+                          <Check className="h-2.5 w-2.5" />
                         </div>
                         <span className="text-muted-foreground font-medium">{feature}</span>
                       </li>
@@ -162,14 +182,16 @@ export default function PricingPage() {
                 </div>
               </CardContent>
 
-              <CardFooter className="p-8 pt-0 mt-auto">
-                <Link href="/login" className="w-full">
+              <CardFooter className="p-6 pt-0 mt-auto">
+                <Link href={plan.price === '₹0' ? "/signup" : "/login"} className="w-full">
                   <Button 
+                    variant={plan.variant === 'ghost' ? "outline" : "default"}
                     className={cn(
-                      "w-full h-12 rounded-xl font-bold text-base shadow-lg",
+                      "w-full h-11 rounded-xl font-bold text-sm shadow-md",
                       plan.variant === 'accent' ? "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-200" :
                       plan.variant === 'default' ? "bg-primary text-primary-foreground shadow-primary/20" :
-                      "bg-white border-2 border-primary/20 text-primary hover:bg-primary/5"
+                      plan.variant === 'outline' ? "bg-white border-2 border-primary/20 text-primary hover:bg-primary/5" :
+                      "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
                     )}
                   >
                     {plan.buttonText}
