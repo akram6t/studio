@@ -1,11 +1,13 @@
+
 "use client";
 
 import { getTests, TestItem } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Search, 
   Plus, 
@@ -13,21 +15,59 @@ import {
   Timer, 
   Award, 
   HelpCircle,
-  MoreVertical,
   CheckCircle2,
-  Clock,
+  Edit2,
+  Trash2,
+  Save,
   ExternalLink
 } from "lucide-react";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetDescription,
+  SheetFooter,
+  SheetClose
+} from "@/components/ui/sheet";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 export default function AdminTestsPage() {
-  const tests = getTests('all');
+  const testsData = getTests('all');
+  const [tests, setTests] = useState<TestItem[]>(testsData);
   const [search, setSearch] = useState("");
+
+  // Drawer State
+  const [editingTest, setEditingTest] = useState<TestItem | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const filteredTests = useMemo(() => {
     return tests.filter(test => test.title.toLowerCase().includes(search.toLowerCase()));
   }, [tests, search]);
+
+  const handleEdit = (test: TestItem) => {
+    setEditingTest(test);
+    setIsSheetOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    setTests(tests.filter(t => t.id !== id));
+  };
+
+  const handleSave = () => {
+    if (editingTest) {
+      setTests(tests.map(t => t.id === editingTest.id ? editingTest : t));
+      setIsSheetOpen(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -44,7 +84,7 @@ export default function AdminTestsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {[
-          { label: "Total Questions", value: "12,500+", icon: HelpCircle, color: "text-blue-600", bg: "bg-blue-50" },
+          { label: "Total Questions", value: tests.reduce((a, b) => a + b.numberOfQuestions, 0).toLocaleString() + "+", icon: HelpCircle, color: "text-blue-600", bg: "bg-blue-50" },
           { label: "Avg. Accuracy", value: "72.4%", icon: Award, color: "text-emerald-600", bg: "bg-emerald-50" },
           { label: "Completion Rate", value: "85%", icon: CheckCircle2, color: "text-purple-600", bg: "bg-purple-50" },
         ].map((stat) => (
@@ -132,11 +172,21 @@ export default function AdminTestsPage() {
                     </TableCell>
                     <TableCell className="text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary">
-                          <ExternalLink className="h-4 w-4" />
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleEdit(test)}
+                          className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                        >
+                          <Edit2 className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-                          <MoreVertical className="h-4 w-4" />
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleDelete(test.id)}
+                          className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -147,6 +197,77 @@ export default function AdminTestsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Test Drawer */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="right" className="sm:max-w-md">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-xl">Edit Sectional Test</SheetTitle>
+            <SheetDescription>Update test parameters, questions, and access levels.</SheetDescription>
+          </SheetHeader>
+          
+          {editingTest && (
+            <div className="space-y-6 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-test-title">Test Title</Label>
+                <Input 
+                  id="edit-test-title" 
+                  value={editingTest.title} 
+                  onChange={(e) => setEditingTest({...editingTest, title: e.target.value})}
+                  className="rounded-xl"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Questions</Label>
+                  <Input 
+                    type="number"
+                    value={editingTest.numberOfQuestions} 
+                    onChange={(e) => setEditingTest({...editingTest, numberOfQuestions: parseInt(e.target.value) || 0})}
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Duration (Mins)</Label>
+                  <Input 
+                    type="number"
+                    value={editingTest.durationInMinutes} 
+                    onChange={(e) => setEditingTest({...editingTest, durationInMinutes: parseInt(e.target.value) || 0})}
+                    className="rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Access Level</Label>
+                <Select 
+                  value={editingTest.isFree ? "free" : "premium"} 
+                  onValueChange={(val: any) => setEditingTest({...editingTest, isFree: val === "free"})}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select access" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free Access</SelectItem>
+                    <SelectItem value="premium">Premium Only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          <SheetFooter className="mt-8 gap-2">
+            <SheetClose asChild>
+              <Button variant="outline" className="w-full rounded-xl">Cancel</Button>
+            </SheetClose>
+            <Button onClick={handleSave} className="w-full gap-2 rounded-xl shadow-lg">
+              <Save className="h-4 w-4" />
+              Save Changes
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

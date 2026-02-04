@@ -1,3 +1,4 @@
+
 "use client";
 
 import { CATEGORIES, EXAMS } from "@/lib/api";
@@ -6,33 +7,76 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Search, 
   Plus, 
   LayoutGrid, 
   TrendingUp, 
   Layers, 
-  MoreVertical,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  BookOpen
+  BookOpen,
+  Edit2,
+  Trash2,
+  Save
 } from "lucide-react";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetDescription,
+  SheetFooter,
+  SheetClose
+} from "@/components/ui/sheet";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
-export default function AdminCategoriesPage() {
-  const [search, setSearch] = useState("");
+interface CategoryData {
+  id: string;
+  name: string;
+  examCount: number;
+  status: string;
+  trendingCount: number;
+}
 
-  const categoriesData = useMemo(() => {
-    return CATEGORIES.map((cat, index) => ({
-      id: `cat-${index + 1}`,
-      name: cat,
-      examCount: EXAMS.filter(e => e.category === cat).length,
-      status: 'active',
-      trendingCount: EXAMS.filter(e => e.category === cat && e.trending).length
-    })).filter(cat => cat.name.toLowerCase().includes(search.toLowerCase()));
-  }, [search]);
+export default function AdminCategoriesPage() {
+  const initialData = CATEGORIES.map((cat, index) => ({
+    id: `cat-${index + 1}`,
+    name: cat,
+    examCount: EXAMS.filter(e => e.category === cat).length,
+    status: 'active',
+    trendingCount: EXAMS.filter(e => e.category === cat && e.trending).length
+  }));
+
+  const [categories, setCategories] = useState<CategoryData[]>(initialData);
+  const [search, setSearch] = useState("");
+  
+  // Drawer State
+  const [editingCategory, setEditingCategory] = useState<CategoryData | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const filteredCategories = useMemo(() => {
+    return categories.filter(cat => cat.name.toLowerCase().includes(search.toLowerCase()));
+  }, [categories, search]);
+
+  const handleEdit = (cat: CategoryData) => {
+    setEditingCategory(cat);
+    setIsSheetOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    setCategories(categories.filter(c => c.id !== id));
+  };
+
+  const handleSave = () => {
+    if (editingCategory) {
+      setCategories(categories.map(c => c.id === editingCategory.id ? editingCategory : c));
+      setIsSheetOpen(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -49,9 +93,9 @@ export default function AdminCategoriesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {[
-          { label: "Total Sectors", value: CATEGORIES.length.toString(), icon: LayoutGrid, color: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Total Exams", value: EXAMS.length.toString(), icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Trending Now", value: EXAMS.filter(e => e.trending).length.toString(), icon: TrendingUp, color: "text-amber-600", bg: "bg-amber-50" },
+          { label: "Total Sectors", value: categories.length.toString(), icon: LayoutGrid, color: "text-blue-600", bg: "bg-blue-50" },
+          { label: "Total Exams", value: categories.reduce((acc, curr) => acc + curr.examCount, 0).toString(), icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50" },
+          { label: "Trending Now", value: categories.reduce((acc, curr) => acc + curr.trendingCount, 0).toString(), icon: TrendingUp, color: "text-amber-600", bg: "bg-amber-50" },
         ].map((stat) => (
           <Card key={stat.label} className="border-none shadow-sm">
             <CardContent className="p-5 flex items-center gap-4">
@@ -92,7 +136,7 @@ export default function AdminCategoriesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {categoriesData.map((category) => (
+                {filteredCategories.map((category) => (
                   <TableRow key={category.id} className="group border-b last:border-0 hover:bg-muted/5 transition-colors">
                     <TableCell className="py-4 pl-6">
                       <div className="flex items-center gap-3">
@@ -128,8 +172,21 @@ export default function AdminCategoriesPage() {
                     </TableCell>
                     <TableCell className="text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary">
-                          <MoreVertical className="h-4 w-4" />
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleEdit(category)}
+                          className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleDelete(category.id)}
+                          className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -138,22 +195,63 @@ export default function AdminCategoriesPage() {
               </TableBody>
             </Table>
           </div>
-          
-          <div className="p-4 bg-muted/20 border-t flex items-center justify-between">
-            <p className="text-xs text-muted-foreground font-medium">
-              Showing <span className="text-foreground font-bold">{categoriesData.length}</span> categories
-            </p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="h-8 rounded-lg text-[10px] font-bold gap-1 px-3" disabled>
-                <ChevronLeft className="h-3 w-3" /> PREVIOUS
-              </Button>
-              <Button variant="outline" size="sm" className="h-8 rounded-lg text-[10px] font-bold gap-1 px-3">
-                NEXT <ChevronRight className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
+
+      {/* Edit Category Drawer */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="right" className="sm:max-w-md">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-xl">Edit Category</SheetTitle>
+            <SheetDescription>Update the category name and tracking details.</SheetDescription>
+          </SheetHeader>
+          
+          {editingCategory && (
+            <div className="space-y-6 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-cat-name">Category Name</Label>
+                <Input 
+                  id="edit-cat-name" 
+                  value={editingCategory.name} 
+                  onChange={(e) => setEditingCategory({...editingCategory, name: e.target.value})}
+                  className="rounded-xl"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Trending Exams</Label>
+                  <Input 
+                    type="number"
+                    value={editingCategory.trendingCount} 
+                    onChange={(e) => setEditingCategory({...editingCategory, trendingCount: parseInt(e.target.value) || 0})}
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Exam Count</Label>
+                  <Input 
+                    type="number"
+                    disabled
+                    value={editingCategory.examCount} 
+                    className="rounded-xl bg-muted"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <SheetFooter className="mt-8 gap-2">
+            <SheetClose asChild>
+              <Button variant="outline" className="w-full rounded-xl">Cancel</Button>
+            </SheetClose>
+            <Button onClick={handleSave} className="w-full gap-2 rounded-xl shadow-lg">
+              <Save className="h-4 w-4" />
+              Save Changes
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

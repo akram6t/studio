@@ -1,3 +1,4 @@
+
 "use client";
 
 import { getUsers, User } from "@/lib/api";
@@ -13,9 +14,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Search, 
-  MoreVertical, 
   UserPlus, 
   Mail, 
   Calendar,
@@ -25,15 +26,38 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldAlert,
-  Edit2
+  Edit2,
+  Trash2,
+  Save
 } from "lucide-react";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetDescription,
+  SheetFooter,
+  SheetClose
+} from "@/components/ui/sheet";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 export default function AdminUsersPage() {
-  const users = getUsers();
+  const usersData = getUsers();
+  const [users, setUsers] = useState<User[]>(usersData);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  
+  // Edit Drawer State
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
@@ -43,6 +67,22 @@ export default function AdminUsersPage() {
       return matchesSearch && matchesRole;
     });
   }, [users, search, roleFilter]);
+
+  const handleEdit = (user: User) => {
+    setEditingUser(user);
+    setIsSheetOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    setUsers(users.filter(u => u.id !== id));
+  };
+
+  const handleSave = () => {
+    if (editingUser) {
+      setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
+      setIsSheetOpen(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -165,11 +205,21 @@ export default function AdminUsersPage() {
                     </TableCell>
                     <TableCell className="text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleEdit(user)}
+                          className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                        >
                           <Edit2 className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-                          <MoreVertical className="h-4 w-4" />
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleDelete(user.id)}
+                          className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -178,22 +228,102 @@ export default function AdminUsersPage() {
               </TableBody>
             </Table>
           </div>
-          
-          <div className="p-4 bg-muted/20 border-t flex items-center justify-between">
-            <p className="text-xs text-muted-foreground font-medium">
-              Showing <span className="text-foreground font-bold">{filteredUsers.length}</span> of {users.length} users
-            </p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="h-8 rounded-lg text-[10px] font-bold gap-1 px-3" disabled>
-                <ChevronLeft className="h-3 w-3" /> PREVIOUS
-              </Button>
-              <Button variant="outline" size="sm" className="h-8 rounded-lg text-[10px] font-bold gap-1 px-3">
-                NEXT <ChevronRight className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
+
+      {/* Edit User Drawer */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="right" className="sm:max-w-md">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-xl">Edit User Profile</SheetTitle>
+            <SheetDescription>Update personal information, roles, and premium status.</SheetDescription>
+          </SheetHeader>
+          
+          {editingUser && (
+            <div className="space-y-6 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Full Name</Label>
+                <Input 
+                  id="edit-name" 
+                  value={editingUser.name} 
+                  onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                  className="rounded-xl"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-email">Email Address</Label>
+                <Input 
+                  id="edit-email" 
+                  value={editingUser.email} 
+                  onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
+                  className="rounded-xl"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>User Role</Label>
+                  <Select 
+                    value={editingUser.role} 
+                    onValueChange={(val: any) => setEditingUser({...editingUser, role: val})}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="creator">Creator</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Account Status</Label>
+                  <Select 
+                    value={editingUser.status} 
+                    onValueChange={(val: any) => setEditingUser({...editingUser, status: val})}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-bold">Premium Status</p>
+                  <p className="text-xs text-muted-foreground">Grant access to all premium content</p>
+                </div>
+                <Button 
+                  variant={editingUser.isPremium ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setEditingUser({...editingUser, isPremium: !editingUser.isPremium})}
+                  className={cn("rounded-lg font-bold", editingUser.isPremium && "bg-amber-600 hover:bg-amber-700")}
+                >
+                  {editingUser.isPremium ? "Active" : "Grant"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <SheetFooter className="mt-8 gap-2">
+            <SheetClose asChild>
+              <Button variant="outline" className="w-full rounded-xl">Cancel</Button>
+            </SheetClose>
+            <Button onClick={handleSave} className="w-full gap-2 rounded-xl shadow-lg">
+              <Save className="h-4 w-4" />
+              Save Changes
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

@@ -1,18 +1,22 @@
+
 "use client";
 
-import { getContent } from "@/lib/api";
+import { getContent, ContentItem } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Search, 
   Plus, 
   FileText, 
   MonitorPlay, 
   BookOpen, 
-  MoreVertical,
+  Edit2,
+  Trash2,
+  Save,
   CheckCircle2,
   Download,
   Eye,
@@ -22,16 +26,53 @@ import {
   Zap,
   LibraryBig
 } from "lucide-react";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetDescription,
+  SheetFooter,
+  SheetClose
+} from "@/components/ui/sheet";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 export default function AdminContentPage() {
-  const contentItems = getContent('all');
+  const contentItemsData = getContent('all');
+  const [content, setContent] = useState<ContentItem[]>(contentItemsData);
   const [search, setSearch] = useState("");
 
+  // Drawer State
+  const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
   const filteredContent = useMemo(() => {
-    return contentItems.filter(item => item.title.toLowerCase().includes(search.toLowerCase()));
-  }, [contentItems, search]);
+    return content.filter(item => item.title.toLowerCase().includes(search.toLowerCase()));
+  }, [content, search]);
+
+  const handleEdit = (item: ContentItem) => {
+    setEditingItem(item);
+    setIsSheetOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    setContent(content.filter(c => c.id !== id));
+  };
+
+  const handleSave = () => {
+    if (editingItem) {
+      setContent(content.map(c => c.id === editingItem.id ? editingItem : c));
+      setIsSheetOpen(false);
+    }
+  };
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -56,8 +97,8 @@ export default function AdminContentPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         {[
-          { label: "Total Assets", value: "245", icon: LibraryBig, color: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Premium Items", value: "112", icon: Zap, color: "text-amber-600", bg: "bg-amber-50" },
+          { label: "Total Assets", value: content.length.toString(), icon: LibraryBig, color: "text-blue-600", bg: "bg-blue-50" },
+          { label: "Premium Items", value: content.filter(c => !c.isFree).length.toString(), icon: Zap, color: "text-amber-600", bg: "bg-amber-50" },
           { label: "Verified", value: "98%", icon: ShieldCheck, color: "text-emerald-600", bg: "bg-emerald-50" },
           { label: "Downloads", value: "84k", icon: Download, color: "text-purple-600", bg: "bg-purple-50" },
         ].map((stat) => (
@@ -141,11 +182,21 @@ export default function AdminContentPage() {
                     </TableCell>
                     <TableCell className="text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary">
-                          <Eye className="h-4 w-4" />
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleEdit(item)}
+                          className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                        >
+                          <Edit2 className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-                          <MoreVertical className="h-4 w-4" />
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleDelete(item.id)}
+                          className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -154,22 +205,75 @@ export default function AdminContentPage() {
               </TableBody>
             </Table>
           </div>
-          
-          <div className="p-4 bg-muted/20 border-t flex items-center justify-between">
-            <p className="text-xs text-muted-foreground font-medium">
-              Showing <span className="text-foreground font-bold">{filteredContent.length}</span> assets
-            </p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="h-8 rounded-lg text-[10px] font-bold gap-1 px-3" disabled>
-                <ChevronLeft className="h-3 w-3" /> PREVIOUS
-              </Button>
-              <Button variant="outline" size="sm" className="h-8 rounded-lg text-[10px] font-bold gap-1 px-3">
-                NEXT <ChevronRight className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
+
+      {/* Edit Content Drawer */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="right" className="sm:max-w-md">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-xl">Edit Resource</SheetTitle>
+            <SheetDescription>Modify resource details, type, and availability.</SheetDescription>
+          </SheetHeader>
+          
+          {editingItem && (
+            <div className="space-y-6 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-item-title">Resource Title</Label>
+                <Input 
+                  id="edit-item-title" 
+                  value={editingItem.title} 
+                  onChange={(e) => setEditingItem({...editingItem, title: e.target.value})}
+                  className="rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Content Type</Label>
+                <Select 
+                  value={editingItem.type} 
+                  onValueChange={(val: any) => setEditingItem({...editingItem, type: val})}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pdf">PDF Document</SelectItem>
+                    <SelectItem value="ppt">Presentation Slides</SelectItem>
+                    <SelectItem value="blog">Blog/Article</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Access Status</Label>
+                <Select 
+                  value={editingItem.isFree ? "free" : "premium"} 
+                  onValueChange={(val: any) => setEditingItem({...editingItem, isFree: val === "free"})}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select access" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free Resource</SelectItem>
+                    <SelectItem value="premium">Premium Resource</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          <SheetFooter className="mt-8 gap-2">
+            <SheetClose asChild>
+              <Button variant="outline" className="w-full rounded-xl">Cancel</Button>
+            </SheetClose>
+            <Button onClick={handleSave} className="w-full gap-2 rounded-xl shadow-lg">
+              <Save className="h-4 w-4" />
+              Save Changes
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
