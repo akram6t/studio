@@ -46,7 +46,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 // Define a type for supported icons
@@ -191,8 +191,8 @@ export default function AdminPracticePage() {
     }
   };
 
-  const moveSubject = (index: number, direction: 'up' | 'down') => {
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
+  const moveSubject = (index: number, direction: 'left' | 'right') => {
+    const newIndex = direction === 'left' ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= subjects.length) return;
 
     const newSubjects = [...subjects];
@@ -214,7 +214,7 @@ export default function AdminPracticePage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {subjects.map((subject, index) => (
           <Card key={subject.id} className="group overflow-hidden border-none shadow-md hover:shadow-xl transition-all bg-card flex flex-col">
             <CardHeader className="flex flex-row items-center gap-4 pb-2 relative">
@@ -236,7 +236,7 @@ export default function AdminPracticePage() {
                   size="icon" 
                   className="h-6 w-6 rounded-md shadow-sm"
                   disabled={index === 0}
-                  onClick={() => moveSubject(index, 'up')}
+                  onClick={() => moveSubject(index, 'left')}
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </Button>
@@ -245,7 +245,7 @@ export default function AdminPracticePage() {
                   size="icon" 
                   className="h-6 w-6 rounded-md shadow-sm"
                   disabled={index === subjects.length - 1}
-                  onClick={() => moveSubject(index, 'down')}
+                  onClick={() => moveSubject(index, 'right')}
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Button>
