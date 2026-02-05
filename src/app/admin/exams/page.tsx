@@ -1,6 +1,6 @@
 "use client";
 
-import { EXAMS, CATEGORIES, Exam } from "@/lib/api";
+import { EXAMS, CATEGORIES, Exam, getMockTests, getTests, getPrevPapers, getQuizzes, getContent } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,11 @@ import {
   BookOpen, 
   Layout,
   Image as ImageIcon,
-  Upload
+  Upload,
+  Trophy,
+  ClipboardCheck,
+  History,
+  LibraryBig
 } from "lucide-react";
 import { 
   Sheet, 
@@ -194,87 +198,115 @@ export default function AdminExamsPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredExams.map((exam) => (
-          <Card key={exam.id} className="group overflow-hidden border-none shadow-md hover:shadow-xl transition-all flex flex-col bg-card">
-            <div className="aspect-[16/10] relative overflow-hidden bg-muted">
-              <img src={exam.image} alt="" className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
-              <div className="absolute top-2 left-2 z-10">
-                <Badge className="bg-white/90 text-primary border-none shadow-sm backdrop-blur-sm text-[10px] font-bold">
-                  {exam.category}
-                </Badge>
-              </div>
-              {exam.trending && (
-                <div className="absolute top-2 right-2 z-10">
-                  <Badge className="bg-amber-600 text-white border-none shadow-sm text-[10px] font-bold">
-                    <TrendingUp className="h-3 w-3 mr-1" /> TRENDING
+        {filteredExams.map((exam) => {
+          // Analytics calculations
+          const mockCount = getMockTests(exam.slug).length;
+          const sectionalCount = getTests(exam.slug).length;
+          const prevCount = getPrevPapers(exam.slug).length;
+          const quizCount = getQuizzes(exam.slug).length;
+          const contentCount = getContent(exam.slug).length;
+
+          return (
+            <Card key={exam.id} className="group overflow-hidden border-none shadow-md hover:shadow-xl transition-all flex flex-col bg-card">
+              <div className="aspect-[16/10] relative overflow-hidden bg-muted">
+                <img src={exam.image} alt="" className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
+                <div className="absolute top-2 left-2 z-10">
+                  <Badge className="bg-white/90 text-primary border-none shadow-sm backdrop-blur-sm text-[10px] font-bold">
+                    {exam.category}
                   </Badge>
                 </div>
-              )}
-            </div>
-            <CardHeader className="p-4 pb-2">
-              <h3 className="font-bold text-base leading-tight group-hover:text-primary transition-colors">{exam.title}</h3>
-              <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{exam.description}</p>
-            </CardHeader>
-            <CardContent className="p-4 pt-2 flex-grow space-y-3">
-              <div>
-                <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-widest block mb-1">Stages / Levels</span>
-                <div className="flex flex-wrap gap-1">
-                  {exam.stages?.slice(0, 2).map((st, i) => (
-                    <Badge key={i} variant="secondary" className="bg-primary/5 text-primary border-none text-[9px] font-bold">
-                      {st}
+                {exam.trending && (
+                  <div className="absolute top-2 right-2 z-10">
+                    <Badge className="bg-amber-600 text-white border-none shadow-sm text-[10px] font-bold">
+                      <TrendingUp className="h-3 w-3 mr-1" /> TRENDING
                     </Badge>
-                  ))}
-                  {(exam.stages?.length || 0) > 2 && (
-                    <Badge variant="secondary" className="bg-muted text-[9px] font-bold text-muted-foreground">
-                      +{(exam.stages?.length || 0) - 2} more
-                    </Badge>
-                  )}
+                  </div>
+                )}
+              </div>
+              <CardHeader className="p-4 pb-2">
+                <h3 className="font-bold text-base leading-tight group-hover:text-primary transition-colors">{exam.title}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{exam.description}</p>
+              </CardHeader>
+              <CardContent className="p-4 pt-2 flex-grow space-y-4">
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest block mb-1">Stages / Levels</span>
+                    <div className="flex flex-wrap gap-1">
+                      {exam.stages?.slice(0, 2).map((st, i) => (
+                        <Badge key={i} variant="secondary" className="bg-primary/5 text-primary border-none text-[9px] font-bold">
+                          {st}
+                        </Badge>
+                      ))}
+                      {(exam.stages?.length || 0) > 2 && (
+                        <Badge variant="secondary" className="bg-muted text-[9px] font-bold text-muted-foreground">
+                          +{(exam.stages?.length || 0) - 2} more
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Preparation Analytics Section */}
+                  <div className="pt-3 border-t">
+                    <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest block mb-2">Preparation Analytics</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="flex flex-col items-center justify-center p-1.5 bg-amber-500/5 rounded-xl border border-amber-500/10 hover:bg-amber-500/10 transition-colors">
+                        <Trophy className="h-3 w-3 text-amber-600 mb-1" />
+                        <span className="text-[10px] font-black text-amber-700">{mockCount}</span>
+                        <span className="text-[7px] uppercase font-bold text-amber-600/70">Mocks</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center p-1.5 bg-blue-500/5 rounded-xl border border-blue-500/10 hover:bg-blue-500/10 transition-colors">
+                        <ClipboardCheck className="h-3 w-3 text-blue-600 mb-1" />
+                        <span className="text-[10px] font-black text-blue-700">{sectionalCount}</span>
+                        <span className="text-[7px] uppercase font-bold text-blue-600/70">Tests</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center p-1.5 bg-emerald-500/5 rounded-xl border border-emerald-500/10 hover:bg-emerald-500/10 transition-colors">
+                        <History className="h-3 w-3 text-emerald-600 mb-1" />
+                        <span className="text-[10px] font-black text-emerald-700">{prevCount}</span>
+                        <span className="text-[7px] uppercase font-bold text-emerald-600/70">Papers</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center p-1.5 bg-purple-500/5 rounded-xl border border-purple-500/10 hover:bg-purple-500/10 transition-colors">
+                        <LibraryBig className="h-3 w-3 text-purple-600 mb-1" />
+                        <span className="text-[10px] font-black text-purple-700">{contentCount}</span>
+                        <span className="text-[7px] uppercase font-bold text-purple-600/70">Files</span>
+                      </div>
+                      <div className="flex flex-col items-center justify-center p-1.5 bg-orange-500/5 rounded-xl border border-orange-500/10 hover:bg-orange-500/10 transition-colors">
+                        <Layout className="h-3 w-3 text-orange-600 mb-1" />
+                        <span className="text-[10px] font-black text-orange-700">{quizCount}</span>
+                        <span className="text-[7px] uppercase font-bold text-orange-600/70">Quiz</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <span className="text-[9px] uppercase font-bold text-muted-foreground tracking-widest block mb-1">Key Subjects</span>
-                <div className="flex flex-wrap gap-1">
-                  {exam.subjects?.slice(0, 3).map((sub, i) => (
-                    <Badge key={i} variant="outline" className="text-[9px] font-bold text-muted-foreground border-muted-foreground/20">
-                      {sub}
-                    </Badge>
-                  ))}
-                  {(exam.subjects?.length || 0) > 3 && (
-                    <Badge variant="outline" className="text-[9px] font-bold text-muted-foreground border-muted-foreground/20">
-                      +{(exam.subjects?.length || 0) - 3} more
-                    </Badge>
-                  )}
+              </CardContent>
+              <CardFooter className="p-4 pt-0 flex items-center justify-between border-t bg-muted/5 mt-auto">
+                <div className="flex items-center gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => handleEdit(exam)}
+                    className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => handleDelete(exam.id)}
+                    className={cn(
+                      "h-8 w-8 rounded-lg transition-all",
+                      confirmDeleteId === exam.id 
+                        ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 w-16 px-2" 
+                        : "hover:bg-destructive/10 hover:text-destructive"
+                    )}
+                  >
+                    {confirmDeleteId === exam.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
+                  </Button>
                 </div>
-              </div>
-            </CardContent>
-            <CardFooter className="p-4 pt-0 flex items-center justify-between border-t bg-muted/5 mt-auto">
-              <div className="flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => handleEdit(exam)}
-                  className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => handleDelete(exam.id)}
-                  className={cn(
-                    "h-8 w-8 rounded-lg transition-all",
-                    confirmDeleteId === exam.id 
-                      ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 w-16 px-2" 
-                      : "hover:bg-destructive/10 hover:text-destructive"
-                  )}
-                >
-                  {confirmDeleteId === exam.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
-                </Button>
-              </div>
-              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">ID: {exam.id}</span>
-            </CardFooter>
-          </Card>
-        ))}
+                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">ID: {exam.id}</span>
+              </CardFooter>
+            </Card>
+          );
+        })}
       </div>
 
       {filteredExams.length === 0 && (
