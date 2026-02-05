@@ -19,8 +19,8 @@ import {
   Trash2,
   Save,
   Check,
-  ChevronUp,
-  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   BookOpen,
   TrendingUp,
   Layout,
@@ -229,8 +229,8 @@ export default function AdminPracticePage() {
                 <CardDescription className="line-clamp-1 text-[11px] font-semibold uppercase tracking-wider">{subject.id}</CardDescription>
               </div>
               
-              {/* Order Controls overlay */}
-              <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Order Controls overlay - Horizontal */}
+              <div className="absolute top-2 right-2 flex flex-row gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button 
                   variant="secondary" 
                   size="icon" 
@@ -238,7 +238,7 @@ export default function AdminPracticePage() {
                   disabled={index === 0}
                   onClick={() => moveSubject(index, 'up')}
                 >
-                  <ChevronUp className="h-3.5 w-3.5" />
+                  <ChevronLeft className="h-3.5 w-3.5" />
                 </Button>
                 <Button 
                   variant="secondary" 
@@ -247,7 +247,7 @@ export default function AdminPracticePage() {
                   disabled={index === subjects.length - 1}
                   onClick={() => moveSubject(index, 'down')}
                 >
-                  <ChevronDown className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </CardHeader>
