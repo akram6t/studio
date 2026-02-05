@@ -1,8 +1,11 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Calculator, 
   Languages, 
@@ -11,12 +14,45 @@ import {
   ArrowRight,
   Plus,
   BarChart3,
-  Target
+  Target,
+  Edit2,
+  Trash2,
+  Save,
+  Check,
+  X,
+  Settings2
 } from "lucide-react";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetDescription,
+  SheetFooter,
+  SheetClose
+} from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Link from "next/link";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
-const SUBJECTS = [
+interface Subject {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  topicsCount: number | string;
+  questionsCount: string;
+}
+
+const INITIAL_SUBJECTS: Subject[] = [
   {
     id: "quant",
     title: "Quantitative Aptitude",
@@ -55,7 +91,66 @@ const SUBJECTS = [
   }
 ];
 
+const COLOR_OPTIONS = [
+  { label: "Blue", value: "bg-blue-500" },
+  { label: "Emerald", value: "bg-emerald-500" },
+  { label: "Purple", value: "bg-purple-500" },
+  { label: "Orange", value: "bg-orange-500" },
+  { label: "Red", value: "bg-red-500" },
+  { label: "Indigo", value: "bg-indigo-500" },
+  { label: "Pink", value: "bg-pink-500" },
+];
+
 export default function AdminPracticePage() {
+  const [subjects, setSubjects] = useState<Subject[]>(INITIAL_SUBJECTS);
+  
+  // CRUD State
+  const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const handleEdit = (subject: Subject) => {
+    setEditingSubject({ ...subject });
+    setIsSheetOpen(true);
+  };
+
+  const handleAdd = () => {
+    const newId = `subject-${subjects.length + 1}`;
+    setEditingSubject({
+      id: newId,
+      title: "New Subject",
+      description: "Enter a brief description here.",
+      icon: <Target className="h-6 w-6" />,
+      color: "bg-blue-500",
+      topicsCount: 0,
+      questionsCount: "0"
+    });
+    setIsSheetOpen(true);
+  };
+
+  const handleSave = () => {
+    if (editingSubject) {
+      const exists = subjects.some(s => s.id === editingSubject.id);
+      if (exists) {
+        setSubjects(subjects.map(s => s.id === editingSubject.id ? editingSubject : s));
+      } else {
+        setSubjects([...subjects, editingSubject]);
+      }
+      setIsSheetOpen(false);
+      setEditingSubject(null);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirmDeleteId === id) {
+      setSubjects(subjects.filter(s => s.id !== id));
+      setConfirmDeleteId(null);
+    } else {
+      setConfirmDeleteId(id);
+      setTimeout(() => setConfirmDeleteId(prev => prev === id ? null : prev), 3000);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -63,28 +158,28 @@ export default function AdminPracticePage() {
           <h1 className="text-2xl font-headline font-bold text-foreground">Practice Subject Management</h1>
           <p className="text-muted-foreground text-sm font-medium">Define subjects, organize topics and manage question banks.</p>
         </div>
-        <Button className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20 font-bold">
+        <Button onClick={handleAdd} className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20 font-bold">
           <Plus className="h-4 w-4" />
           Add New Subject
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        {SUBJECTS.map((subject) => (
-          <Card key={subject.id} className="group overflow-hidden border-none shadow-md hover:shadow-xl transition-all bg-card">
+        {subjects.map((subject) => (
+          <Card key={subject.id} className="group overflow-hidden border-none shadow-md hover:shadow-xl transition-all bg-card flex flex-col">
             <CardHeader className="flex flex-row items-center gap-4 pb-2">
               <div className={cn(
-                "p-3 rounded-2xl text-white shadow-lg",
+                "p-3 rounded-2xl text-white shadow-lg transition-transform group-hover:scale-110",
                 subject.color
               )}>
                 {subject.icon}
               </div>
-              <div className="flex-grow">
-                <CardTitle className="text-lg">{subject.title}</CardTitle>
+              <div className="flex-grow min-w-0">
+                <CardTitle className="text-lg truncate">{subject.title}</CardTitle>
                 <CardDescription className="line-clamp-1 text-[11px] font-semibold uppercase tracking-wider">{subject.id}</CardDescription>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 flex-grow">
               <p className="text-xs text-muted-foreground line-clamp-2 h-8 font-medium">
                 {subject.description}
               </p>
@@ -105,16 +200,139 @@ export default function AdminPracticePage() {
                   </div>
                 </div>
               </div>
-
-              <Link href={`/admin/practice/${subject.id}`} className="block">
-                <Button className="w-full gap-2 rounded-xl group-hover:bg-primary group-hover:text-primary-foreground transition-all" variant="outline">
+            </CardContent>
+            <CardFooter className="pt-0 p-4 bg-muted/5 flex gap-2">
+              <Link href={`/admin/practice/${subject.id}`} className="flex-grow">
+                <Button className="w-full gap-2 rounded-xl h-10 font-bold" variant="outline">
                   Manage Topics <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-            </CardContent>
+              <div className="flex items-center gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => handleEdit(subject)}
+                  className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => handleDelete(subject.id)}
+                  className={cn(
+                    "h-10 w-10 rounded-xl transition-all",
+                    confirmDeleteId === subject.id 
+                      ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 w-16 px-2" 
+                      : "hover:bg-destructive/10 hover:text-destructive"
+                  )}
+                >
+                  {confirmDeleteId === subject.id ? <div className="flex items-center gap-1 text-[10px] font-black"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
+                </Button>
+              </div>
+            </CardFooter>
           </Card>
         ))}
       </div>
+
+      {subjects.length === 0 && (
+        <div className="text-center py-20 bg-muted/20 rounded-3xl border-2 border-dashed">
+          <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
+          <h3 className="text-xl font-bold mb-2">No subjects defined</h3>
+          <p className="text-muted-foreground">Create your first practice subject to start organizing curriculum.</p>
+        </div>
+      )}
+
+      {/* Edit/Add Subject Drawer */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="right" className="sm:max-w-md">
+          <SheetHeader className="mb-6 border-b pb-4">
+            <SheetTitle className="text-xl font-headline font-bold text-foreground">
+              {subjects.some(s => s.id === editingSubject?.id) ? 'Edit Subject' : 'Add New Subject'}
+            </SheetTitle>
+            <SheetDescription className="font-medium">Configure core subject details and presentation.</SheetDescription>
+          </SheetHeader>
+          
+          {editingSubject && (
+            <div className="space-y-6 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="sub-id" className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Unique Slug / ID</Label>
+                <Input 
+                  id="sub-id" 
+                  value={editingSubject.id} 
+                  onChange={(e) => setEditingSubject({...editingSubject, id: e.target.value.toLowerCase().replace(/\s+/g, '-')})}
+                  className="rounded-xl h-11 font-mono text-xs"
+                  placeholder="e.g. logic-reasoning"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sub-title" className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Subject Title</Label>
+                <Input 
+                  id="sub-title" 
+                  value={editingSubject.title} 
+                  onChange={(e) => setEditingSubject({...editingSubject, title: e.target.value})}
+                  className="rounded-xl h-11 font-bold"
+                  placeholder="e.g. Verbal Reasoning"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sub-desc" className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Short Description</Label>
+                <Textarea 
+                  id="sub-desc" 
+                  value={editingSubject.description} 
+                  onChange={(e) => setEditingSubject({...editingSubject, description: e.target.value})}
+                  className="rounded-xl min-h-[100px] resize-none"
+                  placeholder="Describe what this subject covers..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Theme Color</Label>
+                <Select 
+                  value={editingSubject.color} 
+                  onValueChange={(val) => setEditingSubject({...editingSubject, color: val})}
+                >
+                  <SelectTrigger className="rounded-xl h-11">
+                    <SelectValue placeholder="Select a color theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COLOR_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        <div className="flex items-center gap-2">
+                          <div className={cn("h-3 w-3 rounded-full", opt.value)} />
+                          {opt.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="p-4 bg-muted/30 rounded-xl border flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-bold">Visual Representation</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-semibold">Live Preview Icon</p>
+                </div>
+                <div className={cn("p-3 rounded-2xl text-white shadow-lg", editingSubject.color)}>
+                  {editingSubject.icon}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <SheetFooter className="mt-8 gap-2 pb-8">
+            <SheetClose asChild>
+              <Button variant="outline" className="w-full rounded-xl h-11 font-bold">Cancel</Button>
+            </SheetClose>
+            <Button onClick={handleSave} className="w-full gap-2 rounded-xl h-11 font-bold shadow-lg shadow-primary/20">
+              <Save className="h-4 w-4" />
+              Save Subject
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
