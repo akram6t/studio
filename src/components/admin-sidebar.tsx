@@ -16,7 +16,8 @@ import {
   CheckCircle2,
   MessageSquare,
   GraduationCap,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Target
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -45,6 +46,7 @@ const ADMIN_NAV = [
   { title: "Users", icon: Users, url: "/admin/users" },
   { title: "Exam Categories", icon: LayoutGrid, url: "/admin/categories" },
   { title: "Exams", icon: GraduationCap, url: "/admin/exams" },
+  { title: "Practice Sets", icon: Target, url: "/admin/practice" },
   { title: "Sectional Tests", icon: FileText, url: "/admin/tests" },
   { title: "Mock Tests", icon: Trophy, url: "/admin/mocks" },
   { title: "Study Content", icon: LibraryBig, url: "/admin/content" },
@@ -101,7 +103,7 @@ export function AdminSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {ADMIN_NAV.map((item) => {
-                const isActive = pathname === item.url;
+                const isActive = pathname === item.url || (item.url !== '/admin' && pathname.startsWith(item.url));
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton 
