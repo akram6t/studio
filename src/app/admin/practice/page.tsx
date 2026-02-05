@@ -19,8 +19,15 @@ import {
   Trash2,
   Save,
   Check,
-  X,
-  Settings2
+  ChevronUp,
+  ChevronDown,
+  BookOpen,
+  TrendingUp,
+  Layout,
+  FlaskConical,
+  History,
+  Microscope,
+  Type
 } from "lucide-react";
 import { 
   Sheet, 
@@ -42,22 +49,40 @@ import Link from "next/link";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
+// Define a type for supported icons
+type IconName = 'calculator' | 'languages' | 'brain' | 'globe' | 'target' | 'book' | 'trending' | 'layout' | 'science' | 'history' | 'microscope' | 'text';
+
 interface Subject {
   id: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
+  iconName: IconName;
   color: string;
   topicsCount: number | string;
   questionsCount: string;
 }
+
+const ICON_MAP: Record<IconName, React.ReactNode> = {
+  calculator: <Calculator className="h-6 w-6" />,
+  languages: <Languages className="h-6 w-6" />,
+  brain: <BrainCircuit className="h-6 w-6" />,
+  globe: <Globe className="h-6 w-6" />,
+  target: <Target className="h-6 w-6" />,
+  book: <BookOpen className="h-6 w-6" />,
+  trending: <TrendingUp className="h-6 w-6" />,
+  layout: <Layout className="h-6 w-6" />,
+  science: <FlaskConical className="h-6 w-6" />,
+  history: <History className="h-6 w-6" />,
+  microscope: <Microscope className="h-6 w-6" />,
+  text: <Type className="h-6 w-6" />
+};
 
 const INITIAL_SUBJECTS: Subject[] = [
   {
     id: "quant",
     title: "Quantitative Aptitude",
     description: "Arithmetic, Algebra, Geometry, and Data Interpretation.",
-    icon: <Calculator className="h-6 w-6" />,
+    iconName: "calculator",
     color: "bg-blue-500",
     topicsCount: 12,
     questionsCount: "1200+"
@@ -66,7 +91,7 @@ const INITIAL_SUBJECTS: Subject[] = [
     id: "english",
     title: "English Language",
     description: "Grammar, Vocabulary, and Reading Comprehension.",
-    icon: <Languages className="h-6 w-6" />,
+    iconName: "languages",
     color: "bg-emerald-500",
     topicsCount: 8,
     questionsCount: "1500+"
@@ -75,7 +100,7 @@ const INITIAL_SUBJECTS: Subject[] = [
     id: "reasoning",
     title: "Reasoning Ability",
     description: "Logical puzzles, Series, and Analytical reasoning.",
-    icon: <BrainCircuit className="h-6 w-6" />,
+    iconName: "brain",
     color: "bg-purple-500",
     topicsCount: 10,
     questionsCount: "1000+"
@@ -84,7 +109,7 @@ const INITIAL_SUBJECTS: Subject[] = [
     id: "gk",
     title: "General Knowledge",
     description: "History, Geography, Science, and Current Affairs.",
-    icon: <Globe className="h-6 w-6" />,
+    iconName: "globe",
     color: "bg-orange-500",
     topicsCount: 15,
     questionsCount: "2000+"
@@ -99,6 +124,21 @@ const COLOR_OPTIONS = [
   { label: "Red", value: "bg-red-500" },
   { label: "Indigo", value: "bg-indigo-500" },
   { label: "Pink", value: "bg-pink-500" },
+];
+
+const ICON_OPTIONS: { label: string, value: IconName }[] = [
+  { label: "Calculator", value: "calculator" },
+  { label: "Languages", value: "languages" },
+  { label: "Brain", value: "brain" },
+  { label: "Globe", value: "globe" },
+  { label: "Target", value: "target" },
+  { label: "Book", value: "book" },
+  { label: "Trending", value: "trending" },
+  { label: "Layout", value: "layout" },
+  { label: "Science", value: "science" },
+  { label: "History", value: "history" },
+  { label: "Microscope", value: "microscope" },
+  { label: "Text", value: "text" },
 ];
 
 export default function AdminPracticePage() {
@@ -120,7 +160,7 @@ export default function AdminPracticePage() {
       id: newId,
       title: "New Subject",
       description: "Enter a brief description here.",
-      icon: <Target className="h-6 w-6" />,
+      iconName: "target",
       color: "bg-blue-500",
       topicsCount: 0,
       questionsCount: "0"
@@ -151,6 +191,16 @@ export default function AdminPracticePage() {
     }
   };
 
+  const moveSubject = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= subjects.length) return;
+
+    const newSubjects = [...subjects];
+    const [movedItem] = newSubjects.splice(index, 1);
+    newSubjects.splice(newIndex, 0, movedItem);
+    setSubjects(newSubjects);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -165,18 +215,40 @@ export default function AdminPracticePage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        {subjects.map((subject) => (
+        {subjects.map((subject, index) => (
           <Card key={subject.id} className="group overflow-hidden border-none shadow-md hover:shadow-xl transition-all bg-card flex flex-col">
-            <CardHeader className="flex flex-row items-center gap-4 pb-2">
+            <CardHeader className="flex flex-row items-center gap-4 pb-2 relative">
               <div className={cn(
                 "p-3 rounded-2xl text-white shadow-lg transition-transform group-hover:scale-110",
                 subject.color
               )}>
-                {subject.icon}
+                {ICON_MAP[subject.iconName]}
               </div>
               <div className="flex-grow min-w-0">
                 <CardTitle className="text-lg truncate">{subject.title}</CardTitle>
                 <CardDescription className="line-clamp-1 text-[11px] font-semibold uppercase tracking-wider">{subject.id}</CardDescription>
+              </div>
+              
+              {/* Order Controls overlay */}
+              <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button 
+                  variant="secondary" 
+                  size="icon" 
+                  className="h-6 w-6 rounded-md shadow-sm"
+                  disabled={index === 0}
+                  onClick={() => moveSubject(index, 'up')}
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  size="icon" 
+                  className="h-6 w-6 rounded-md shadow-sm"
+                  disabled={index === subjects.length - 1}
+                  onClick={() => moveSubject(index, 'down')}
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-6 flex-grow">
@@ -245,7 +317,7 @@ export default function AdminPracticePage() {
 
       {/* Edit/Add Subject Drawer */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent side="right" className="sm:max-w-md">
+        <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
           <SheetHeader className="mb-6 border-b pb-4">
             <SheetTitle className="text-xl font-headline font-bold text-foreground">
               {subjects.some(s => s.id === editingSubject?.id) ? 'Edit Subject' : 'Add New Subject'}
@@ -288,35 +360,62 @@ export default function AdminPracticePage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Theme Color</Label>
-                <Select 
-                  value={editingSubject.color} 
-                  onValueChange={(val) => setEditingSubject({...editingSubject, color: val})}
-                >
-                  <SelectTrigger className="rounded-xl h-11">
-                    <SelectValue placeholder="Select a color theme" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COLOR_OPTIONS.map(opt => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        <div className="flex items-center gap-2">
-                          <div className={cn("h-3 w-3 rounded-full", opt.value)} />
-                          {opt.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Subject Icon</Label>
+                  <Select 
+                    value={editingSubject.iconName} 
+                    onValueChange={(val: IconName) => setEditingSubject({...editingSubject, iconName: val})}
+                  >
+                    <SelectTrigger className="rounded-xl h-11">
+                      <SelectValue placeholder="Pick an icon" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ICON_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          <div className="flex items-center gap-2">
+                            <span className="scale-75">{ICON_MAP[opt.value]}</span>
+                            {opt.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Theme Color</Label>
+                  <Select 
+                    value={editingSubject.color} 
+                    onValueChange={(val) => setEditingSubject({...editingSubject, color: val})}
+                  >
+                    <SelectTrigger className="rounded-xl h-11">
+                      <SelectValue placeholder="Pick a color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COLOR_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          <div className="flex items-center gap-2">
+                            <div className={cn("h-3 w-3 rounded-full", opt.value)} />
+                            {opt.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="p-4 bg-muted/30 rounded-xl border flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <p className="text-sm font-bold">Visual Representation</p>
-                  <p className="text-[10px] text-muted-foreground uppercase font-semibold">Live Preview Icon</p>
+              <div className="p-6 bg-muted/30 rounded-2xl border flex flex-col items-center justify-center text-center space-y-4">
+                <div className="space-y-1">
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Dashboard Preview</p>
                 </div>
-                <div className={cn("p-3 rounded-2xl text-white shadow-lg", editingSubject.color)}>
-                  {editingSubject.icon}
+                <div className={cn("p-5 rounded-[2rem] text-white shadow-2xl scale-110", editingSubject.color)}>
+                  {ICON_MAP[editingSubject.iconName]}
+                </div>
+                <div className="space-y-1">
+                  <p className="text-lg font-bold">{editingSubject.title || 'Untitled Subject'}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono">{editingSubject.id || 'no-id'}</p>
                 </div>
               </div>
             </div>
