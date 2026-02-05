@@ -10,7 +10,8 @@ import {
   Globe, 
   ArrowRight,
   Plus,
-  BarChart3
+  BarChart3,
+  Target
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
