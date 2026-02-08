@@ -1,37 +1,54 @@
 "use client";
 
+import { useParams } from 'next/navigation';
+import { EXAMS } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Crown, Sparkles, Zap } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { CheckCircle2, Crown, Sparkles, Zap, Info } from 'lucide-react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 
 export default function ExamOverview() {
+  const params = useParams();
+  const slug = params.exam_slug as string;
+  const exam = EXAMS.find(e => e.slug === slug);
   const [isUnlocked, setIsUnlocked] = useState(false);
 
   const handleUnlock = () => {
     setIsUnlocked(true);
-    // Dispatch custom event to notify layout.tsx
     window.dispatchEvent(new Event('premium-unlocked'));
   };
+
+  if (!exam) return null;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-8">
-        <section className="bg-card p-6 rounded-2xl shadow-sm border">
-          <h2 className="text-2xl font-headline font-bold mb-6">About the Exam</h2>
-          <div className="prose prose-slate dark:prose-invert max-w-none space-y-4 text-muted-foreground">
-            <p>
-              The exam is conducted annually to recruit eligible candidates for various positions. It tests candidates on their aptitude, technical knowledge, and mental ability.
-            </p>
-            <p>
-              Success in this exam requires a disciplined approach, thorough understanding of the syllabus, and consistent practice with mock tests.
-            </p>
+        <section className="bg-card p-6 md:p-8 rounded-3xl shadow-sm border overflow-hidden">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-primary/5 p-2.5 rounded-2xl text-primary">
+              <Info className="h-6 w-6" />
+            </div>
+            <h2 className="text-2xl font-headline font-bold">About the Exam</h2>
+          </div>
+          
+          <div className="prose prose-slate dark:prose-invert max-w-none">
+            {exam.overviewMdx ? (
+              <MarkdownRenderer content={exam.overviewMdx} />
+            ) : (
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                <p>{exam.description}</p>
+                <p>
+                  Success in this exam requires a disciplined approach, thorough understanding of the syllabus, and consistent practice with mock tests.
+                </p>
+              </div>
+            )}
           </div>
         </section>
 
-        <section className="bg-card p-6 rounded-2xl shadow-sm border">
+        <section className="bg-card p-6 md:p-8 rounded-3xl shadow-sm border">
           <h2 className="text-2xl font-headline font-bold mb-6">What you'll get</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
@@ -42,45 +59,37 @@ export default function ExamOverview() {
               "Interactive study materials",
               "Performance analytics dashboard"
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                <CheckCircle2 className={cn("h-5 w-5", isUnlocked ? "text-amber-600" : "text-accent")} />
-                <span className="text-sm font-medium">{item}</span>
+              <div key={i} className="flex items-center gap-3 p-4 bg-muted/30 rounded-2xl border border-transparent hover:border-primary/10 transition-colors">
+                <CheckCircle2 className={cn("h-5 w-5", isUnlocked ? "text-amber-600" : "text-primary")} />
+                <span className="text-sm font-semibold">{item}</span>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="bg-card p-6 rounded-2xl shadow-sm border">
-          <h2 className="text-2xl font-headline font-bold mb-6">Exam Pattern</h2>
-          <div className="overflow-x-auto">
+        <section className="bg-card p-6 md:p-8 rounded-3xl shadow-sm border">
+          <h2 className="text-2xl font-headline font-bold mb-6">Standard Exam Pattern</h2>
+          <div className="overflow-x-auto rounded-2xl border">
             <table className="w-full text-sm">
-              <thead className="bg-muted text-left">
+              <thead className="bg-muted/50 text-left">
                 <tr>
-                  <th className="p-3 font-semibold">Section</th>
-                  <th className="p-3 font-semibold">Questions</th>
-                  <th className="p-3 font-semibold">Marks</th>
+                  <th className="p-4 font-bold uppercase tracking-widest text-[10px] text-muted-foreground">Section</th>
+                  <th className="p-4 font-bold uppercase tracking-widest text-[10px] text-muted-foreground text-center">Questions</th>
+                  <th className="p-4 font-bold uppercase tracking-widest text-[10px] text-muted-foreground text-center">Marks</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
-                <tr>
-                  <td className="p-3">General Intelligence</td>
-                  <td className="p-3">25</td>
-                  <td className="p-3">25</td>
-                </tr>
-                <tr>
-                  <td className="p-3">English Language</td>
-                  <td className="p-3">25</td>
-                  <td className="p-3">25</td>
-                </tr>
-                <tr>
-                  <td className="p-3">Quantitative Aptitude</td>
-                  <td className="p-3">25</td>
-                  <td className="p-3">25</td>
-                </tr>
-                <tr className="bg-muted/50 font-bold">
-                  <td className="p-3">Total</td>
-                  <td className="p-3">100</td>
-                  <td className="p-3">100</td>
+                {exam.subjects.map((subject, idx) => (
+                  <tr key={idx} className="hover:bg-muted/5 transition-colors">
+                    <td className="p-4 font-medium">{subject}</td>
+                    <td className="p-4 text-center font-bold">25</td>
+                    <td className="p-4 text-center font-bold">25</td>
+                  </tr>
+                ))}
+                <tr className="bg-primary/5 font-black text-primary">
+                  <td className="p-4">Total Estimate</td>
+                  <td className="p-4 text-center">{exam.subjects.length * 25}</td>
+                  <td className="p-4 text-center">{exam.subjects.length * 25}</td>
                 </tr>
               </tbody>
             </table>
@@ -90,72 +99,68 @@ export default function ExamOverview() {
 
       <div className="space-y-6">
         <Card className={cn(
-          "sticky top-40 overflow-hidden transition-all duration-500",
+          "sticky top-40 overflow-hidden transition-all duration-500 rounded-[2rem]",
           isUnlocked 
             ? "border-amber-600 bg-amber-50 dark:bg-amber-950/20" 
-            : "border-accent/20 bg-accent/5"
+            : "border-primary/10 bg-primary/5 shadow-xl"
         )}>
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-headline font-bold">Preparation Kit</h3>
+          <CardContent className="p-8">
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="text-2xl font-headline font-bold">Preparation Kit</h3>
               {isUnlocked ? (
-                <div className="bg-amber-600 p-1.5 rounded-lg text-white">
-                  <Crown className="h-5 w-5" />
+                <div className="bg-amber-600 p-2 rounded-2xl text-white shadow-lg shadow-amber-600/20">
+                  <Crown className="h-6 w-6" />
                 </div>
               ) : (
-                <div className="bg-accent p-1.5 rounded-lg text-white">
-                  <Zap className="h-5 w-5" />
+                <div className="bg-primary p-2 rounded-2xl text-white shadow-lg shadow-primary/20">
+                  <Zap className="h-6 w-6" />
                 </div>
               )}
             </div>
 
             {isUnlocked ? (
               <div className="space-y-6">
-                <div className="p-4 bg-white dark:bg-card rounded-xl border-2 border-amber-600/20">
-                  <div className="flex items-center gap-3 mb-2">
+                <div className="p-5 bg-white dark:bg-card rounded-[1.5rem] border-2 border-amber-600/20 shadow-inner">
+                  <div className="flex items-center gap-3 mb-3">
                     <Sparkles className="h-5 w-5 text-amber-600" />
-                    <span className="font-bold text-amber-600 uppercase tracking-widest text-xs">Premium Access</span>
+                    <span className="font-black text-amber-600 uppercase tracking-widest text-[10px]">Elite Status</span>
                   </div>
-                  <p className="text-sm font-medium">All 250+ Premium tests are now unlocked for you!</p>
+                  <p className="text-sm font-bold leading-relaxed">Your account has unrestricted access to all 250+ premium tests!</p>
                 </div>
                 
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Pass Status</span>
-                    <Badge className="bg-amber-600 text-white border-none">ACTIVE</Badge>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest">
+                    <span className="text-muted-foreground">Pass Type</span>
+                    <Badge className="bg-amber-600 text-white border-none px-3 py-1">ULTIMATE</Badge>
                   </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Validity</span>
-                    <span className="font-bold">Expires in 364 days</span>
+                  <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest">
+                    <span className="text-muted-foreground">Days Left</span>
+                    <span className="text-amber-700 dark:text-amber-400">364 Days</span>
                   </div>
                 </div>
                 
-                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white" disabled>
-                  Elite Member
+                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white h-12 rounded-2xl font-black text-xs uppercase tracking-widest" disabled>
+                  Elite Member Active
                 </Button>
               </div>
             ) : (
-              <div className="space-y-6">
-                <div className="flex items-end gap-2">
-                  <span className="text-3xl font-bold">₹499</span>
-                  <span className="text-muted-foreground line-through text-sm mb-1">₹1,499</span>
-                  <Badge variant="outline" className="mb-1 text-[10px] text-emerald-600 border-emerald-600 bg-emerald-50">66% OFF</Badge>
+              <div className="space-y-8">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xs font-bold text-muted-foreground">Starts at</span>
+                  <span className="text-4xl font-black tracking-tight text-foreground">₹499</span>
+                  <Badge variant="outline" className="text-[9px] font-black text-emerald-600 border-emerald-600 bg-emerald-50 h-5">66% OFF</Badge>
                 </div>
                 
-                <p className="text-sm text-muted-foreground">Unlock all premium content, full mock tests, and expert guidance for this exam.</p>
+                <p className="text-sm text-muted-foreground font-medium leading-relaxed">Unlock the full potential of your preparation with expert strategy guides and official pattern mocks.</p>
                 
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center text-sm">
-                    <span>Pass Status</span>
-                    <Badge variant="outline" className="border-accent text-accent">Inactive</Badge>
-                  </div>
                   <Button 
-                    className="w-full bg-accent hover:bg-accent/90 text-white h-12 text-lg font-bold shadow-lg shadow-accent/20"
+                    className="w-full bg-primary hover:bg-primary/90 text-white h-14 text-lg font-black rounded-2xl shadow-xl shadow-primary/20"
                     onClick={handleUnlock}
                   >
-                    Unlock All Tests
+                    Unlock Pro Prep
                   </Button>
-                  <p className="text-[10px] text-center text-muted-foreground italic">1-year validity • Instant access</p>
+                  <p className="text-[10px] text-center text-muted-foreground font-bold italic tracking-wide uppercase">One-time payment • 365 days validity</p>
                 </div>
               </div>
             )}

@@ -6,6 +6,7 @@ export interface Exam {
   title: string;
   category: string;
   description: string;
+  overviewMdx?: string;
   trending: boolean;
   image: string;
   stages: string[];
@@ -112,6 +113,23 @@ export const EXAMS: Exam[] = [
     title: 'SSC GD Constable',
     category: 'SSC Exams',
     description: 'Staff Selection Commission - General Duty Constable Exam Preparation.',
+    overviewMdx: `
+# Complete Preparation Guide
+The Staff Selection Commission (SSC) conducts the **GD Constable** exam annually. This is a golden opportunity for aspirants seeking a career in paramilitary forces.
+
+### Exam Highlights
+- **Mode:** Computer Based Test (CBT)
+- **Duration:** 60 Minutes
+- **Negative Marking:** 0.25 for every wrong answer
+
+### Mathematical Proficiency
+The Quantitative Aptitude section covers essential topics like:
+- Number Systems
+- $Profit = Selling\ Price - Cost\ Price$
+- $Simple\ Interest = \frac{P \times R \times T}{100}$
+
+> Success in SSC GD requires a blend of speed and accuracy. Focus on daily mock tests to improve your time management.
+    `,
     trending: true,
     image: getImage('exam-ssc'),
     stages: ['Full Length'],
@@ -123,6 +141,20 @@ export const EXAMS: Exam[] = [
     title: 'GATE 2024',
     category: 'Engineering',
     description: 'Graduate Aptitude Test in Engineering for engineering graduates.',
+    overviewMdx: `
+# GATE 2024 Strategic Overview
+The Graduate Aptitude Test in Engineering (GATE) is a national-level exam that primarily tests the comprehensive understanding of various undergraduate subjects in engineering and science.
+
+### Technical Core
+Expect high-weightage questions from:
+- **Engineering Mathematics:** Calculus, Linear Algebra, and Probability.
+- **Subject Specifics:** Detailed technical concepts.
+
+### Evaluation Criteria
+The score is calculated using the formula:
+$$Score = S_q + (S_t - S_q) \frac{M - M_q}{\overline{M}_t - M_q}$$
+where $M$ is the marks obtained by the candidate.
+    `,
     trending: true,
     image: getImage('exam-gate'),
     stages: ['Technical Paper'],
