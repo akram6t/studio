@@ -227,7 +227,7 @@ export default function UniversalTestSession() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {currentQuestion.options.map((option, idx) => (
                   <div
                     key={idx}
@@ -247,7 +247,7 @@ export default function UniversalTestSession() {
                     )}>
                       {String.fromCharCode(65 + idx)}
                     </div>
-                    <div className="text-sm md:text-base font-semibold text-slate-700 flex-grow">
+                    <div className="text-sm md:text-base font-semibold text-slate-700 flex-grow text-left">
                       {currentQuestion.mdx ? (
                         <MarkdownRenderer content={option} className="prose-p:m-0" />
                       ) : (
@@ -323,14 +323,16 @@ export default function UniversalTestSession() {
                 <div className="grid grid-cols-5 gap-2 pr-2">
                   {questions.map((q, idx) => {
                     const isSelected = idx === currentIndex;
+                    const status = statuses[q.id] || 'not-visited';
+                    
                     return (
                       <button
                         key={q.id}
                         onClick={() => setCurrentIndex(idx)}
                         className={cn(
                           "h-9 w-9 rounded-lg border font-black text-[10px] flex items-center justify-center transition-all",
-                          isSelected ? "border-primary scale-105 z-10 shadow-sm" : "",
-                          getStatusStyles(statuses[q.id] || 'not-visited')
+                          isSelected ? "border-slate-400" : "border-slate-200",
+                          getStatusStyles(status)
                         )}
                       >
                         {idx + 1}
