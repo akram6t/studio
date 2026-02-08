@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getQuestions, getTopicSets, Question } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
@@ -12,12 +12,13 @@ import {
   ChevronLeft, 
   ChevronRight, 
   Flag, 
-  Save, 
   RotateCcw, 
   CheckCircle2, 
-  AlertCircle,
   HelpCircle,
-  X
+  ShieldCheck,
+  User,
+  LogOut,
+  Clock
 } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { cn } from '@/lib/utils';
@@ -42,7 +43,10 @@ export default function ExamScreen() {
 
   // Timer logic
   useEffect(() => {
-    if (isFinished || timeLeft <= 0) return;
+    if (isFinished || timeLeft <= 0) {
+      if (timeLeft === 0) setIsFinished(true);
+      return;
+    }
     const timer = setInterval(() => {
       setTimeLimit((prev) => prev - 1);
     }, 1000);
@@ -108,51 +112,67 @@ export default function ExamScreen() {
   };
 
   const submitExam = () => {
-    setIsFinished(true);
+    if (confirm("Are you sure you want to submit the exam?")) {
+      setIsFinished(true);
+    }
   };
 
-  const getStatusColor = (status: QuestionStatus) => {
+  const getStatusStyles = (status: QuestionStatus) => {
     switch (status) {
-      case 'answered': return 'bg-emerald-500 text-white border-emerald-500';
-      case 'not-answered': return 'bg-rose-500 text-white border-rose-500';
-      case 'marked-for-review': return 'bg-purple-600 text-white border-purple-600';
-      case 'answered-and-review': return 'bg-purple-600 text-white border-purple-600 relative after:content-[""] after:absolute after:bottom-0 after:right-0 after:w-2 after:h-2 after:bg-emerald-400 after:rounded-full after:border after:border-white';
-      default: return 'bg-muted text-muted-foreground border-muted';
+      case 'answered': return 'bg-emerald-500 text-white border-emerald-600 shadow-emerald-200';
+      case 'not-answered': return 'bg-rose-500 text-white border-rose-600 shadow-rose-200';
+      case 'marked-for-review': return 'bg-purple-600 text-white border-purple-700 shadow-purple-200';
+      case 'answered-and-review': return 'bg-purple-600 text-white border-purple-700 relative after:content-[""] after:absolute after:-bottom-1 after:-right-1 after:w-3 after:h-3 after:bg-emerald-400 after:rounded-full after:border-2 after:border-white shadow-purple-200';
+      default: return 'bg-muted text-muted-foreground border-muted-foreground/20';
     }
   };
 
   if (isFinished) {
     const score = questions.reduce((acc, q) => (answers[q.id] === q.answer ? acc + 1 : acc), 0);
+    const attempted = Object.keys(answers).length;
+    
     return (
-      <div className="container mx-auto px-4 py-12 max-w-2xl text-center">
-        <Card className="border-none shadow-2xl overflow-hidden">
-          <div className="h-2 bg-primary" />
-          <CardContent className="p-12 space-y-8">
-            <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 size={48} />
-            </div>
-            <div className="space-y-2">
-              <h1 className="text-3xl font-headline font-bold">Exam Submitted!</h1>
-              <p className="text-muted-foreground">You have successfully completed {currentSet?.title}.</p>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-2xl border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden rounded-3xl bg-white">
+          <div className="h-2 bg-primary w-full" />
+          <CardContent className="p-8 md:p-12 text-center space-y-10">
+            <div className="w-24 h-24 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto ring-8 ring-emerald-50/50">
+              <CheckCircle2 size={48} className="animate-in zoom-in duration-500" />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-6 bg-muted/30 rounded-2xl">
-                <p className="text-3xl font-black text-primary">{score}/{questions.length}</p>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Final Score</p>
+            <div className="space-y-3">
+              <h1 className="text-3xl font-headline font-bold text-slate-900 tracking-tight">Test Concluded Successfully</h1>
+              <p className="text-slate-500 font-medium">Results for: <span className="text-slate-900 font-bold">{currentSet?.title}</span></p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center">
+                <p className="text-3xl font-black text-primary mb-1">{score}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Score</p>
               </div>
-              <div className="p-6 bg-muted/30 rounded-2xl">
-                <p className="text-3xl font-black text-primary">{Math.round((score / questions.length) * 100)}%</p>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Accuracy</p>
+              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center">
+                <p className="text-3xl font-black text-primary mb-1">{attempted}/{questions.length}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Attempted</p>
+              </div>
+              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center">
+                <p className="text-3xl font-black text-primary mb-1">{Math.round((score / questions.length) * 100)}%</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Accuracy</p>
               </div>
             </div>
 
-            <div className="space-y-3 pt-4">
-              <Button className="w-full h-12 rounded-xl font-bold" onClick={() => router.push(`/practice/${params.subject_id}/${params.topic_id}`)}>
-                Back to Practice Sets
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button 
+                className="flex-1 h-14 rounded-2xl font-bold text-lg shadow-lg shadow-primary/20 transition-transform active:scale-95" 
+                onClick={() => router.push(`/practice/${params.subject_id}/${params.topic_id}`)}
+              >
+                Return to Dashboard
               </Button>
-              <Button variant="outline" className="w-full h-12 rounded-xl font-bold" onClick={() => window.location.reload()}>
-                Retry Test
+              <Button 
+                variant="outline" 
+                className="flex-1 h-14 rounded-2xl font-bold text-lg border-2 border-slate-200 transition-transform active:scale-95" 
+                onClick={() => window.location.reload()}
+              >
+                Restart Test
               </Button>
             </div>
           </CardContent>
@@ -162,49 +182,79 @@ export default function ExamScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="h-16 border-b bg-card flex items-center justify-between px-6 sticky top-0 z-50">
-        <div className="flex items-center gap-4">
-          <Badge className="bg-primary text-primary-foreground font-bold rounded-lg px-3 py-1">
-            Logical Book Pro
-          </Badge>
-          <div className="hidden md:block">
-            <h1 className="font-bold text-sm">{currentSet?.title}</h1>
+    <div className="min-h-screen bg-slate-50 flex flex-col font-body selection:bg-primary/10">
+      {/* Top Conduction Bar */}
+      <header className="h-16 border-b bg-white flex items-center justify-between px-6 sticky top-0 z-50 shadow-sm">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary text-white p-1.5 rounded-lg">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-headline font-bold text-sm leading-none">Logical Book Pro</span>
+              <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest mt-1">Secure Conduction Mode</span>
+            </div>
+          </div>
+          <div className="h-8 w-px bg-slate-200 hidden md:block" />
+          <div className="hidden md:flex items-center gap-2">
+            <Badge variant="outline" className="rounded-md border-slate-200 bg-slate-50 text-slate-600 font-bold px-3 py-1">
+              {currentSet?.title}
+            </Badge>
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 text-rose-600 font-black font-mono bg-rose-50 px-4 py-1.5 rounded-xl border border-rose-100">
-            <Timer className="h-4 w-4" />
-            <span>Time Left: {formatTime(timeLeft)}</span>
+        <div className="flex items-center gap-4 md:gap-8">
+          <div className={cn(
+            "flex items-center gap-3 font-black font-mono px-5 py-2 rounded-xl border transition-colors",
+            timeLeft < 60 
+              ? "bg-rose-50 text-rose-600 border-rose-200 animate-pulse" 
+              : "bg-slate-900 text-white border-slate-800"
+          )}>
+            <Timer className={cn("h-4 w-4", timeLeft < 60 && "animate-spin-slow")} />
+            <span className="text-lg tabular-nums tracking-tighter">{formatTime(timeLeft)}</span>
           </div>
-          <Button variant="destructive" size="sm" className="font-bold shadow-lg shadow-rose-900/20" onClick={submitExam}>
-            Submit Exam
+          
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            className="font-bold h-10 px-6 rounded-xl shadow-lg shadow-rose-900/20 active:scale-95 transition-transform" 
+            onClick={submitExam}
+          >
+            Submit Final
           </Button>
         </div>
       </header>
 
-      {/* Main Layout */}
-      <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
-        {/* Left Side: Question Content */}
-        <div className="flex-grow flex flex-col h-[calc(100vh-4rem)]">
-          <div className="p-6 border-b bg-muted/5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-primary px-3 py-1 bg-primary/10 rounded-lg">Question {currentIndex + 1}</span>
-              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground border-muted-foreground/20">
-                Multiple Choice
-              </Badge>
+      {/* Main Conduction Layout */}
+      <div className="flex-grow flex flex-col md:flex-row overflow-hidden h-[calc(100vh-4rem)]">
+        
+        {/* Left Area: The Question Interface */}
+        <div className="flex-grow flex flex-col min-w-0 bg-white md:m-4 md:mr-2 md:rounded-3xl md:border md:shadow-sm">
+          <div className="p-6 border-b bg-slate-50/50 flex items-center justify-between md:rounded-t-3xl">
+            <div className="flex items-center gap-3">
+              <span className="font-black text-white px-4 py-1.5 bg-primary rounded-xl text-sm shadow-md shadow-primary/20">
+                Q {currentIndex + 1}
+              </span>
+              <div className="h-4 w-px bg-slate-300" />
+              <div className="flex gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Type</span>
+                  <span className="text-[10px] font-bold text-slate-600">Single Choice MCQ</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Marking</span>
+                  <span className="text-[10px] font-bold text-emerald-600">+1.0 / -0.25</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-emerald-600">+1.00 Mark</span>
-              <span className="text-[10px] font-bold text-rose-600">-0.25 Mark</span>
-            </div>
+            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-rose-500 rounded-xl">
+              <Flag className="h-4 w-4" />
+            </Button>
           </div>
 
-          <ScrollArea className="flex-grow p-8 md:p-12">
-            <div className="max-w-3xl mx-auto space-y-10 pb-20">
-              <div className="text-lg md:text-xl font-medium leading-relaxed">
+          <ScrollArea className="flex-grow">
+            <div className="max-w-4xl mx-auto p-8 md:p-16 space-y-12">
+              <div className="text-xl md:text-2xl font-medium leading-relaxed text-slate-800">
                 {currentQuestion.mdx ? (
                   <MarkdownRenderer content={currentQuestion.q} />
                 ) : (
@@ -212,25 +262,27 @@ export default function ExamScreen() {
                 )}
               </div>
 
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
                 {currentQuestion.options.map((option, idx) => (
                   <div
                     key={idx}
                     onClick={() => handleOptionSelect(idx)}
                     className={cn(
-                      "group flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200",
+                      "group flex items-center gap-5 p-6 rounded-2xl border-2 cursor-pointer transition-all duration-200",
                       answers[currentQuestion.id] === idx 
-                        ? "border-primary bg-primary/5 shadow-md ring-1 ring-primary/20" 
-                        : "border-muted-foreground/10 hover:border-primary/30 bg-card hover:bg-primary/5"
+                        ? "border-primary bg-primary/5 shadow-lg shadow-primary/5 ring-1 ring-primary/10" 
+                        : "border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50"
                     )}
                   >
                     <div className={cn(
-                      "h-8 w-8 rounded-full border-2 flex items-center justify-center font-bold text-sm transition-all",
-                      answers[currentQuestion.id] === idx ? "bg-primary text-primary-foreground border-primary" : "border-muted-foreground/30 text-muted-foreground group-hover:border-primary group-hover:text-primary"
+                      "h-10 w-10 shrink-0 rounded-xl border-2 flex items-center justify-center font-black text-sm transition-all",
+                      answers[currentQuestion.id] === idx 
+                        ? "bg-primary text-white border-primary shadow-lg shadow-primary/30" 
+                        : "bg-slate-50 border-slate-200 text-slate-400 group-hover:border-slate-400 group-hover:text-slate-600"
                     )}>
                       {String.fromCharCode(65 + idx)}
                     </div>
-                    <div className="text-base font-semibold flex-grow">
+                    <div className="text-lg font-bold text-slate-700 flex-grow">
                       {currentQuestion.mdx ? (
                         <MarkdownRenderer content={option} className="prose-p:m-0" />
                       ) : (
@@ -243,99 +295,120 @@ export default function ExamScreen() {
             </div>
           </ScrollArea>
 
-          {/* Question Footer */}
-          <footer className="p-4 border-t bg-card flex items-center justify-between px-6 sticky bottom-0">
-            <div className="flex items-center gap-2">
-              <Button variant="outline" className="rounded-xl font-bold gap-2" onClick={handleMarkForReview}>
-                <Flag className="h-4 w-4" />
-                Mark for Review
-              </Button>
-              <Button variant="ghost" className="rounded-xl font-bold text-muted-foreground" onClick={clearResponse}>
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Clear Response
-              </Button>
-            </div>
+          {/* Persistent Action Footer */}
+          <footer className="p-4 border-t bg-white flex items-center justify-between px-6 sticky bottom-0 md:rounded-b-3xl">
             <div className="flex items-center gap-2">
               <Button 
                 variant="outline" 
-                className="rounded-xl font-bold" 
+                className="rounded-xl font-bold h-11 px-6 border-slate-200 text-slate-600 hover:bg-slate-50 gap-2" 
+                onClick={handleMarkForReview}
+              >
+                <Flag className="h-4 w-4" />
+                <span className="hidden sm:inline">Mark & Next</span>
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="rounded-xl font-bold h-11 text-slate-400 hover:text-rose-500 hover:bg-rose-50" 
+                onClick={clearResponse}
+              >
+                <RotateCcw className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Clear Response</span>
+              </Button>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                className="rounded-xl font-bold h-11 w-11 sm:w-auto sm:px-6 border-slate-200 disabled:opacity-30" 
                 disabled={currentIndex === 0}
                 onClick={() => setCurrentIndex(currentIndex - 1)}
               >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Previous
+                <ChevronLeft className="h-5 w-5 sm:mr-2" />
+                <span className="hidden sm:inline">Back</span>
               </Button>
-              <Button className="rounded-xl font-bold gap-2 px-8 shadow-lg shadow-primary/20" onClick={handleSaveAndNext}>
-                Save & Next
-                <ChevronRight className="h-4 w-4 ml-2" />
+              <Button 
+                className="rounded-xl font-bold h-11 px-10 shadow-xl shadow-primary/20 gap-2 transition-all active:scale-95" 
+                onClick={handleSaveAndNext}
+              >
+                <span>{currentIndex === questions.length - 1 ? 'Save Only' : 'Save & Next'}</span>
+                <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
           </footer>
         </div>
 
-        {/* Right Side: Question Palette */}
-        <aside className="w-full md:w-80 border-l bg-card flex flex-col h-full md:h-[calc(100vh-4rem)] shrink-0">
-          <div className="p-6 border-b flex items-center justify-between">
-            <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <HelpCircle className="h-4 w-4 text-primary" />
-              Question Palette
-            </h3>
-          </div>
-
-          <ScrollArea className="flex-grow p-6">
-            <div className="grid grid-cols-5 gap-3">
-              {questions.map((q, idx) => (
-                <button
-                  key={q.id}
-                  onClick={() => setCurrentIndex(idx)}
-                  className={cn(
-                    "h-10 w-10 rounded-lg border-2 font-bold text-xs flex items-center justify-center transition-all",
-                    idx === currentIndex && "ring-2 ring-primary ring-offset-2 scale-110 z-10 shadow-lg",
-                    getStatusColor(statuses[q.id] || 'not-visited')
-                  )}
-                >
-                  {idx + 1}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-10 space-y-4">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Quick Legend</h4>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <div className="flex items-center gap-2 text-[10px] font-bold">
-                  <div className="h-4 w-4 rounded bg-emerald-500" />
-                  <span>Answered</span>
+        {/* Right Sidebar: Status & Candidate Profile */}
+        <aside className="w-full md:w-80 flex flex-col h-full shrink-0 md:py-4 md:pr-4">
+          <div className="bg-white h-full border rounded-3xl shadow-sm flex flex-col overflow-hidden">
+            <div className="p-6 border-b bg-slate-50/50">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary ring-4 ring-primary/5">
+                  <User size={28} />
                 </div>
-                <div className="flex items-center gap-2 text-[10px] font-bold">
-                  <div className="h-4 w-4 rounded bg-rose-500" />
-                  <span>Not Answered</span>
-                </div>
-                <div className="flex items-center gap-2 text-[10px] font-bold">
-                  <div className="h-4 w-4 rounded bg-purple-600" />
-                  <span>Marked</span>
-                </div>
-                <div className="flex items-center gap-2 text-[10px] font-bold">
-                  <div className="h-4 w-4 rounded bg-muted" />
-                  <span>Not Visited</span>
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-900 leading-tight">Candidate 402</span>
+                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">Verified Session</span>
                 </div>
               </div>
             </div>
-          </ScrollArea>
 
-          <div className="p-6 border-t bg-muted/10">
-            <Card className="border-none shadow-sm bg-white dark:bg-card">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                    A
+            <div className="p-6 flex-grow flex flex-col min-h-0">
+              <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-2">
+                <HelpCircle className="h-3 w-3 text-primary" />
+                Question Palette
+              </h3>
+
+              <ScrollArea className="flex-grow">
+                <div className="grid grid-cols-5 gap-3 pr-2">
+                  {questions.map((q, idx) => (
+                    <button
+                      key={q.id}
+                      onClick={() => setCurrentIndex(idx)}
+                      className={cn(
+                        "h-10 w-10 rounded-xl border-2 font-black text-xs flex items-center justify-center transition-all duration-200",
+                        idx === currentIndex && "ring-4 ring-primary/20 border-primary scale-110 z-10",
+                        getStatusStyles(statuses[q.id] || 'not-visited')
+                      )}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
+
+              <div className="mt-8 pt-8 border-t border-slate-100 space-y-4">
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Legend Status</h4>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-4 w-4 rounded-md bg-emerald-500 shadow-sm shadow-emerald-200" />
+                    <span className="text-[10px] font-bold text-slate-600">Answered</span>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold leading-none">Aspirant User</p>
-                    <p className="text-[10px] text-muted-foreground font-semibold mt-1">Free Practice Plan</p>
+                  <div className="flex items-center gap-3">
+                    <div className="h-4 w-4 rounded-md bg-rose-500 shadow-sm shadow-rose-200" />
+                    <span className="text-[10px] font-bold text-slate-600">Unanswered</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-4 w-4 rounded-md bg-purple-600 shadow-sm shadow-purple-200" />
+                    <span className="text-[10px] font-bold text-slate-600">Review</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-4 w-4 rounded-md bg-slate-100 border border-slate-200" />
+                    <span className="text-[10px] font-bold text-slate-600">Not Visited</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+
+            <div className="p-6 border-t bg-slate-50/50">
+              <Button 
+                variant="outline" 
+                className="w-full h-12 rounded-2xl border-slate-200 text-rose-600 hover:bg-rose-50 hover:border-rose-200 font-bold gap-2 group"
+                onClick={() => router.back()}
+              >
+                <LogOut className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                Exit Examination
+              </Button>
+            </div>
           </div>
         </aside>
       </div>
