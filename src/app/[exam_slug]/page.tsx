@@ -10,6 +10,7 @@ import { Crown, Sparkles, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
+import Link from 'next/link';
 
 export default function ExamOverview() {
   const params = useParams();
@@ -23,11 +24,6 @@ export default function ExamOverview() {
     window.addEventListener('premium-unlocked', handleUnlock);
     return () => window.removeEventListener('premium-unlocked', handleUnlock);
   }, []);
-
-  const handleUnlockClick = () => {
-    setIsUnlocked(true);
-    window.dispatchEvent(new Event('premium-unlocked'));
-  };
 
   if (!exam) return null;
 
@@ -103,22 +99,26 @@ Success in this competitive examination requires a disciplined approach, a thoro
               </div>
             ) : (
               <div className="space-y-8">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-bold text-muted-foreground">Starts at</span>
-                  <span className="text-4xl font-black tracking-tight text-foreground">₹499</span>
-                  <Badge variant="outline" className="text-[9px] font-black text-emerald-600 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 h-5">66% OFF</Badge>
+                <div className="space-y-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs font-bold text-muted-foreground">Starting at</span>
+                    <span className="text-4xl font-black tracking-tight text-foreground">₹199</span>
+                    <span className="text-sm font-bold text-muted-foreground">/mo</span>
+                  </div>
+                  <Badge variant="outline" className="text-[9px] font-black text-emerald-600 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 h-5">BEST VALUE</Badge>
                 </div>
                 
                 <p className="text-sm text-muted-foreground font-medium leading-relaxed">Unlock the full potential of your preparation with expert strategy guides and official pattern mocks.</p>
                 
                 <div className="space-y-4">
-                  <Button 
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-14 text-lg font-black rounded-2xl shadow-xl shadow-primary/20"
-                    onClick={handleUnlockClick}
-                  >
-                    Unlock Pro Prep
-                  </Button>
-                  <p className="text-[10px] text-center text-muted-foreground font-bold italic tracking-wide uppercase">One-time payment • 365 days validity</p>
+                  <Link href="/pricing" className="block w-full">
+                    <Button 
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-14 text-lg font-black rounded-2xl shadow-xl shadow-primary/20"
+                    >
+                      Unlock Pro Prep
+                    </Button>
+                  </Link>
+                  <p className="text-[10px] text-center text-muted-foreground font-bold italic tracking-wide uppercase">Choose a plan that works for you • Instant activation</p>
                 </div>
               </div>
             )}
