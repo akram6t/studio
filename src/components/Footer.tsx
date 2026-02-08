@@ -18,7 +18,7 @@ export default function Footer() {
               <div className="bg-primary text-primary-foreground p-1.5 rounded-lg">
                 <BookOpen className="h-6 w-6" />
               </div>
-              <span className="font-headline font-bold text-xl tracking-tight">ExamPrep</span>
+              <span className="font-headline font-bold text-xl tracking-tight">Logical Book</span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed">
               Empowering aspirants with the best-in-class study materials, mock tests, and expert guidance to crack competitive exams with confidence.
@@ -73,7 +73,7 @@ export default function Footer() {
               <ul className="space-y-2">
                 <li className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Mail className="h-4 w-4 text-primary" />
-                  <span className="font-medium">support@examprep.com</span>
+                  <span className="font-medium">support@logicalbook.com</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Phone className="h-4 w-4 text-primary" />
@@ -97,7 +97,7 @@ export default function Footer() {
 
         <div className="pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground text-center md:text-left font-medium">
-            © {currentYear} ExamPrep. All rights reserved. Designed for serious aspirants.
+            © {currentYear} Logical Book. All rights reserved. Designed for serious aspirants.
           </p>
           <div className="flex items-center gap-6">
             <Link href="#" className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-primary transition-colors">Disclaimer</Link>

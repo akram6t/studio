@@ -35,7 +35,7 @@ export default function Navbar() {
             <div className="bg-primary text-primary-foreground p-1.5 rounded-lg">
               <BookOpen className="h-6 w-6" />
             </div>
-            <span className="font-headline font-bold text-xl tracking-tight hidden sm:inline-block">ExamPrep</span>
+            <span className="font-headline font-bold text-xl tracking-tight hidden sm:inline-block">Logical Book</span>
           </Link>
           
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">

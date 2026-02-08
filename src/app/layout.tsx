@@ -3,7 +3,7 @@ import './globals.css';
 import LayoutWrapper from '@/components/layout-wrapper';
 
 export const metadata: Metadata = {
-  title: 'ExamPrep - Your Path to Success',
+  title: 'Logical Book - Your Path to Success',
   description: 'The ultimate destination for exam preparation. Mock tests, quizzes, and resources for all competitive exams.',
 };
 

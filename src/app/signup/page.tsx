@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -52,7 +51,7 @@ export default function SignupPage() {
         <div className="w-full md:w-1/2 bg-card">
           <CardHeader className="pt-8">
             <CardTitle className="text-2xl font-headline font-bold">Create Account</CardTitle>
-            <CardDescription>Join ExamPrep and start practicing.</CardDescription>
+            <CardDescription>Join Logical Book and start practicing.</CardDescription>
           </CardHeader>
           <CardContent className="p-8">
             <form onSubmit={handleSignup} className="space-y-4">

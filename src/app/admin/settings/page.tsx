@@ -69,16 +69,16 @@ export default function AdminSettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="siteName">Site Name</Label>
-                  <Input id="siteName" defaultValue="ExamPrep" className="rounded-xl" />
+                  <Input id="siteName" defaultValue="Logical Book" className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="supportEmail">Support Email</Label>
-                  <Input id="supportEmail" defaultValue="support@examprep.com" className="rounded-xl" />
+                  <Input id="supportEmail" defaultValue="support@logicalbook.com" className="rounded-xl" />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="siteDescription">Global Meta Description</Label>
-                <Input id="siteDescription" defaultValue="The ultimate destination for exam preparation." className="rounded-xl" />
+                <Input id="siteDescription" defaultValue="The ultimate destination for logical exam preparation." className="rounded-xl" />
               </div>
             </CardContent>
           </Card>
