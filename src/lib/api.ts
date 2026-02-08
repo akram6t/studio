@@ -178,7 +178,7 @@ where $M$ is the marks obtained by the candidate.
     slug: 'upsc-civil-services',
     title: 'UPSC Civil Services',
     category: 'Civil Services',
-    description: 'The premier exam for IAS, IPS, and IFS services in India.',
+    description: 'The premier exam for IAS, IPS, and IPS services in India.',
     trending: true,
     image: getImage('exam-upsc'),
     stages: ['Prelims Paper I', 'Prelims Paper II (CSAT)'],
