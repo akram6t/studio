@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getQuestions, getQuizzes, Question } from '@/lib/api';
+import { getQuestions, Question } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -11,11 +11,9 @@ import {
   Timer, 
   ChevronLeft, 
   ChevronRight, 
-  CheckCircle2, 
   Zap,
   ArrowLeft,
-  Trophy,
-  AlertCircle
+  Trophy
 } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { cn } from '@/lib/utils';
@@ -93,7 +91,7 @@ export default function QuizSessionPage() {
 
             <Button 
               className="w-full h-14 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20"
-              onClick={() => router.push('/practice')}
+              onClick={() => router.back()}
             >
               Back to Dashboard
             </Button>
@@ -119,7 +117,7 @@ export default function QuizSessionPage() {
         <div className="flex items-center gap-4">
           <div className={cn(
             "flex items-center gap-2 font-mono font-black px-4 py-1.5 rounded-full border text-sm",
-            timeLeft < 60 ? "bg-rose-500 text-white animate-pulse border-none" : "bg-muted/50 text-foreground"
+            timeLeft < 60 ? "bg-rose-50 text-white animate-pulse border-none" : "bg-muted/50 text-foreground"
           )}>
             <Timer className="h-4 w-4" />
             <span>{formatTime(timeLeft)}</span>
