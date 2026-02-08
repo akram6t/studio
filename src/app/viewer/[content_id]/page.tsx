@@ -55,8 +55,8 @@ export default function SecureViewer() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-body select-none">
-      <header className="h-16 border-b bg-card flex items-center justify-between px-4 md:px-8 sticky top-0 z-50 shadow-sm backdrop-blur-md">
+    <div className="h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-body select-none overflow-hidden">
+      <header className="h-16 border-b bg-card flex items-center justify-between px-4 md:px-8 sticky top-0 z-50 shadow-sm backdrop-blur-md shrink-0">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
             <ArrowLeft className="h-5 w-5" />
@@ -85,18 +85,21 @@ export default function SecureViewer() {
         </div>
       </header>
 
-      <main className="flex-grow flex flex-col items-center p-4 md:p-8">
+      <main className={cn(
+        "flex-grow flex flex-col items-center overflow-auto",
+        content.type === 'pdf' ? "p-2 md:p-4 h-[calc(100vh-4rem)]" : "p-4 md:p-8"
+      )}>
         {content.type === 'pdf' ? (
-          <div className="w-full max-w-6xl h-full flex flex-col gap-6">
-            <div className="bg-card border-none shadow-2xl rounded-3xl overflow-hidden relative min-h-[85vh] flex flex-col border border-border/50">
+          <div className="w-full max-w-6xl h-full flex flex-col gap-2">
+            <div className="flex-grow bg-card border-none shadow-2xl rounded-2xl overflow-hidden relative flex flex-col border border-border/50">
               
               <div className="absolute inset-0 pointer-events-none z-20 flex flex-wrap items-center justify-center opacity-[0.03] overflow-hidden rotate-[-25deg] select-none scale-125">
                 {Array.from({ length: 30 }).map((_, i) => (
-                  <span key={i} className="text-2xl font-black p-12 uppercase whitespace-nowrap">Logical Book Secure Stream</span>
+                  <span key={i} className="text-2xl font-black p-12 uppercase whitespace-nowrap text-foreground">Logical Book Secure Stream</span>
                 ))}
               </div>
 
-              <div className="flex-grow bg-slate-200 dark:bg-slate-900 flex items-center justify-center relative">
+              <div className="flex-grow bg-slate-200 dark:bg-slate-900 flex items-center justify-center relative overflow-hidden">
                 <iframe 
                   src={`${content.url}#view=FitH&toolbar=0&navpanes=0`} 
                   className="w-full h-full border-none"
@@ -115,12 +118,9 @@ export default function SecureViewer() {
               </div>
             </div>
             
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] text-center max-w-md">
+            <div className="flex flex-col items-center gap-1 py-1 shrink-0">
+              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] text-center">
                 Protected Content Session
-              </p>
-              <p className="text-[9px] text-muted-foreground/60 text-center italic">
-                The document is displayed in a secure sandbox. Printing and downloading are restricted.
               </p>
             </div>
           </div>
