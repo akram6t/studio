@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useParams } from 'next/navigation';
@@ -23,7 +24,6 @@ export default function ContentPage() {
   const [isUnlocked, setIsUnlocked] = useState(false);
 
   useEffect(() => {
-    // Check for premium status
     const handleUnlock = () => setIsUnlocked(true);
     window.addEventListener('premium-unlocked', handleUnlock);
     return () => window.removeEventListener('premium-unlocked', handleUnlock);
@@ -103,7 +103,7 @@ export default function ContentPage() {
           </Card>
         </aside>
 
-        {/* Content Content */}
+        {/* Content Grid */}
         <div className="flex-grow">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
@@ -127,7 +127,7 @@ export default function ContentPage() {
                     onClick={(e) => {
                       if (!canAccess) {
                         e.preventDefault();
-                        window.dispatchEvent(new Event('premium-unlocked')); // Simulate unlock trigger
+                        window.dispatchEvent(new Event('premium-unlocked'));
                       }
                     }}
                   >
@@ -145,7 +145,7 @@ export default function ContentPage() {
                         ) : (
                           <div className={cn(
                             "text-white text-[9px] font-black px-2.5 py-1 rounded-b-md shadow-lg flex items-center gap-1 uppercase tracking-widest",
-                            "bg-amber-600"
+                            isUnlocked ? "bg-emerald-600" : "bg-amber-600"
                           )}>
                             {isUnlocked ? <Unlock className="h-2.5 w-2.5" /> : <Lock className="h-2.5 w-2.5" />} 
                             {isUnlocked ? "Unlocked" : "Premium"}

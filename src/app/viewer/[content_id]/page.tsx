@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useParams, useRouter } from 'next/navigation';
@@ -11,7 +12,6 @@ import {
   ShieldCheck, 
   Printer, 
   Share2, 
-  Maximize2, 
   Lock, 
   AlertCircle,
   Download,
@@ -28,7 +28,6 @@ export default function SecureViewer() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API fetch from backend
     const found = getContent('all').find(c => c.id === contentId);
     if (found) {
       setContent(found);
@@ -38,9 +37,11 @@ export default function SecureViewer() {
   }, [contentId]);
 
   useEffect(() => {
-    // Global protection handlers to prevent basic save/print/copy
-    const handleContext = (e: MouseEvent) => e.preventDefault();
-    document.addEventListener('contextmenu', handleContext);
+    // Global protection handlers
+    const handleContext = (e: MouseEvent) => {
+      e.preventDefault();
+      return false;
+    };
     
     const handleKeyDown = (e: KeyboardEvent) => {
       // Block common print/save/inspect shortcuts
@@ -48,17 +49,25 @@ export default function SecureViewer() {
         e.preventDefault();
         return false;
       }
-      // Block F12
       if (e.key === 'F12') {
         e.preventDefault();
         return false;
       }
     };
+
+    const handleSelect = (e: Event) => {
+      e.preventDefault();
+      return false;
+    };
+
+    document.addEventListener('contextmenu', handleContext);
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('selectstart', handleSelect);
 
     return () => {
       document.removeEventListener('contextmenu', handleContext);
       document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('selectstart', handleSelect);
     };
   }, []);
 
@@ -67,7 +76,7 @@ export default function SecureViewer() {
       <div className="h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">
-          Loading Secure Document...
+          Initializing Secure Environment...
         </p>
       </div>
     );
@@ -77,14 +86,14 @@ export default function SecureViewer() {
     <div className="h-screen flex items-center justify-center bg-background p-6 text-center">
       <div className="space-y-4">
         <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
-        <h1 className="text-2xl font-bold">Content Not Found</h1>
+        <h1 className="text-2xl font-bold">Document Not Found</h1>
         <Button onClick={() => router.back()}>Go Back</Button>
       </div>
     </div>
   );
 
   return (
-    <div className="h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-body select-none overflow-hidden">
+    <div className="h-screen bg-slate-100 dark:bg-slate-950 flex flex-col font-body select-none overflow-hidden">
       <header className="h-16 border-b bg-card flex items-center justify-between px-4 md:px-8 sticky top-0 z-50 shadow-sm backdrop-blur-md shrink-0">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
@@ -94,7 +103,7 @@ export default function SecureViewer() {
           <div className="flex flex-col">
             <h1 className="font-headline font-bold text-sm md:text-base line-clamp-1">{content.title}</h1>
             <span className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-1">
-              <ShieldCheck className="h-3 w-3" /> Secure Reader Mode
+              <ShieldCheck className="h-3 w-3" /> Protected Resource
             </span>
           </div>
         </div>
@@ -114,34 +123,36 @@ export default function SecureViewer() {
         </div>
       </header>
 
-      <main className="flex-grow relative bg-slate-200 dark:bg-slate-900/50 overflow-hidden">
+      <main className={cn(
+        "flex-grow relative overflow-hidden",
+        content.type === 'pdf' ? "bg-slate-200" : "bg-slate-50 dark:bg-slate-900/50"
+      )}>
         {content.type === 'pdf' ? (
-          <div className="w-full h-full relative">
-            {/* Native PDF Iframe with native UI disabled where possible */}
-            <iframe 
-              src={`${content.url}#toolbar=0&navpanes=0&scrollbar=0`}
-              className="w-full h-full border-none"
-              title={content.title}
-            />
-            
-            {/* Subtle Watermark Overlay (pointer-events-none ensures user can still scroll/interact if iframe allows) */}
-            <div className="absolute inset-0 pointer-events-none z-20 flex flex-wrap items-center justify-center opacity-[0.03] overflow-hidden rotate-[-25deg] select-none scale-125">
-              {Array.from({ length: 40 }).map((_, i) => (
-                <span key={i} className="text-3xl font-black p-16 uppercase whitespace-nowrap text-foreground">
-                  Logical Book Secure Viewer • Restricted Access
-                </span>
-              ))}
+          <div className="w-full h-full relative flex flex-col items-center">
+            {/* The Document Viewport */}
+            <div className="w-full max-w-5xl h-full bg-white shadow-2xl relative">
+              <iframe 
+                src={`${content.url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                className="w-full h-full border-none pointer-events-auto"
+                title={content.title}
+              />
+              
+              {/* Floating Security Watermark Layer */}
+              <div className="absolute inset-0 pointer-events-none z-20 flex flex-wrap items-center justify-center opacity-[0.04] overflow-hidden rotate-[-25deg] select-none scale-125">
+                {Array.from({ length: 60 }).map((_, i) => (
+                  <span key={i} className="text-2xl font-black p-12 md:p-20 uppercase whitespace-nowrap text-foreground">
+                    Logical Book Restricted Access
+                  </span>
+                ))}
+              </div>
             </div>
 
-            {/* Secure Guard Indicator */}
-            <div className="fixed bottom-8 left-8 z-30 bg-slate-900/90 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center gap-3 text-white shadow-2xl animate-in slide-in-from-left duration-500">
-              <div className="h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Lock className="h-5 w-5" />
+            {/* Guard Banner */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-900/90 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-full flex items-center gap-3 text-white shadow-2xl">
+              <div className="h-6 w-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                <Lock className="h-3 w-3" />
               </div>
-              <div className="pr-4">
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Security</p>
-                <p className="text-xs font-bold">Document Shield Active</p>
-              </div>
+              <p className="text-[10px] font-bold uppercase tracking-widest">Secure Reader Active • Copying Prohibited</p>
             </div>
           </div>
         ) : (
@@ -164,7 +175,7 @@ export default function SecureViewer() {
                 </div>
                 <CardContent className="p-8 md:p-16">
                   <MarkdownRenderer 
-                    content={content.contentMdx || '# Coming Soon\n\nThe full article is being prepared by our editorial team.'} 
+                    content={content.contentMdx || '# Content Unavailable\n\nPlease check back later.'} 
                     className="prose-base md:prose-lg"
                   />
                 </CardContent>
@@ -173,14 +184,6 @@ export default function SecureViewer() {
           </div>
         )}
       </main>
-
-      {content.type === 'blog' && (
-        <div className="fixed bottom-8 right-8 z-50">
-          <Button className="h-14 w-14 rounded-full shadow-2xl shadow-primary/40 hover:scale-110 transition-transform">
-            <Maximize2 className="h-6 w-6" />
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
