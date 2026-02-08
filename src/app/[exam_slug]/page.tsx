@@ -23,6 +23,17 @@ export default function ExamOverview() {
 
   if (!exam) return null;
 
+  // Generate a full markdown string if overviewMdx is missing
+  const markdownContent = exam.overviewMdx || `
+# ${exam.title}
+${exam.description}
+
+### Preparation Strategy
+Success in this competitive examination requires a disciplined approach, a thorough understanding of the comprehensive syllabus, and consistent daily practice with high-fidelity mock tests.
+
+> "Consistency is the key to unlocking your potential in this exam."
+  `;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-8">
@@ -34,17 +45,11 @@ export default function ExamOverview() {
             <h2 className="text-2xl font-headline font-bold">About the Exam</h2>
           </div>
           
-          <div className="prose prose-slate dark:prose-invert max-w-none">
-            {exam.overviewMdx ? (
-              <MarkdownRenderer content={exam.overviewMdx} />
-            ) : (
-              <div className="space-y-4 text-muted-foreground leading-relaxed">
-                <p>{exam.description}</p>
-                <p>
-                  Success in this exam requires a disciplined approach, thorough understanding of the syllabus, and consistent practice with mock tests.
-                </p>
-              </div>
-            )}
+          <div className="max-w-none">
+            <MarkdownRenderer 
+              content={markdownContent} 
+              className="prose-base md:prose-lg"
+            />
           </div>
         </section>
 

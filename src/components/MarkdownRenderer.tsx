@@ -13,16 +13,16 @@ import { cn } from '@/lib/utils';
 
 // Custom components for MDX using ShadCN-style elements
 const MDXComponents = {
-  h1: (props: any) => <h1 className="text-2xl font-bold mt-6 mb-4 text-foreground font-headline" {...props} />,
-  h2: (props: any) => <h2 className="text-xl font-semibold mt-5 mb-3 text-foreground font-headline" {...props} />,
-  h3: (props: any) => <h3 className="text-lg font-semibold mt-4 mb-2 text-foreground font-headline" {...props} />,
+  h1: (props: any) => <h1 className="text-2xl md:text-3xl font-bold mt-8 mb-4 text-foreground font-headline" {...props} />,
+  h2: (props: any) => <h2 className="text-xl md:text-2xl font-semibold mt-6 mb-3 text-foreground font-headline" {...props} />,
+  h3: (props: any) => <h3 className="text-lg md:text-xl font-semibold mt-5 mb-2 text-foreground font-headline" {...props} />,
   p: (props: any) => <p className="mb-4 leading-relaxed text-foreground/90" {...props} />,
-  ul: (props: any) => <ul className="list-disc pl-6 mb-4 space-y-1 text-foreground" {...props} />,
-  ol: (props: any) => <ol className="list-decimal pl-6 mb-4 space-y-1 text-foreground" {...props} />,
+  ul: (props: any) => <ul className="list-disc pl-6 mb-4 space-y-2 text-foreground" {...props} />,
+  ol: (props: any) => <ol className="list-decimal pl-6 mb-4 space-y-2 text-foreground" {...props} />,
   li: (props: any) => <li className="text-foreground" {...props} />,
   blockquote: (props: any) => (
     <blockquote 
-      className="border-l-4 border-primary pl-4 italic my-4 text-muted-foreground bg-muted/30 py-2 rounded-r-lg"
+      className="border-l-4 border-primary pl-4 italic my-6 text-muted-foreground bg-primary/5 py-4 rounded-r-2xl"
       {...props} 
     />
   ),
@@ -34,7 +34,7 @@ const MDXComponents = {
   ),
   pre: (props: any) => (
     <pre 
-      className="bg-muted p-4 rounded-lg overflow-x-auto mb-4 font-mono text-sm border shadow-inner" 
+      className="bg-muted p-4 rounded-xl overflow-x-auto mb-6 font-mono text-sm border shadow-inner" 
       {...props} 
     />
   ),
@@ -48,9 +48,9 @@ const MDXComponents = {
   ),
   strong: (props: any) => <strong className="font-bold text-foreground" {...props} />,
   em: (props: any) => <em className="italic" {...props} />,
-  hr: (props: any) => <hr className="my-6 border-border" {...props} />,
+  hr: (props: any) => <hr className="my-8 border-border" {...props} />,
   table: (props: any) => (
-    <div className="overflow-x-auto mb-4 rounded-xl border border-border shadow-sm">
+    <div className="overflow-x-auto mb-6 rounded-2xl border border-border shadow-sm">
       <table className="w-full border-collapse text-sm" {...props} />
     </div>
   ),
@@ -111,11 +111,9 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
 
   if (isLoading) {
     return (
-      <div className={cn("py-4 flex items-center justify-center min-h-[100px]", className)}>
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          <span className="text-sm font-bold uppercase tracking-widest">Processing...</span>
-        </div>
+      <div className={cn("py-12 flex flex-col items-center justify-center min-h-[200px]", className)}>
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <span className="text-sm font-black uppercase tracking-widest text-muted-foreground">Preparing Content...</span>
       </div>
     );
   }
@@ -136,7 +134,7 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
   }
 
   return (
-    <div className={cn("prose prose-sm dark:prose-invert max-w-none", className)}>
+    <div className={cn("prose dark:prose-invert max-w-none", className)}>
       <MDXRemote {...mdxSource} components={MDXComponents} />
     </div>
   );
