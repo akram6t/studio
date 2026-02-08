@@ -5,7 +5,7 @@ import { EXAMS } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Crown, Sparkles, Zap, Info } from 'lucide-react';
+import { Crown, Sparkles, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
@@ -37,67 +37,12 @@ Success in this competitive examination requires a disciplined approach, a thoro
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-8">
-        <section className="bg-card p-6 md:p-8 rounded-3xl shadow-sm border overflow-hidden">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-primary/5 p-2.5 rounded-2xl text-primary">
-              <Info className="h-6 w-6" />
-            </div>
-            <h2 className="text-2xl font-headline font-bold">About the Exam</h2>
-          </div>
-          
+        <section className="bg-card p-6 md:p-10 rounded-3xl shadow-sm border overflow-hidden">
           <div className="max-w-none">
             <MarkdownRenderer 
               content={markdownContent} 
               className="prose-base md:prose-lg"
             />
-          </div>
-        </section>
-
-        <section className="bg-card p-6 md:p-8 rounded-3xl shadow-sm border">
-          <h2 className="text-2xl font-headline font-bold mb-6">What you'll get</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              "50+ Full length mock tests",
-              "200+ Sectional practice sets",
-              "Previous 10 year solved papers",
-              "Daily current affairs quizzes",
-              "Interactive study materials",
-              "Performance analytics dashboard"
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 p-4 bg-muted/30 rounded-2xl border border-transparent hover:border-primary/10 transition-colors">
-                <CheckCircle2 className={cn("h-5 w-5", isUnlocked ? "text-amber-600" : "text-primary")} />
-                <span className="text-sm font-semibold">{item}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="bg-card p-6 md:p-8 rounded-3xl shadow-sm border">
-          <h2 className="text-2xl font-headline font-bold mb-6">Standard Exam Pattern</h2>
-          <div className="overflow-x-auto rounded-2xl border">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-left">
-                <tr>
-                  <th className="p-4 font-bold uppercase tracking-widest text-[10px] text-muted-foreground">Section</th>
-                  <th className="p-4 font-bold uppercase tracking-widest text-[10px] text-muted-foreground text-center">Questions</th>
-                  <th className="p-4 font-bold uppercase tracking-widest text-[10px] text-muted-foreground text-center">Marks</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {exam.subjects.map((subject, idx) => (
-                  <tr key={idx} className="hover:bg-muted/5 transition-colors">
-                    <td className="p-4 font-medium">{subject}</td>
-                    <td className="p-4 text-center font-bold">25</td>
-                    <td className="p-4 text-center font-bold">25</td>
-                  </tr>
-                ))}
-                <tr className="bg-primary/5 font-black text-primary">
-                  <td className="p-4">Total Estimate</td>
-                  <td className="p-4 text-center">{exam.subjects.length * 25}</td>
-                  <td className="p-4 text-center">{exam.subjects.length * 25}</td>
-                </tr>
-              </tbody>
-            </table>
           </div>
         </section>
       </div>
