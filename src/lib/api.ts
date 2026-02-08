@@ -243,12 +243,14 @@ export const getContent = (slug: string): ContentItem[] => [
     id: 'c1', 
     title: 'SSC GD Preparation Strategy Guide', 
     type: 'pdf', 
-    url: '#', 
+    url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', 
     pages: [
       'https://picsum.photos/seed/doc1-p1/800/1200',
       'https://picsum.photos/seed/doc1-p2/800/1200',
       'https://picsum.photos/seed/doc1-p3/800/1200',
-      'https://picsum.photos/seed/doc1-p4/800/1200'
+      'https://picsum.photos/seed/doc1-p4/800/1200',
+      'https://picsum.photos/seed/doc1-p5/800/1200',
+      'https://picsum.photos/seed/doc1-p6/800/1200'
     ],
     thumbnail: getImage('book-cover-1'), 
     isFree: true 
@@ -292,10 +294,11 @@ Success in the English section isn't about memorizing rules; it's about context.
     id: 'c4', 
     title: 'SSC Important Formulas Master Sheet', 
     type: 'pdf', 
-    url: '#', 
+    url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', 
     pages: [
       'https://picsum.photos/seed/formulas-p1/800/1200',
-      'https://picsum.photos/seed/formulas-p2/800/1200'
+      'https://picsum.photos/seed/formulas-p2/800/1200',
+      'https://picsum.photos/seed/formulas-p3/800/1200'
     ],
     thumbnail: 'https://picsum.photos/seed/formulas/300/400', 
     isFree: false 
@@ -304,10 +307,12 @@ Success in the English section isn't about memorizing rules; it's about context.
     id: 'c5', 
     title: 'Mathematics Shortcut Tricks (Vedic Math)', 
     type: 'pdf', 
-    url: '#', 
+    url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', 
     pages: [
       'https://picsum.photos/seed/vedic-p1/800/1200',
-      'https://picsum.photos/seed/vedic-p2/800/1200'
+      'https://picsum.photos/seed/vedic-p2/800/1200',
+      'https://picsum.photos/seed/vedic-p3/800/1200',
+      'https://picsum.photos/seed/vedic-p4/800/1200'
     ],
     thumbnail: 'https://picsum.photos/seed/tricks/300/400', 
     isFree: false 
