@@ -218,7 +218,7 @@ export default function UniversalTestSession() {
           </div>
 
           <ScrollArea className="flex-grow">
-            <div className="max-w-4xl mx-auto p-6 md:p-12 space-y-8">
+            <div className="max-w-5xl mx-auto p-6 md:p-12 space-y-8">
               <div className="text-lg md:text-xl font-medium leading-relaxed text-slate-800 min-h-[60px]">
                 {currentQuestion.mdx ? (
                   <MarkdownRenderer content={currentQuestion.q} />
@@ -227,7 +227,7 @@ export default function UniversalTestSession() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 gap-2.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentQuestion.options.map((option, idx) => (
                   <div
                     key={idx}
@@ -235,7 +235,7 @@ export default function UniversalTestSession() {
                     className={cn(
                       "group flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-150",
                       answers[currentQuestion.id] === idx 
-                        ? "border-primary bg-primary/5 ring-1 ring-primary/10" 
+                        ? "border-primary bg-primary/5 shadow-sm" 
                         : "border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50"
                     )}
                   >
@@ -321,19 +321,22 @@ export default function UniversalTestSession() {
 
               <ScrollArea className="flex-grow">
                 <div className="grid grid-cols-5 gap-2 pr-2">
-                  {questions.map((q, idx) => (
-                    <button
-                      key={q.id}
-                      onClick={() => setCurrentIndex(idx)}
-                      className={cn(
-                        "h-9 w-9 rounded-lg border font-black text-[10px] flex items-center justify-center transition-all",
-                        idx === currentIndex && "ring-2 ring-primary/20 border-primary/40 scale-105 z-10",
-                        getStatusStyles(statuses[q.id] || 'not-visited')
-                      )}
-                    >
-                      {idx + 1}
-                    </button>
-                  ))}
+                  {questions.map((q, idx) => {
+                    const isSelected = idx === currentIndex;
+                    return (
+                      <button
+                        key={q.id}
+                        onClick={() => setCurrentIndex(idx)}
+                        className={cn(
+                          "h-9 w-9 rounded-lg border font-black text-[10px] flex items-center justify-center transition-all",
+                          isSelected ? "border-primary scale-105 z-10 shadow-sm" : "",
+                          getStatusStyles(statuses[q.id] || 'not-visited')
+                        )}
+                      >
+                        {idx + 1}
+                      </button>
+                    );
+                  })}
                 </div>
               </ScrollArea>
 
