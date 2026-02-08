@@ -92,6 +92,14 @@ export interface MediaItem {
   createdAt: string;
 }
 
+export interface Question {
+  id: string;
+  q: string;
+  options: string[];
+  answer: number;
+  mdx?: boolean;
+}
+
 const getImage = (id: string) => {
   if (!PlaceHolderImages) return `https://picsum.photos/seed/${id}/600/400`;
   return PlaceHolderImages.find(img => img.id === id)?.imageUrl || `https://picsum.photos/seed/${id}/600/400`;
@@ -246,6 +254,44 @@ export const getTopicSets = (topicId: string): TopicSet[] => [
   { id: 's3', title: 'Practice Set 3: Advanced Concepts', questions: 20, timeLimit: 20, isCompleted: false, isFree: false },
   { id: 's4', title: 'Practice Set 4: Mix Bag', questions: 25, timeLimit: 25, isCompleted: false, isFree: false },
   { id: 's5', title: 'Practice Set 5: Speed Test', questions: 15, timeLimit: 10, isCompleted: false, isFree: false },
+];
+
+export const getQuestions = (setId: string): Question[] => [
+  {
+    id: 'q1',
+    q: 'Find the value of $x$ in the equation $2^x = 1024$.',
+    options: ['8', '9', '10', '12'],
+    answer: 2,
+    mdx: true
+  },
+  {
+    id: 'q2',
+    q: 'What is the largest 3-digit prime number?',
+    options: ['991', '997', '993', '987'],
+    answer: 1,
+    mdx: false
+  },
+  {
+    id: 'q3',
+    q: 'Evaluate the integral: $\\int_{0}^{1} x^2 dx$',
+    options: ['$1/2$', '$1/3$', '$1/4$', '$1$'],
+    answer: 1,
+    mdx: true
+  },
+  {
+    id: 'q4',
+    q: 'The sum of the first $n$ natural numbers is given by which formula?',
+    options: ['$n^2$', '$\\frac{n(n+1)}{2}$', '$n(n+1)$', '$\\frac{n(n-1)}{2}$'],
+    answer: 1,
+    mdx: true
+  },
+  {
+    id: 'q5',
+    q: 'Which of these is NOT an irrational number?',
+    options: ['$\\sqrt{2}$', '$\\pi$', '$\\sqrt{9}$', '$e$'],
+    answer: 2,
+    mdx: true
+  }
 ];
 
 export const getUsers = (): User[] => [

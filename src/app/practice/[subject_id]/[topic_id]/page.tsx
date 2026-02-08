@@ -92,25 +92,28 @@ export default function TopicSetsPage() {
 
                   {/* Action */}
                   <div className="shrink-0 w-full md:w-auto">
-                    <Button 
-                      className={cn(
-                        "w-full md:w-auto gap-2 rounded-xl h-12 px-8 font-bold",
-                        !canAccess && "bg-amber-600 hover:bg-amber-700"
-                      )}
-                      variant={set.isCompleted ? "outline" : "default"}
-                    >
-                      {canAccess ? (
-                        <>
+                    {canAccess ? (
+                      <Link href={`/practice/${subjectId}/${topicId}/${set.id}`} className="w-full md:w-auto">
+                        <Button 
+                          className={cn(
+                            "w-full md:w-auto gap-2 rounded-xl h-12 px-8 font-bold"
+                          )}
+                          variant={set.isCompleted ? "outline" : "default"}
+                        >
                           <Play className="h-4 w-4 fill-current" />
                           {set.isCompleted ? 'Retry Set' : 'Start Set'}
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="h-4 w-4" />
-                          Unlock Premium
-                        </>
-                      )}
-                    </Button>
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button 
+                        className={cn(
+                          "w-full md:w-auto gap-2 rounded-xl h-12 px-8 font-bold bg-amber-600 hover:bg-amber-700"
+                        )}
+                      >
+                        <Lock className="h-4 w-4" />
+                        Unlock Premium
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>
