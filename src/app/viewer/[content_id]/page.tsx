@@ -5,6 +5,7 @@ import { getContent } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   ArrowLeft, 
   ShieldCheck, 
@@ -25,7 +26,6 @@ export default function SecureViewer() {
   
   // Find content across all exams (mock logic)
   const content = getContent('all').find(c => c.id === contentId);
-  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     // Prevent right-click on the viewer
