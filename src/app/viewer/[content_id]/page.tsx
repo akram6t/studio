@@ -24,15 +24,12 @@ export default function SecureViewer() {
   const router = useRouter();
   const contentId = params.content_id as string;
   
-  // Find content across all exams (mock logic)
   const content = getContent('all').find(c => c.id === contentId);
 
   useEffect(() => {
-    // Prevent right-click on the viewer to provide front-end protection
     const handleContext = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', handleContext);
     
-    // Prevent common key combinations for saving or printing
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 's' || e.key === 'u')) {
         e.preventDefault();
@@ -58,8 +55,7 @@ export default function SecureViewer() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col font-body select-none">
-      {/* Secure Header */}
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-body select-none">
       <header className="h-16 border-b bg-card flex items-center justify-between px-4 md:px-8 sticky top-0 z-50 shadow-sm backdrop-blur-md">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
@@ -89,39 +85,31 @@ export default function SecureViewer() {
         </div>
       </header>
 
-      {/* Content Area */}
       <main className="flex-grow flex flex-col items-center p-4 md:p-8">
         {content.type === 'pdf' ? (
-          <div className="w-full max-w-5xl h-full flex flex-col gap-6">
+          <div className="w-full max-w-6xl h-full flex flex-col gap-6">
             <div className="bg-card border-none shadow-2xl rounded-3xl overflow-hidden relative min-h-[85vh] flex flex-col border border-border/50">
               
-              {/* PDF Secure Overlay Watermark - Acts as a click-shield and visual deterrent */}
-              <div className="absolute inset-0 pointer-events-none z-20 flex flex-wrap items-center justify-center opacity-[0.04] overflow-hidden rotate-[-25deg] select-none scale-150">
-                {Array.from({ length: 40 }).map((_, i) => (
-                  <span key={i} className="text-3xl font-black p-16 uppercase whitespace-nowrap">Logical Book Secure Stream</span>
+              <div className="absolute inset-0 pointer-events-none z-20 flex flex-wrap items-center justify-center opacity-[0.03] overflow-hidden rotate-[-25deg] select-none scale-125">
+                {Array.from({ length: 30 }).map((_, i) => (
+                  <span key={i} className="text-2xl font-black p-12 uppercase whitespace-nowrap">Logical Book Secure Stream</span>
                 ))}
               </div>
 
-              {/* PDF Rendering Canvas */}
-              <div className="flex-grow bg-slate-800 flex items-center justify-center relative">
-                {/* Iframe with hidden toolbars for basic protection */}
+              <div className="flex-grow bg-slate-200 dark:bg-slate-900 flex items-center justify-center relative">
                 <iframe 
-                  src={`${content.url}#toolbar=0&navpanes=0&scrollbar=0`} 
+                  src={`${content.url}#view=FitH&toolbar=0&navpanes=0`} 
                   className="w-full h-full border-none"
                   title={content.title}
                 />
                 
-                {/* Transparent Shield - Prevents direct clicks on the iframe content */}
-                <div className="absolute inset-0 z-10 bg-transparent" />
-                
-                {/* Floating Secure Guard */}
-                <div className="absolute bottom-6 right-6 z-30 bg-slate-900/90 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center gap-3 text-white shadow-2xl">
+                <div className="absolute bottom-6 left-6 z-30 bg-slate-900/90 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center gap-3 text-white shadow-2xl">
                   <div className="h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
                     <Lock className="h-5 w-5" />
                   </div>
                   <div className="pr-4">
                     <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Security</p>
-                    <p className="text-xs font-bold">Encrypted Viewer Active</p>
+                    <p className="text-xs font-bold">Encrypted Stream Active</p>
                   </div>
                 </div>
               </div>
@@ -129,10 +117,10 @@ export default function SecureViewer() {
             
             <div className="flex flex-col items-center gap-2">
               <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] text-center max-w-md">
-                Strict DRM Protected Session
+                Protected Content Session
               </p>
               <p className="text-[9px] text-muted-foreground/60 text-center italic">
-                Printing, downloading, and local caching are restricted for premium assets.
+                The document is displayed in a secure sandbox. Printing and downloading are restricted.
               </p>
             </div>
           </div>
@@ -164,7 +152,6 @@ export default function SecureViewer() {
         )}
       </main>
 
-      {/* Floating Action Menu for Articles */}
       {content.type === 'blog' && (
         <div className="fixed bottom-8 right-8 z-50">
           <Button className="h-14 w-14 rounded-full shadow-2xl shadow-primary/40 hover:scale-110 transition-transform">
