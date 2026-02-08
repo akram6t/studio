@@ -30,8 +30,6 @@ export default function UniversalTestSession() {
   const router = useRouter();
   const testId = params.test_id as string;
 
-  // In a real app, we'd fetch the specific test metadata by ID.
-  // For the prototype, we use the existing MCQ array.
   const questions = useMemo(() => getQuestions(testId), [testId]);
   
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -39,10 +37,9 @@ export default function UniversalTestSession() {
   const [statuses, setStatuses] = useState<Record<string, QuestionStatus>>(
     Object.fromEntries(questions.map((q, i) => [q.id, i === 0 ? 'not-answered' : 'not-visited']))
   );
-  const [timeLeft, setTimeLimit] = useState(15 * 60); // Default 15 mins for practice
+  const [timeLeft, setTimeLimit] = useState(15 * 60);
   const [isFinished, setIsFinished] = useState(false);
 
-  // Timer logic
   useEffect(() => {
     if (isFinished || timeLeft <= 0) {
       if (timeLeft === 0) setIsFinished(true);
@@ -64,7 +61,6 @@ export default function UniversalTestSession() {
 
   const handleOptionSelect = (optionIndex: number) => {
     setAnswers({ ...answers, [currentQuestion.id]: optionIndex });
-    // Instant Palette Update: mark as answered as soon as option is clicked
     setStatuses({ ...statuses, [currentQuestion.id]: 'answered' });
   };
 
@@ -114,11 +110,16 @@ export default function UniversalTestSession() {
 
   const getStatusStyles = (status: QuestionStatus) => {
     switch (status) {
-      case 'answered': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      case 'not-answered': return 'bg-rose-100 text-rose-700 border-rose-200';
-      case 'marked-for-review': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'answered-and-review': return 'bg-purple-100 text-purple-700 border-purple-200 relative after:content-[""] after:absolute after:-bottom-1 after:-right-1 after:w-2.5 after:h-2.5 after:bg-emerald-500 after:rounded-full after:border-2 after:border-white';
-      default: return 'bg-slate-50 text-slate-400 border-slate-200';
+      case 'answered': 
+        return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case 'marked-for-review': 
+        return 'bg-purple-50 text-purple-600 border-purple-100';
+      case 'answered-and-review': 
+        return 'bg-purple-50 text-purple-600 border-purple-100 relative after:content-[""] after:absolute after:-bottom-1 after:-right-1 after:w-2 after:h-2 after:bg-emerald-500 after:rounded-full after:border after:border-white';
+      case 'not-answered':
+      case 'not-visited':
+      default: 
+        return 'bg-slate-50 text-slate-400 border-slate-200';
     }
   };
 
@@ -169,7 +170,6 @@ export default function UniversalTestSession() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-body">
-      {/* Universal Conduction Header */}
       <header className="h-14 border-b bg-white flex items-center justify-between px-6 sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="bg-primary text-white p-1 rounded-lg">
@@ -201,17 +201,13 @@ export default function UniversalTestSession() {
         </div>
       </header>
 
-      {/* Main Interface */}
       <div className="flex-grow flex flex-col md:flex-row overflow-hidden h-[calc(100vh-3.5rem)]">
-        
-        {/* Left: Question Area */}
         <div className="flex-grow flex flex-col min-w-0 bg-white md:m-3 md:rounded-2xl border shadow-sm">
-          {/* Compressed Question Number Bar */}
           <div className="px-6 py-2 border-b bg-slate-50/50 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="font-black text-primary text-xs uppercase tracking-widest">Question {currentIndex + 1} of {questions.length}</span>
+              <span className="font-black text-primary text-[10px] uppercase tracking-widest">Question {currentIndex + 1} / {questions.length}</span>
               <div className="h-3 w-px bg-slate-300" />
-              <div className="flex gap-3 text-[10px] font-bold text-slate-500">
+              <div className="flex gap-3 text-[9px] font-bold text-slate-500">
                 <span className="text-emerald-600">+1.0 Correct</span>
                 <span className="text-rose-500">-0.25 Wrong</span>
               </div>
@@ -221,10 +217,9 @@ export default function UniversalTestSession() {
             </Button>
           </div>
 
-          {/* Expanded Question Canvas */}
           <ScrollArea className="flex-grow">
-            <div className="max-w-4xl mx-auto p-6 md:p-12 space-y-10">
-              <div className="text-lg md:text-xl font-medium leading-relaxed text-slate-800 min-h-[80px]">
+            <div className="max-w-4xl mx-auto p-6 md:p-12 space-y-8">
+              <div className="text-lg md:text-xl font-medium leading-relaxed text-slate-800 min-h-[60px]">
                 {currentQuestion.mdx ? (
                   <MarkdownRenderer content={currentQuestion.q} />
                 ) : (
@@ -232,27 +227,27 @@ export default function UniversalTestSession() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-2.5">
                 {currentQuestion.options.map((option, idx) => (
                   <div
                     key={idx}
                     onClick={() => handleOptionSelect(idx)}
                     className={cn(
-                      "group flex items-center gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all duration-150",
+                      "group flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-150",
                       answers[currentQuestion.id] === idx 
                         ? "border-primary bg-primary/5 ring-1 ring-primary/10" 
                         : "border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50"
                     )}
                   >
                     <div className={cn(
-                      "h-8 w-8 shrink-0 rounded-lg border-2 flex items-center justify-center font-black text-xs transition-all",
+                      "h-7 w-7 shrink-0 rounded-lg border flex items-center justify-center font-black text-[10px] transition-all",
                       answers[currentQuestion.id] === idx 
                         ? "bg-primary text-white border-primary shadow-md" 
                         : "bg-slate-50 border-slate-200 text-slate-400 group-hover:border-slate-400 group-hover:text-slate-600"
                     )}>
                       {String.fromCharCode(65 + idx)}
                     </div>
-                    <div className="text-base md:text-lg font-semibold text-slate-700 flex-grow">
+                    <div className="text-sm md:text-base font-semibold text-slate-700 flex-grow">
                       {currentQuestion.mdx ? (
                         <MarkdownRenderer content={option} className="prose-p:m-0" />
                       ) : (
@@ -265,12 +260,11 @@ export default function UniversalTestSession() {
             </div>
           </ScrollArea>
 
-          {/* Actions Footer */}
           <footer className="p-3 border-t bg-white flex items-center justify-between px-6">
             <div className="flex items-center gap-2">
               <Button 
                 variant="outline" 
-                className="rounded-lg font-bold h-10 px-4 border-slate-200 text-slate-600 text-xs gap-2" 
+                className="rounded-lg font-bold h-9 px-4 border-slate-200 text-slate-600 text-[10px] gap-2" 
                 onClick={handleMarkForReview}
               >
                 <Flag className="h-3 w-3" />
@@ -278,7 +272,7 @@ export default function UniversalTestSession() {
               </Button>
               <Button 
                 variant="ghost" 
-                className="rounded-lg font-bold h-10 text-slate-400 hover:text-rose-500 text-xs" 
+                className="rounded-lg font-bold h-9 text-slate-400 hover:text-rose-500 text-[10px]" 
                 onClick={clearResponse}
               >
                 <RotateCcw className="h-3 w-3 sm:mr-2" />
@@ -289,7 +283,7 @@ export default function UniversalTestSession() {
             <div className="flex items-center gap-3">
               <Button 
                 variant="outline" 
-                className="rounded-lg font-bold h-10 px-4 border-slate-200 disabled:opacity-30 text-xs" 
+                className="rounded-lg font-bold h-9 px-4 border-slate-200 disabled:opacity-30 text-[10px]" 
                 disabled={currentIndex === 0}
                 onClick={() => setCurrentIndex(currentIndex - 1)}
               >
@@ -297,7 +291,7 @@ export default function UniversalTestSession() {
                 <span className="hidden sm:inline">Prev</span>
               </Button>
               <Button 
-                className="rounded-lg font-bold h-10 px-8 shadow-lg gap-2 text-xs" 
+                className="rounded-lg font-bold h-9 px-8 shadow-lg gap-2 text-[10px]" 
                 onClick={handleSaveAndNext}
               >
                 <span>{currentIndex === questions.length - 1 ? 'Finish Section' : 'Save & Next'}</span>
@@ -307,7 +301,6 @@ export default function UniversalTestSession() {
           </footer>
         </div>
 
-        {/* Right: Palette & Legend */}
         <aside className="w-full md:w-72 flex flex-col h-full shrink-0 md:py-3 md:pr-3">
           <div className="bg-white h-full border md:rounded-2xl shadow-sm flex flex-col overflow-hidden">
             <div className="p-5 border-b bg-slate-50/50 flex items-center gap-3">
@@ -333,8 +326,8 @@ export default function UniversalTestSession() {
                       key={q.id}
                       onClick={() => setCurrentIndex(idx)}
                       className={cn(
-                        "h-9 w-9 rounded-lg border-2 font-black text-[10px] flex items-center justify-center transition-all",
-                        idx === currentIndex && "ring-2 ring-primary ring-offset-1 border-primary scale-105 z-10",
+                        "h-9 w-9 rounded-lg border font-black text-[10px] flex items-center justify-center transition-all",
+                        idx === currentIndex && "ring-2 ring-primary/20 border-primary/40 scale-105 z-10",
                         getStatusStyles(statuses[q.id] || 'not-visited')
                       )}
                     >
@@ -348,15 +341,15 @@ export default function UniversalTestSession() {
                 <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Legend</h4>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded bg-emerald-100 border border-emerald-200" />
+                    <div className="h-3 w-3 rounded bg-emerald-50 border border-emerald-100" />
                     <span className="text-[9px] font-bold text-slate-600">Answered</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded bg-rose-100 border border-rose-200" />
+                    <div className="h-3 w-3 rounded bg-slate-50 border border-slate-200" />
                     <span className="text-[9px] font-bold text-slate-600">Skipped</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded bg-purple-100 border border-purple-200" />
+                    <div className="h-3 w-3 rounded bg-purple-50 border border-purple-100" />
                     <span className="text-[9px] font-bold text-slate-600">Review</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -370,7 +363,7 @@ export default function UniversalTestSession() {
             <div className="p-4 border-t">
               <Button 
                 variant="outline" 
-                className="w-full h-10 rounded-lg border-slate-200 text-rose-600 text-xs font-bold gap-2"
+                className="w-full h-10 rounded-lg border-slate-200 text-rose-600 text-[10px] font-bold gap-2"
                 onClick={() => router.back()}
               >
                 <LogOut className="h-3.5 w-3.5" />
