@@ -37,10 +37,11 @@ export interface QuizItem {
 export interface ContentItem {
   id: string;
   title: string;
-  type: 'pdf' | 'ppt' | 'blog';
+  type: 'pdf' | 'blog';
   url: string;
   thumbnail?: string;
   isFree: boolean;
+  contentMdx?: string; // For blog types
 }
 
 export interface Book {
@@ -237,11 +238,65 @@ export const getQuizzes = (slug: string): QuizItem[] => [
 ];
 
 export const getContent = (slug: string): ContentItem[] => [
-  { id: 'c1', title: 'Preparation Strategy Guide', type: 'pdf', url: '#', thumbnail: getImage('book-cover-1'), isFree: true },
-  { id: 'c2', title: 'Last 10 Year Analysis', type: 'ppt', url: '#', thumbnail: getImage('book-cover-2'), isFree: false },
-  { id: 'c3', title: 'How to score 90+ in English', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/blog-study/300/400', isFree: true },
-  { id: 'c4', title: 'Important Formulas Sheet', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/formulas/300/400', isFree: false },
-  { id: 'c5', title: 'Mathematics Shortcut Tricks', type: 'pdf', url: '#', thumbnail: 'https://picsum.photos/seed/tricks/300/400', isFree: false },
+  { 
+    id: 'c1', 
+    title: 'SSC GD Preparation Strategy Guide', 
+    type: 'pdf', 
+    url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 
+    thumbnail: getImage('book-cover-1'), 
+    isFree: true 
+  },
+  { 
+    id: 'c2', 
+    title: 'Ultimate 10 Year Exam Analysis', 
+    type: 'blog', 
+    url: '#', 
+    thumbnail: getImage('book-cover-2'), 
+    isFree: false,
+    contentMdx: `
+# 10 Year Deep Dive Analysis
+Understanding patterns is the first step toward success. In this article, we analyze the shifting weightage of subjects over the last decade.
+
+### Key Observation
+- **Quant weightage:** Steady at 25%.
+- **Logic complexity:** Increasing since 2021.
+
+> "Data beats intuition. Look at the numbers before you start your day."
+    `
+  },
+  { 
+    id: 'c3', 
+    title: 'How to score 90+ in English Language', 
+    type: 'blog', 
+    url: '#', 
+    thumbnail: 'https://picsum.photos/seed/blog-study/300/400', 
+    isFree: true,
+    contentMdx: `
+# Master the English Section
+Success in the English section isn't about memorizing rules; it's about context.
+
+### Top 3 Tips:
+1. Read an English daily newspaper for 30 minutes.
+2. Focus on vocabulary through root words.
+3. Practice 5 RCs every single day.
+    `
+  },
+  { 
+    id: 'c4', 
+    title: 'SSC Important Formulas Master Sheet', 
+    type: 'pdf', 
+    url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 
+    thumbnail: 'https://picsum.photos/seed/formulas/300/400', 
+    isFree: false 
+  },
+  { 
+    id: 'c5', 
+    title: 'Mathematics Shortcut Tricks (Vedic Math)', 
+    type: 'pdf', 
+    url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 
+    thumbnail: 'https://picsum.photos/seed/tricks/300/400', 
+    isFree: false 
+  },
 ];
 
 export const getPracticeSets = (subjectId: string): PracticeSet[] => {

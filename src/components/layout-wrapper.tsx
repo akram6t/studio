@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
  * It excludes them from:
  * - Admin routes (/admin)
  * - Active test sessions (/test-session/[id])
+ * - Secure content viewer (/viewer/[id])
  */
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -19,8 +20,11 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   // Check if current path is a live test session (Universal Route)
   const isTestSession = pathname?.startsWith('/test-session');
 
-  // If either admin or test session, don't show standard layout
-  if (isAdmin || isTestSession) {
+  // Check if current path is the secure viewer
+  const isViewer = pathname?.startsWith('/viewer');
+
+  // If either admin, test session, or viewer, don't show standard layout
+  if (isAdmin || isTestSession || isViewer) {
     return <>{children}</>;
   }
 

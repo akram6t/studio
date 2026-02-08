@@ -11,14 +11,11 @@ import {
   Search, 
   Plus, 
   FileText, 
-  MonitorPlay, 
   BookOpen, 
   Edit2,
   Trash2,
   Save,
   CheckCircle2,
-  Download,
-  ShieldCheck,
   LibraryBig,
   Check,
   ChevronLeft,
@@ -119,7 +116,7 @@ export default function AdminContentPage() {
   const getIcon = (type: string) => {
     switch (type) {
       case 'pdf': return <FileText className="h-4 w-4 text-red-500" />;
-      case 'ppt': return <MonitorPlay className="h-4 w-4 text-orange-500" />;
+      case 'blog': return <BookOpen className="h-4 w-4 text-blue-500" />;
       default: return <BookOpen className="h-4 w-4 text-blue-500" />;
     }
   };
@@ -129,7 +126,7 @@ export default function AdminContentPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-headline font-bold">Study Content</h1>
-          <p className="text-muted-foreground text-sm">Upload and manage PDFs, slides, and articles.</p>
+          <p className="text-muted-foreground text-sm">Upload and manage PDFs and long-form study articles.</p>
         </div>
         <Button className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20">
           <Plus className="h-4 w-4" />
@@ -189,9 +186,8 @@ export default function AdminContentPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="pdf">PDFs</SelectItem>
-                    <SelectItem value="ppt">Slides</SelectItem>
-                    <SelectItem value="blog">Articles</SelectItem>
+                    <SelectItem value="pdf">PDF Documents</SelectItem>
+                    <SelectItem value="blog">Articles (MDX)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -240,7 +236,7 @@ export default function AdminContentPage() {
                         <div className="flex flex-col">
                           <span className="font-bold text-sm leading-tight line-clamp-1">{item.title}</span>
                           <span className="text-[10px] text-muted-foreground font-semibold mt-0.5">
-                            Added: 24 Oct 2024
+                            ID: {item.id}
                           </span>
                         </div>
                       </div>
@@ -354,8 +350,7 @@ export default function AdminContentPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pdf">PDF Document</SelectItem>
-                    <SelectItem value="ppt">Presentation Slides</SelectItem>
-                    <SelectItem value="blog">Blog/Article</SelectItem>
+                    <SelectItem value="blog">Study Article (MDX)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

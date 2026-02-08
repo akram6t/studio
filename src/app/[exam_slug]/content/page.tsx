@@ -2,17 +2,17 @@
 
 import { useParams } from 'next/navigation';
 import { getContent } from '@/lib/api';
-import { FileText, MonitorPlay, BookOpen, Lock, Unlock, Filter, ChevronRight } from 'lucide-react';
+import { FileText, BookOpen, Lock, Unlock, Filter, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Image from 'next/image';
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 const CATEGORIES = [
   "All Resources",
   "PDF Documents",
-  "Presentations",
   "Articles & Blogs"
 ];
 
@@ -34,7 +34,6 @@ export default function ContentPage() {
     
     return allContent.filter(item => {
       if (selectedCategory === "PDF Documents") return item.type === 'pdf';
-      if (selectedCategory === "Presentations") return item.type === 'ppt';
       if (selectedCategory === "Articles & Blogs") return item.type === 'blog';
       return true;
     });
@@ -42,8 +41,8 @@ export default function ContentPage() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'pdf': return <FileText className="h-5 w-5 text-red-500" />;
-      case 'ppt': return <MonitorPlay className="h-5 w-5 text-orange-500" />;
+      case 'pdf': return <FileText className="h-5 w-5 text-rose-500" />;
+      case 'blog': return <BookOpen className="h-5 w-5 text-blue-500" />;
       default: return <BookOpen className="h-5 w-5 text-blue-500" />;
     }
   };
@@ -52,7 +51,7 @@ export default function ContentPage() {
     <div className="space-y-6">
       <div className="mb-4">
         <h2 className="text-xl md:text-2xl font-headline font-bold">Study Resources</h2>
-        <p className="text-muted-foreground text-xs md:text-sm">Curated PDFs, presentations, and expert blog posts.</p>
+        <p className="text-muted-foreground text-xs md:text-sm">Curated PDFs and expert strategy guides.</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -113,36 +112,49 @@ export default function ContentPage() {
           </div>
 
           {filteredContent.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredContent.map(item => {
                 const canAccess = item.isFree || isUnlocked;
                 
                 return (
-                  <div key={item.id} className="group cursor-pointer">
-                    <Card className="aspect-[3/4] relative overflow-hidden border-none shadow-sm bg-white dark:bg-card group-hover:-translate-y-1 transition-all duration-300 flex flex-col">
+                  <Link 
+                    key={item.id} 
+                    href={canAccess ? `/viewer/${item.id}` : '#'} 
+                    className={cn(
+                      "group block relative",
+                      !canAccess && "cursor-default"
+                    )}
+                    onClick={(e) => {
+                      if (!canAccess) {
+                        e.preventDefault();
+                        window.dispatchEvent(new Event('premium-unlocked')); // Simulate unlock trigger
+                      }
+                    }}
+                  >
+                    <Card className="aspect-[3/4.2] relative overflow-hidden border-none shadow-md bg-white dark:bg-card group-hover:-translate-y-1.5 transition-all duration-500 flex flex-col">
                       {/* Spine Effect */}
-                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-black/10 z-10" />
-                      <div className="absolute left-1.5 top-0 bottom-0 w-px bg-white/20 z-10" />
+                      <div className="absolute left-0 top-0 bottom-0 w-2 bg-black/10 z-10" />
+                      <div className="absolute left-2 top-0 bottom-0 w-px bg-white/10 z-10" />
                       
                       {/* Status Badges */}
-                      <div className="absolute top-0 left-2 z-30">
+                      <div className="absolute top-0 left-3 z-30">
                         {item.isFree ? (
-                          <div className="bg-emerald-500 text-white text-[8px] font-bold px-2 py-1 rounded-b-sm shadow-sm flex items-center gap-1 uppercase tracking-widest">
+                          <div className="bg-emerald-500 text-white text-[9px] font-black px-2.5 py-1 rounded-b-md shadow-lg flex items-center gap-1 uppercase tracking-widest">
                             Free
                           </div>
                         ) : (
                           <div className={cn(
-                            "text-white text-[8px] font-bold px-2 py-1 rounded-b-sm shadow-sm flex items-center gap-1 uppercase tracking-widest",
+                            "text-white text-[9px] font-black px-2.5 py-1 rounded-b-md shadow-lg flex items-center gap-1 uppercase tracking-widest",
                             "bg-amber-600"
                           )}>
-                            {isUnlocked ? <Unlock className="h-2 w-2" /> : <Lock className="h-2 w-2" />} 
+                            {isUnlocked ? <Unlock className="h-2.5 w-2.5" /> : <Lock className="h-2.5 w-2.5" />} 
                             {isUnlocked ? "Unlocked" : "Premium"}
                           </div>
                         )}
                       </div>
 
-                      <CardContent className="p-0 flex-grow flex flex-col relative">
-                        <div className="relative flex-grow bg-muted/30">
+                      <CardContent className="p-0 flex-grow flex flex-col relative h-full">
+                        <div className="relative flex-grow bg-muted/20 overflow-hidden">
                           <Image 
                             src={item.thumbnail || `https://picsum.photos/seed/${item.id}/300/400`} 
                             alt={item.title} 
@@ -150,29 +162,35 @@ export default function ContentPage() {
                             className="object-cover opacity-90 group-hover:opacity-100 transition-opacity"
                             data-ai-hint="book cover"
                           />
-                          {/* Overlay for icon type */}
-                          <div className="absolute top-2 right-2 p-1.5 bg-white/90 dark:bg-card/90 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                          
+                          {/* Top Icon Overlay */}
+                          <div className="absolute top-3 right-3 p-2 bg-white/95 dark:bg-card/95 rounded-xl shadow-xl backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
                             {getIcon(item.type)}
                           </div>
                           
                           {!canAccess && (
-                            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="bg-white/10 p-3 rounded-full border border-white/20">
-                                <Lock className="h-6 w-6 text-white" />
+                            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[3px] flex flex-col items-center justify-center p-6 text-center gap-3">
+                              <div className="bg-white/10 p-4 rounded-full border border-white/20 animate-pulse">
+                                <Lock className="h-8 w-8 text-white" />
                               </div>
+                              <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Requires Pro Pass</span>
                             </div>
                           )}
                         </div>
                         
-                        <div className="p-4 bg-white dark:bg-card flex flex-col gap-2 border-t relative z-20">
-                          <h3 className="font-bold text-xs md:text-sm leading-snug line-clamp-2 h-10">{item.title}</h3>
+                        <div className="p-4 bg-white dark:bg-card flex flex-col gap-2 border-t relative z-20 shrink-0">
+                          <h3 className="font-bold text-xs md:text-sm leading-tight line-clamp-2 h-10 group-hover:text-primary transition-colors">
+                            {item.title}
+                          </h3>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{item.type}</span>
+                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                              {getIcon(item.type)} {item.type}
+                            </span>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
