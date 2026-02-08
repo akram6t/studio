@@ -244,12 +244,6 @@ export const getContent = (slug: string): ContentItem[] => [
     title: 'SSC GD Preparation Strategy Guide', 
     type: 'pdf', 
     url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', 
-    pages: [
-      'https://picsum.photos/seed/strategy-p1/800/1200',
-      'https://picsum.photos/seed/strategy-p2/800/1200',
-      'https://picsum.photos/seed/strategy-p3/800/1200',
-      'https://picsum.photos/seed/strategy-p4/800/1200'
-    ],
     thumbnail: getImage('book-cover-1'), 
     isFree: true 
   },
@@ -293,13 +287,6 @@ Success in the English section isn't about memorizing rules; it's about context.
     title: 'SSC Important Formulas Master Sheet', 
     type: 'pdf', 
     url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', 
-    pages: [
-      'https://picsum.photos/seed/formulas-chunk-1/800/1200',
-      'https://picsum.photos/seed/formulas-chunk-2/800/1200',
-      'https://picsum.photos/seed/formulas-chunk-3/800/1200',
-      'https://picsum.photos/seed/formulas-chunk-4/800/1200',
-      'https://picsum.photos/seed/formulas-chunk-5/800/1200'
-    ],
     thumbnail: 'https://picsum.photos/seed/formulas/300/400', 
     isFree: false 
   },
@@ -308,11 +295,6 @@ Success in the English section isn't about memorizing rules; it's about context.
     title: 'Mathematics Shortcut Tricks (Vedic Math)', 
     type: 'pdf', 
     url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', 
-    pages: [
-      'https://picsum.photos/seed/tricks-p1/800/1200',
-      'https://picsum.photos/seed/tricks-p2/800/1200',
-      'https://picsum.photos/seed/tricks-p3/800/1200'
-    ],
     thumbnail: 'https://picsum.photos/seed/tricks/300/400', 
     isFree: false 
   },

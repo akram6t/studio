@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { getContent, ContentItem } from '@/lib/api';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,7 +13,6 @@ import {
   Share2, 
   Maximize2, 
   Lock, 
-  FileText,
   AlertCircle,
   Download,
   Loader2
@@ -34,12 +33,12 @@ export default function SecureViewer() {
     if (found) {
       setContent(found);
     }
-    const timer = setTimeout(() => setIsLoading(false), 1000);
+    const timer = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(timer);
   }, [contentId]);
 
   useEffect(() => {
-    // Global protection handlers
+    // Global protection handlers to prevent basic save/print/copy
     const handleContext = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', handleContext);
     
@@ -65,17 +64,17 @@ export default function SecureViewer() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+      <div className="h-screen flex flex-col items-center justify-center bg-background gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">
-          Decrypting Secure Stream...
+          Loading Secure Document...
         </p>
       </div>
     );
   }
 
   if (!content) return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6 text-center">
+    <div className="h-screen flex items-center justify-center bg-background p-6 text-center">
       <div className="space-y-4">
         <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
         <h1 className="text-2xl font-bold">Content Not Found</h1>
@@ -115,64 +114,39 @@ export default function SecureViewer() {
         </div>
       </header>
 
-      <main className="flex-grow overflow-y-auto overflow-x-hidden scroll-smooth bg-slate-200 dark:bg-slate-900/50">
-        <div className={cn(
-          "w-full flex flex-col items-center",
-          content.type === 'pdf' ? "p-4 md:p-8" : "p-4 md:p-12"
-        )}>
-          {content.type === 'pdf' ? (
-            <div className="w-full max-w-5xl flex flex-col items-center gap-6 relative">
-              
-              {/* Security Overlay / Watermark */}
-              <div className="fixed inset-0 pointer-events-none z-20 flex flex-wrap items-center justify-center opacity-[0.04] overflow-hidden rotate-[-25deg] select-none scale-125">
-                {Array.from({ length: 40 }).map((_, i) => (
-                  <span key={i} className="text-3xl font-black p-16 uppercase whitespace-nowrap text-foreground">
-                    Logical Book Secure Stream • Protected Session
-                  </span>
-                ))}
-              </div>
+      <main className="flex-grow relative bg-slate-200 dark:bg-slate-900/50 overflow-hidden">
+        {content.type === 'pdf' ? (
+          <div className="w-full h-full relative">
+            {/* Native PDF Iframe with native UI disabled where possible */}
+            <iframe 
+              src={`${content.url}#toolbar=0&navpanes=0&scrollbar=0`}
+              className="w-full h-full border-none"
+              title={content.title}
+            />
+            
+            {/* Subtle Watermark Overlay (pointer-events-none ensures user can still scroll/interact if iframe allows) */}
+            <div className="absolute inset-0 pointer-events-none z-20 flex flex-wrap items-center justify-center opacity-[0.03] overflow-hidden rotate-[-25deg] select-none scale-125">
+              {Array.from({ length: 40 }).map((_, i) => (
+                <span key={i} className="text-3xl font-black p-16 uppercase whitespace-nowrap text-foreground">
+                  Logical Book Secure Viewer • Restricted Access
+                </span>
+              ))}
+            </div>
 
-              {/* Page Image Stream */}
-              <div className="flex flex-col gap-6 w-full">
-                {content.pages?.map((pageUrl, idx) => (
-                  <div 
-                    key={idx} 
-                    className="relative w-full aspect-[1/1.41] bg-white shadow-xl border rounded-sm overflow-hidden select-none"
-                  >
-                    <img 
-                      src={pageUrl} 
-                      alt={`Page ${idx + 1}`}
-                      className="w-full h-full object-contain pointer-events-none"
-                      draggable={false}
-                      onContextMenu={(e) => e.preventDefault()}
-                    />
-                    <div className="absolute top-4 right-4 bg-black/10 px-2 py-1 rounded text-[10px] font-bold text-black/40 backdrop-blur-sm">
-                      P.{idx + 1}
-                    </div>
-                  </div>
-                ))}
+            {/* Secure Guard Indicator */}
+            <div className="fixed bottom-8 left-8 z-30 bg-slate-900/90 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center gap-3 text-white shadow-2xl animate-in slide-in-from-left duration-500">
+              <div className="h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Lock className="h-5 w-5" />
               </div>
-
-              {/* Secure Guard Indicator */}
-              <div className="fixed bottom-8 left-8 z-30 bg-slate-900/90 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center gap-3 text-white shadow-2xl animate-in slide-in-from-left duration-500">
-                <div className="h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <Lock className="h-5 w-5" />
-                </div>
-                <div className="pr-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Security</p>
-                  <p className="text-xs font-bold">Image-Stream Encryption Active</p>
-                </div>
-              </div>
-
-              <div className="py-12 flex flex-col items-center gap-4">
-                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.3em] text-center">
-                  End of Document Stream
-                </p>
-                <div className="h-1.5 w-24 bg-primary/20 rounded-full" />
+              <div className="pr-4">
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Security</p>
+                <p className="text-xs font-bold">Document Shield Active</p>
               </div>
             </div>
-          ) : (
-            <div className="w-full max-w-4xl">
+          </div>
+        ) : (
+          <div className="w-full h-full overflow-y-auto p-4 md:p-12">
+            <div className="w-full max-w-4xl mx-auto">
               <Card className="border-none shadow-xl rounded-[2.5rem] bg-card overflow-hidden">
                 <div className="relative h-64 md:h-96 w-full">
                   <img 
@@ -196,8 +170,8 @@ export default function SecureViewer() {
                 </CardContent>
               </Card>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </main>
 
       {content.type === 'blog' && (
