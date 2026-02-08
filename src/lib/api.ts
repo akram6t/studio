@@ -39,7 +39,7 @@ export interface ContentItem {
   title: string;
   type: 'pdf' | 'blog';
   url: string;
-  pages?: string[]; // Streamed images for secure PDFs
+  pages?: string[]; // Streamed images for secure PDFs (output from backend conversion)
   thumbnail?: string;
   isFree: boolean;
   contentMdx?: string; // For blog types
@@ -245,10 +245,10 @@ export const getContent = (slug: string): ContentItem[] => [
     type: 'pdf', 
     url: '#', 
     pages: [
-      'https://picsum.photos/seed/page1/800/1200',
-      'https://picsum.photos/seed/page2/800/1200',
-      'https://picsum.photos/seed/page3/800/1200',
-      'https://picsum.photos/seed/page4/800/1200'
+      'https://picsum.photos/seed/doc1-p1/800/1200',
+      'https://picsum.photos/seed/doc1-p2/800/1200',
+      'https://picsum.photos/seed/doc1-p3/800/1200',
+      'https://picsum.photos/seed/doc1-p4/800/1200'
     ],
     thumbnail: getImage('book-cover-1'), 
     isFree: true 
@@ -294,8 +294,8 @@ Success in the English section isn't about memorizing rules; it's about context.
     type: 'pdf', 
     url: '#', 
     pages: [
-      'https://picsum.photos/seed/form1/800/1200',
-      'https://picsum.photos/seed/form2/800/1200'
+      'https://picsum.photos/seed/formulas-p1/800/1200',
+      'https://picsum.photos/seed/formulas-p2/800/1200'
     ],
     thumbnail: 'https://picsum.photos/seed/formulas/300/400', 
     isFree: false 
@@ -306,8 +306,8 @@ Success in the English section isn't about memorizing rules; it's about context.
     type: 'pdf', 
     url: '#', 
     pages: [
-      'https://picsum.photos/seed/vedic1/800/1200',
-      'https://picsum.photos/seed/vedic2/800/1200'
+      'https://picsum.photos/seed/vedic-p1/800/1200',
+      'https://picsum.photos/seed/vedic-p2/800/1200'
     ],
     thumbnail: 'https://picsum.photos/seed/tricks/300/400', 
     isFree: false 

@@ -104,7 +104,7 @@ export default function SecureViewer() {
               ))}
             </div>
 
-            {/* Page Image Stream */}
+            {/* Page Image Stream (Backend Simulated) */}
             <div className="flex flex-col gap-4 w-full shadow-2xl rounded-xl overflow-hidden bg-slate-200 p-4 border border-border/50">
               {content.pages?.map((pageUrl, idx) => (
                 <div 
