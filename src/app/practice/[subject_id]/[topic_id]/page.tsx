@@ -93,7 +93,7 @@ export default function TopicSetsPage() {
                   {/* Action */}
                   <div className="shrink-0 w-full md:w-auto">
                     {canAccess ? (
-                      <Link href={`/practice/${subjectId}/${topicId}/${set.id}`} className="w-full md:w-auto">
+                      <Link href={`/test-session/${set.id}`} className="w-full md:w-auto">
                         <Button 
                           className={cn(
                             "w-full md:w-auto gap-2 rounded-xl h-12 px-8 font-bold"

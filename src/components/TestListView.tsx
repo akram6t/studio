@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Timer, Award, FileQuestion, Lock, Play, History, ClipboardCheck, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function TestListView({ tests }: { tests: TestItem[] }) {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -89,26 +90,27 @@ export default function TestListView({ tests }: { tests: TestItem[] }) {
             </div>
 
             <div className="shrink-0 w-full md:w-auto">
-              <Button size="sm" className={cn(
-                "w-full md:w-auto gap-2 rounded-lg md:rounded-xl h-9 md:h-10 px-6 font-bold text-xs md:text-sm",
-                canAccess ? "" : "bg-amber-600 hover:bg-amber-700"
-              )}>
-                {canAccess ? (
-                  <>
+              {canAccess ? (
+                <Link href={`/test-session/${test.id}`} className="w-full md:w-auto">
+                  <Button size="sm" className={cn(
+                    "w-full md:w-auto gap-2 rounded-lg md:rounded-xl h-9 md:h-10 px-6 font-bold text-xs md:text-sm"
+                  )}>
                     {isPreviousYear ? (
                       <Eye className="h-3 w-3 md:h-4 md:w-4" />
                     ) : (
                       <Play className="h-3 w-3 md:h-4 md:w-4 fill-current" />
                     )}
                     {isPreviousYear ? 'View Paper' : 'Start Test'}
-                  </>
-                ) : (
-                  <>
-                    <Lock className="h-3 w-3 md:h-4 md:w-4" />
-                    Unlock Now
-                  </>
-                )}
-              </Button>
+                  </Button>
+                </Link>
+              ) : (
+                <Button size="sm" className={cn(
+                  "w-full md:w-auto gap-2 rounded-lg md:rounded-xl h-9 md:h-10 px-6 font-bold text-xs md:text-sm bg-amber-600 hover:bg-amber-700"
+                )}>
+                  <Lock className="h-3 w-3 md:h-4 md:w-4" />
+                  Unlock Now
+                </Button>
+              )}
             </div>
           </div>
         );
