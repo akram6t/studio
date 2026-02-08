@@ -237,12 +237,14 @@ export const getQuizzes = (slug: string): QuizItem[] => [
   { id: 'q3', title: 'English Grammar Booster', questions: 20, timeLimit: 10, tags: ['English', 'Grammar'] },
 ];
 
+const SAMPLE_PDF_URL = 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf';
+
 export const getContent = (slug: string): ContentItem[] => [
   { 
     id: 'c1', 
     title: 'SSC GD Preparation Strategy Guide', 
     type: 'pdf', 
-    url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 
+    url: SAMPLE_PDF_URL, 
     thumbnail: getImage('book-cover-1'), 
     isFree: true 
   },
@@ -285,7 +287,7 @@ Success in the English section isn't about memorizing rules; it's about context.
     id: 'c4', 
     title: 'SSC Important Formulas Master Sheet', 
     type: 'pdf', 
-    url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 
+    url: SAMPLE_PDF_URL, 
     thumbnail: 'https://picsum.photos/seed/formulas/300/400', 
     isFree: false 
   },
@@ -293,7 +295,7 @@ Success in the English section isn't about memorizing rules; it's about context.
     id: 'c5', 
     title: 'Mathematics Shortcut Tricks (Vedic Math)', 
     type: 'pdf', 
-    url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 
+    url: SAMPLE_PDF_URL, 
     thumbnail: 'https://picsum.photos/seed/tricks/300/400', 
     isFree: false 
   },
@@ -395,7 +397,7 @@ export const getUsers = (): User[] => [
 export const getMediaItems = (): MediaItem[] => [
   { id: 'm1', name: 'ssc-banner.jpg', type: 'image', url: getImage('exam-ssc'), size: '1.2MB', createdAt: '2024-03-15' },
   { id: 'm2', name: 'gate-logo.png', type: 'image', url: getImage('exam-gate'), size: '450KB', createdAt: '2024-03-14' },
-  { id: 'm3', name: 'upsc-syllabus.pdf', type: 'pdf', url: '#', size: '2.4MB', createdAt: '2024-03-13' },
+  { id: 'm3', name: 'upsc-syllabus.pdf', type: 'pdf', url: SAMPLE_PDF_URL, size: '2.4MB', createdAt: '2024-03-13' },
   { id: 'm4', name: 'it-software-bg.jpg', type: 'image', url: getImage('exam-cat'), size: '1.8MB', createdAt: '2024-03-12' },
   { id: 'm5', name: 'user-default.png', type: 'image', url: getImage('user-avatar'), size: '120KB', createdAt: '2024-03-11' },
   { id: 'm6', name: 'book-cover-1.jpg', type: 'image', url: getImage('book-cover-1'), size: '800KB', createdAt: '2024-03-10' },

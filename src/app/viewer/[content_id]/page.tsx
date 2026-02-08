@@ -28,10 +28,23 @@ export default function SecureViewer() {
   const content = getContent('all').find(c => c.id === contentId);
 
   useEffect(() => {
-    // Prevent right-click on the viewer
+    // Prevent right-click on the viewer to provide front-end protection
     const handleContext = (e: MouseEvent) => e.preventDefault();
     document.addEventListener('contextmenu', handleContext);
-    return () => document.removeEventListener('contextmenu', handleContext);
+    
+    // Prevent common key combinations for saving or printing
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 's' || e.key === 'u')) {
+        e.preventDefault();
+        return false;
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContext);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   if (!content) return (
@@ -63,10 +76,10 @@ export default function SecureViewer() {
 
         <div className="flex items-center gap-2 md:gap-4">
           <div className="hidden md:flex gap-2">
-            <Button variant="outline" size="sm" className="rounded-lg gap-2 text-xs font-bold" disabled>
+            <Button variant="outline" size="sm" className="rounded-lg gap-2 text-xs font-bold opacity-50 cursor-not-allowed" disabled>
               <Printer className="h-3.5 w-3.5" /> Print
             </Button>
-            <Button variant="outline" size="sm" className="rounded-lg gap-2 text-xs font-bold" disabled>
+            <Button variant="outline" size="sm" className="rounded-lg gap-2 text-xs font-bold opacity-50 cursor-not-allowed" disabled>
               <Download className="h-3.5 w-3.5" /> Download
             </Button>
           </div>
@@ -80,39 +93,46 @@ export default function SecureViewer() {
       <main className="flex-grow flex flex-col items-center p-4 md:p-8">
         {content.type === 'pdf' ? (
           <div className="w-full max-w-5xl h-full flex flex-col gap-6">
-            <div className="bg-card border-none shadow-2xl rounded-3xl overflow-hidden relative min-h-[80vh] flex flex-col">
-              {/* PDF Secure Overlay Watermark */}
-              <div className="absolute inset-0 pointer-events-none z-10 flex flex-wrap items-center justify-center opacity-[0.03] overflow-hidden rotate-[-30deg] select-none">
-                {Array.from({ length: 20 }).map((_, i) => (
-                  <span key={i} className="text-4xl font-black p-12 uppercase">Logical Book Secure Viewer</span>
+            <div className="bg-card border-none shadow-2xl rounded-3xl overflow-hidden relative min-h-[85vh] flex flex-col border border-border/50">
+              
+              {/* PDF Secure Overlay Watermark - Acts as a click-shield and visual deterrent */}
+              <div className="absolute inset-0 pointer-events-none z-20 flex flex-wrap items-center justify-center opacity-[0.04] overflow-hidden rotate-[-25deg] select-none scale-150">
+                {Array.from({ length: 40 }).map((_, i) => (
+                  <span key={i} className="text-3xl font-black p-16 uppercase whitespace-nowrap">Logical Book Secure Stream</span>
                 ))}
               </div>
 
-              {/* PDF Rendering Strategy */}
+              {/* PDF Rendering Canvas */}
               <div className="flex-grow bg-slate-800 flex items-center justify-center relative">
-                {/* Simulated high-fidelity PDF canvas */}
+                {/* Iframe with hidden toolbars for basic protection */}
                 <iframe 
                   src={`${content.url}#toolbar=0&navpanes=0&scrollbar=0`} 
                   className="w-full h-full border-none"
                   title={content.title}
                 />
                 
+                {/* Transparent Shield - Prevents direct clicks on the iframe content */}
+                <div className="absolute inset-0 z-10 bg-transparent" />
+                
                 {/* Floating Secure Guard */}
-                <div className="absolute bottom-6 right-6 bg-slate-900/80 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center gap-3 text-white">
+                <div className="absolute bottom-6 right-6 z-30 bg-slate-900/90 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex items-center gap-3 text-white shadow-2xl">
                   <div className="h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
                     <Lock className="h-5 w-5" />
                   </div>
                   <div className="pr-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Status</p>
-                    <p className="text-xs font-bold">Encrypted Stream Active</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Security</p>
+                    <p className="text-xs font-bold">Encrypted Viewer Active</p>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex justify-center">
-              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest text-center max-w-sm">
-                This document is protected by digital rights management. Printing and local saving are disabled for this session.
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] text-center max-w-md">
+                Strict DRM Protected Session
+              </p>
+              <p className="text-[9px] text-muted-foreground/60 text-center italic">
+                Printing, downloading, and local caching are restricted for premium assets.
               </p>
             </div>
           </div>
@@ -147,7 +167,7 @@ export default function SecureViewer() {
       {/* Floating Action Menu for Articles */}
       {content.type === 'blog' && (
         <div className="fixed bottom-8 right-8 z-50">
-          <Button className="h-14 w-14 rounded-full shadow-2xl shadow-primary/40">
+          <Button className="h-14 w-14 rounded-full shadow-2xl shadow-primary/40 hover:scale-110 transition-transform">
             <Maximize2 className="h-6 w-6" />
           </Button>
         </div>
