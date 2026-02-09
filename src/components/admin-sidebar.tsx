@@ -17,7 +17,8 @@ import {
   MessageSquare,
   GraduationCap,
   Image as ImageIcon,
-  Target
+  Target,
+  CreditCard
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -44,6 +45,7 @@ const CURRENT_USER_ROLE: 'admin' | 'creator' | 'user' = 'admin';
 const ADMIN_NAV = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/admin" },
   { title: "Users", icon: Users, url: "/admin/users" },
+  { title: "Payments", icon: CreditCard, url: "/admin/payments" },
   { title: "Exam Categories", icon: LayoutGrid, url: "/admin/categories" },
   { title: "Exams", icon: GraduationCap, url: "/admin/exams" },
   { title: "Practice Sets", icon: Target, url: "/admin/practice" },
