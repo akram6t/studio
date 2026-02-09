@@ -21,7 +21,8 @@ import {
   ChevronRight,
   Receipt,
   Wallet,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Trophy
 } from "lucide-react";
 import { 
   Select, 
