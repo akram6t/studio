@@ -1,13 +1,42 @@
+"use client";
 
-import { EXAMS, CATEGORIES } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getExams, getCategories, Exam } from '@/lib/api';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { TrendingUp, LayoutGrid, ChevronRight } from 'lucide-react';
+import { TrendingUp, LayoutGrid, ChevronRight, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
 
 export default function ExamsPage() {
-  const trendingExams = EXAMS.filter(e => e.trending);
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [examData, catData] = await Promise.all([getExams(), getCategories()]);
+        setExams(examData);
+        setCategories(catData);
+      } catch (error) {
+        console.error("Failed to fetch exams:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const trendingExams = exams.filter(e => e.trending);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -53,11 +82,11 @@ export default function ExamsPage() {
           <h2 className="text-xl md:text-2xl font-headline font-bold">Categories</h2>
         </div>
         <div className="space-y-8 md:space-y-12">
-          {CATEGORIES.map(category => (
+          {categories.map(category => (
             <div key={category}>
               <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-6 border-l-4 border-accent pl-4">{category}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {EXAMS.filter(e => e.category === category).map(exam => (
+                {exams.filter(e => e.category === category).map(exam => (
                   <Link key={exam.id} href={`/${exam.slug}`}>
                     <div className="flex items-center p-3 md:p-4 bg-card rounded-xl shadow-sm hover:shadow-md border border-border/50 group transition-all">
                       <div className="h-10 w-10 md:h-12 md:w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">

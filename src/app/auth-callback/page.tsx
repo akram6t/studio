@@ -1,27 +1,29 @@
-
 "use client";
 
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
-
-const ADMIN_EMAIL = "developeruniqe@gmail.com";
+import { syncUser } from "@/lib/api";
 
 export default function AuthCallbackPage() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoaded && user) {
-      const email = user.primaryEmailAddress?.emailAddress;
-      
-      if (email === ADMIN_EMAIL) {
-        router.push("/admin");
-      } else {
-        router.push("/exams");
+    async function init() {
+      if (isLoaded && user) {
+        // Sync user with MongoDB
+        const dbUser = await syncUser(user);
+        
+        if (dbUser.role === 'admin') {
+          router.push("/admin");
+        } else {
+          router.push("/exams");
+        }
       }
     }
+    init();
   }, [isLoaded, user, router]);
 
   return (
