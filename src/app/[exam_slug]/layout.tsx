@@ -1,11 +1,11 @@
 "use client";
 
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import { EXAMS, getMockTests, getTests, getPrevPapers, getQuizzes } from '@/lib/api';
+import { getExams, getMockTests, getTests, getPrevPapers, getQuizzes, Exam } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Users, Calendar, ArrowLeft, Crown, CheckCircle2, Layout } from 'lucide-react';
+import { Users, Calendar, ArrowLeft, Crown, CheckCircle2, Layout, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -15,25 +15,54 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
   const pathname = usePathname();
   const router = useRouter();
   const slug = params.exam_slug as string;
-  const exam = EXAMS.find(e => e.slug === slug);
 
-  // Simulated global state for premium status
+  const [exam, setExam] = useState<Exam | null>(null);
+  const [counts, setCounts] = useState({ mock: 0, sectional: 0, prev: 0, quiz: 0 });
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Listen for the custom event from the "Unlock" button in page.tsx
+    async function loadData() {
+      try {
+        const [exams, mocks, tests, papers, quizzes] = await Promise.all([
+          getExams(),
+          getMockTests(slug),
+          getTests(slug),
+          getPrevPapers(slug),
+          getQuizzes(slug)
+        ]);
+        
+        const found = exams.find(e => e.slug === slug);
+        if (found) setExam(found);
+        
+        setCounts({
+          mock: mocks.length,
+          sectional: tests.length,
+          prev: papers.length,
+          quiz: quizzes.length
+        });
+      } catch (err) {
+        console.error("Layout load error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+
     const handleUnlock = () => setIsUnlocked(true);
     window.addEventListener('premium-unlocked', handleUnlock);
     return () => window.removeEventListener('premium-unlocked', handleUnlock);
-  }, []);
+  }, [slug]);
 
-  if (!exam) return <div>Exam not found</div>;
+  if (isLoading) return (
+    <div className="h-screen flex items-center justify-center">
+      <Loader2 className="h-10 w-10 animate-spin text-primary" />
+    </div>
+  );
 
-  const mockCount = getMockTests(slug).length;
-  const sectionalCount = getTests(slug).length;
-  const prevCount = getPrevPapers(slug).length;
-  const quizCount = getQuizzes(slug).length;
-  const totalTests = mockCount + sectionalCount + prevCount;
+  if (!exam) return <div className="p-20 text-center font-bold">Exam not found</div>;
+
+  const totalTests = counts.mock + counts.sectional + counts.prev;
 
   const tabs = [
     { label: 'Overview', value: '' },
@@ -99,7 +128,7 @@ export default function ExamDetailLayout({ children }: { children: React.ReactNo
                 <span className="text-[9px] md:text-[10px] uppercase tracking-widest opacity-70 font-bold block">Mock</span>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="text-xs md:text-lg font-bold">{mockCount}</span>
+                  <span className="text-xs md:text-lg font-bold">{counts.mock}</span>
                 </div>
               </div>
               <div className="space-y-0.5">

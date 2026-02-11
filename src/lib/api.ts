@@ -1,14 +1,14 @@
 'use server';
 
 import connectDB from './db';
-import Exam from '@/models/Exam';
-import Test from '@/models/Test';
-import User from '@/models/User';
-import Book from '@/models/Book';
-import Quiz from '@/models/Quiz';
-import Content from '@/models/Content';
+import ExamModel from '@/models/Exam';
+import TestModel from '@/models/Test';
+import UserModel from '@/models/User';
+import BookModel from '@/models/Book';
+import QuizModel from '@/models/Quiz';
+import ContentModel from '@/models/Content';
 
-// Types
+// Standardized Data Interfaces
 export interface Exam {
   id: string;
   slug: string;
@@ -41,6 +41,7 @@ export interface QuizItem {
   questions: number;
   timeLimit: number;
   tags: string[];
+  examSlug?: string;
 }
 
 export interface ContentItem {
@@ -51,6 +52,7 @@ export interface ContentItem {
   thumbnail?: string;
   isFree: boolean;
   contentMdx?: string;
+  examSlug?: string;
 }
 
 export interface Book {
@@ -65,6 +67,18 @@ export interface Book {
   language: string;
 }
 
+export interface SystemUser {
+  id: string;
+  clerkId: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'creator' | 'user';
+  isPremium: boolean;
+  premiumExpiry?: string;
+  status: 'active' | 'inactive';
+  testsTaken: number;
+}
+
 export interface Question {
   id: string;
   q: string;
@@ -76,7 +90,7 @@ export interface Question {
 // Data Fetching Actions
 export async function getExams(): Promise<Exam[]> {
   await connectDB();
-  const exams = await Exam.find().lean();
+  const exams = await ExamModel.find().lean();
   if (exams.length === 0) return seedExams();
   return exams.map((e: any) => ({ ...e, id: e._id.toString() }));
 }
@@ -89,7 +103,7 @@ export async function getCategories(): Promise<string[]> {
 export async function getMockTests(slug: string): Promise<TestItem[]> {
   await connectDB();
   const query = slug === 'all' ? { type: 'mock' } : { type: 'mock', examSlug: slug };
-  const tests = await Test.find(query).lean();
+  const tests = await TestModel.find(query).lean();
   if (tests.length === 0 && slug === 'all') return seedTests();
   return tests.map((t: any) => ({ ...t, id: t._id.toString() }));
 }
@@ -97,21 +111,21 @@ export async function getMockTests(slug: string): Promise<TestItem[]> {
 export async function getTests(slug: string): Promise<TestItem[]> {
   await connectDB();
   const query = slug === 'all' ? { type: 'test' } : { type: 'test', examSlug: slug };
-  const tests = await Test.find(query).lean();
+  const tests = await TestModel.find(query).lean();
   return tests.map((t: any) => ({ ...t, id: t._id.toString() }));
 }
 
 export async function getPrevPapers(slug: string): Promise<TestItem[]> {
   await connectDB();
   const query = slug === 'all' ? { type: 'previous' } : { type: 'previous', examSlug: slug };
-  const tests = await Test.find(query).lean();
+  const tests = await TestModel.find(query).lean();
   return tests.map((t: any) => ({ ...t, id: t._id.toString() }));
 }
 
 export async function getQuizzes(slug: string): Promise<QuizItem[]> {
   await connectDB();
   const query = slug === 'all' ? {} : { examSlug: slug };
-  const quizzes = await Quiz.find(query).lean();
+  const quizzes = await QuizModel.find(query).lean();
   if (quizzes.length === 0 && slug === 'all') return seedQuizzes();
   return quizzes.map((q: any) => ({ ...q, id: q._id.toString() }));
 }
@@ -119,14 +133,14 @@ export async function getQuizzes(slug: string): Promise<QuizItem[]> {
 export async function getContent(slug: string): Promise<ContentItem[]> {
   await connectDB();
   const query = slug === 'all' ? {} : { examSlug: slug };
-  const content = await Content.find(query).lean();
+  const content = await ContentModel.find(query).lean();
   if (content.length === 0 && slug === 'all') return seedContent();
   return content.map((c: any) => ({ ...c, id: c._id.toString() }));
 }
 
 export async function getBooks(): Promise<Book[]> {
   await connectDB();
-  const books = await Book.find().lean();
+  const books = await BookModel.find().lean();
   if (books.length === 0) return seedBooks();
   return books.map((b: any) => ({ ...b, id: b._id.toString() }));
 }
@@ -137,7 +151,6 @@ export async function getBookCategories(): Promise<string[]> {
 }
 
 export async function getQuestions(setId: string): Promise<Question[]> {
-  // Questions are currently mock as they are usually per session/set
   return [
     { id: 'q1', q: 'Find the value of $x$ in the equation $2^x = 1024$.', options: ['8', '9', '10', '12'], answer: 2, mdx: true },
     { id: 'q2', q: 'What is the largest 3-digit prime number?', options: ['991', '997', '993', '987'], answer: 1, mdx: false },
@@ -147,7 +160,7 @@ export async function getQuestions(setId: string): Promise<Question[]> {
   ];
 }
 
-// Seeding Functions (Internal)
+// Seeding Functions
 async function seedExams() {
   const initial = [
     { slug: 'ssc-gd-constable', title: 'SSC GD Constable', category: 'SSC Exams', description: 'Staff Selection Commission - General Duty Constable Exam Preparation.', trending: true, image: 'https://picsum.photos/seed/ssc-exam/600/400', stages: ['Full Length'], subjects: ['General Intelligence', 'English Language', 'Quantitative Aptitude', 'General Awareness'] },
@@ -155,7 +168,7 @@ async function seedExams() {
     { slug: 'ccat-exam', title: 'CDAC C-CAT', category: 'IT/Software', description: 'CDAC Common Admission Test for PG Diploma courses.', trending: false, image: 'https://picsum.photos/seed/cdac-exam/600/400', stages: ['Section A', 'Section B', 'Section C'], subjects: ['English', 'Mathematics', 'Reasoning', 'Computer Fundamentals', 'Data Structures', 'C Programming', 'OS'] },
     { slug: 'upsc-civil-services', title: 'UPSC Civil Services', category: 'Civil Services', description: 'The premier exam for IAS, IPS, and IPS services in India.', trending: true, image: 'https://picsum.photos/seed/upsc-exam/600/400', stages: ['Prelims Paper I', 'Prelims Paper II (CSAT)'], subjects: ['History', 'Geography', 'Polity', 'Economics', 'Science', 'Current Affairs'] }
   ];
-  const inserted = await Exam.insertMany(initial);
+  const inserted = await ExamModel.insertMany(initial);
   return inserted.map((e: any) => ({ ...e.toObject(), id: e._id.toString() }));
 }
 
@@ -165,7 +178,7 @@ async function seedTests() {
     { title: 'Percentage & Fractions', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude', status: 'published', examSlug: 'ssc-gd-constable' },
     { title: 'Official Paper 2024 (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', subject: '2024', status: 'published', examSlug: 'ssc-gd-constable' }
   ];
-  const inserted = await Test.insertMany(initial);
+  const inserted = await TestModel.insertMany(initial);
   return inserted.map((t: any) => ({ ...t.toObject(), id: t._id.toString() }));
 }
 
@@ -174,7 +187,7 @@ async function seedBooks() {
     { title: 'Quantitative Aptitude', author: 'R.S. Aggarwal', category: 'SSC Exams', price: 450, rating: 4.8, image: 'https://picsum.photos/seed/book1/300/400', pages: 750, language: 'English' },
     { title: 'Modern Reasoning', author: 'Dr. R.S. Aggarwal', category: 'Reasoning', price: 380, rating: 4.7, image: 'https://picsum.photos/seed/book2/300/400', pages: 620, language: 'English' }
   ];
-  const inserted = await Book.insertMany(initial);
+  const inserted = await BookModel.insertMany(initial);
   return inserted.map((b: any) => ({ ...b.toObject(), id: b._id.toString() }));
 }
 
@@ -183,7 +196,7 @@ async function seedQuizzes() {
     { title: 'Daily Current Affairs Quiz', questions: 10, timeLimit: 5, tags: ['CA', 'General Knowledge'], examSlug: 'ssc-gd-constable' },
     { title: 'Numerical Ability Mini Quiz', questions: 15, timeLimit: 12, tags: ['Quant', 'Math'], examSlug: 'ssc-gd-constable' }
   ];
-  const inserted = await Quiz.insertMany(initial);
+  const inserted = await QuizModel.insertMany(initial);
   return inserted.map((q: any) => ({ ...q.toObject(), id: q._id.toString() }));
 }
 
@@ -192,23 +205,27 @@ async function seedContent() {
     { title: 'SSC GD Preparation Strategy', type: 'pdf', url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', thumbnail: 'https://picsum.photos/seed/guide-1/300/400', isFree: true, examSlug: 'ssc-gd-constable' },
     { title: '10 Year Exam Analysis', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/analysis-1/300/400', isFree: false, contentMdx: '# Analysis\nPatterns matter.', examSlug: 'ssc-gd-constable' }
   ];
-  const inserted = await Content.insertMany(initial);
+  const inserted = await ContentModel.insertMany(initial);
   return inserted.map((c: any) => ({ ...c.toObject(), id: c._id.toString() }));
 }
 
-export async function getUsers() {
+export async function getUsers(): Promise<SystemUser[]> {
   await connectDB();
-  const users = await User.find().lean();
-  return users.map((u: any) => ({ ...u, id: u._id.toString() }));
+  const users = await UserModel.find().lean();
+  return users.map((u: any) => ({ 
+    ...u, 
+    id: u._id.toString(),
+    premiumExpiry: u.premiumExpiry ? u.premiumExpiry.toISOString().split('T')[0] : undefined
+  }));
 }
 
 export async function syncUser(clerkUser: any) {
   await connectDB();
-  const existing = await User.findOne({ clerkId: clerkUser.id });
+  const existing = await UserModel.findOne({ clerkId: clerkUser.id });
   if (!existing) {
     const adminEmail = "developeruniqe@gmail.com";
     const email = clerkUser.primaryEmailAddress?.emailAddress;
-    return await User.create({
+    const dbUser = await UserModel.create({
       clerkId: clerkUser.id,
       name: clerkUser.fullName || email.split('@')[0],
       email: email,
@@ -216,12 +233,12 @@ export async function syncUser(clerkUser: any) {
       isPremium: false,
       status: 'active'
     });
+    return { ...dbUser.toObject(), id: dbUser._id.toString() };
   }
-  return existing;
+  return { ...existing.toObject(), id: existing._id.toString() };
 }
 
 export async function getTopicSets(topicId: string) {
-  // Simulated sets
   return [
     { id: 's1', title: 'Practice Set 1: Basic Level', questions: 10, timeLimit: 10, isCompleted: true, isFree: true },
     { id: 's2', title: 'Practice Set 2: Intermediate', questions: 15, timeLimit: 15, isCompleted: false, isFree: true },
@@ -230,7 +247,6 @@ export async function getTopicSets(topicId: string) {
 }
 
 export async function getPracticeSets(subjectId: string) {
-  // Simulated topics
   return [
     { id: 'number-systems', title: 'Number Systems', totalQuestions: 30, completedQuestions: 12, difficulty: 'Easy' },
     { id: 'profit-loss', title: 'Profit & Loss', totalQuestions: 50, completedQuestions: 0, difficulty: 'Medium' }

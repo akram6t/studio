@@ -1,3 +1,4 @@
+
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI!;
@@ -21,15 +22,27 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      dbName: DB_NAME,
+      dbName: DB_NAME || 'logical-book',
+      maxPoolSize: 10,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log('MongoDB Connected to:', DB_NAME);
+      console.log('MongoDB Connected to:', DB_NAME || 'logical-book');
       return mongoose;
+    }).catch(err => {
+      console.error('MongoDB Connection Error:', err);
+      cached.promise = null;
+      throw err;
     });
   }
-  cached.conn = await cached.promise;
+  
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    throw e;
+  }
+  
   return cached.conn;
 }
 

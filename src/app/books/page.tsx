@@ -1,33 +1,50 @@
-
 "use client";
 
-import { BOOKS, BOOK_CATEGORIES, Book } from '@/lib/api';
+import { getBooks, getBookCategories, Book } from '@/lib/api';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, BookOpen, Star, Filter, ChevronRight, ChevronLeft, ShoppingCart } from 'lucide-react';
+import { Search, BookOpen, Star, Filter, ChevronRight, ChevronLeft, ShoppingCart, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 const ITEMS_PER_PAGE = 8;
 
 export default function BooksPage() {
+  const [books, setBooks] = useState<Book[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
 
+  useEffect(() => {
+    async function load() {
+      try {
+        const [bkData, catData] = await Promise.all([getBooks(), getBookCategories()]);
+        setBooks(bkData);
+        setCategories(['All', ...catData]);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
+
   const filteredBooks = useMemo(() => {
-    if (!BOOKS) return [];
-    return BOOKS.filter(book => {
+    return books.filter(book => {
       const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           book.author.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === 'All' || book.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [books, searchQuery, selectedCategory]);
 
   const totalPages = Math.ceil(filteredBooks.length / ITEMS_PER_PAGE);
   const paginatedBooks = filteredBooks.slice(
@@ -40,7 +57,13 @@ export default function BooksPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const categories = ['All', ...(BOOK_CATEGORIES || [])];
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">

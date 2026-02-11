@@ -1,7 +1,6 @@
-
 "use client";
 
-import { EXAMS, BOOKS, getPracticeSets } from '@/lib/api';
+import { getExams, getBooks, Exam, Book } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,15 +15,36 @@ import {
   Star,
   ChevronRight,
   Zap,
-  Layout
+  Layout,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
-  const trendingExams = EXAMS.filter(e => e.trending).slice(0, 4);
-  const featuredBooks = BOOKS.slice(0, 4);
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function init() {
+      try {
+        const [exData, bkData] = await Promise.all([getExams(), getBooks()]);
+        setExams(exData);
+        setBooks(bkData);
+      } catch (error) {
+        console.error("Failed to load home data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    init();
+  }, []);
+
+  const trendingExams = exams.filter(e => e.trending).slice(0, 4);
+  const featuredBooks = books.slice(0, 4);
 
   const practiceSubjects = [
     { id: 'quant', title: 'Quantitative Aptitude', icon: <TrendingUp className="h-6 w-6" />, color: 'bg-blue-500', count: '1200+' },
@@ -32,6 +52,14 @@ export default function Home() {
     { id: 'reasoning', title: 'Reasoning Ability', icon: <Target className="h-6 w-6" />, color: 'bg-purple-500', count: '1000+' },
     { id: 'gk', title: 'General Knowledge', icon: <Layout className="h-6 w-6" />, color: 'bg-orange-500', count: '2000+' },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-20 pb-20">

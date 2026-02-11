@@ -1,6 +1,7 @@
+
 "use client";
 
-import { getUsers, User } from "@/lib/api";
+import { getUsers, SystemUser } from "@/lib/api";
 import { 
   Table, 
   TableBody, 
@@ -57,18 +58,18 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 5;
 
 export default function AdminUsersPage() {
-  const usersData = getUsers();
-  const [users, setUsers] = useState<User[]>(usersData);
+  const [users, setUsers] = useState<SystemUser[]>([]);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [premiumFilter, setPremiumFilter] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true);
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -82,11 +83,25 @@ export default function AdminUsersPage() {
   });
 
   // Edit Drawer State
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<SystemUser | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadUsers() {
+      try {
+        const data = await getUsers();
+        setUsers(data);
+      } catch (error) {
+        console.error("Failed to load users:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadUsers();
+  }, []);
 
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
@@ -105,7 +120,7 @@ export default function AdminUsersPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleEdit = (user: User) => {
+  const handleEdit = (user: SystemUser) => {
     setEditingUser({ ...user });
     setIsSheetOpen(true);
   };
@@ -256,7 +271,16 @@ export default function AdminUsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedUsers.map((user) => (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                        <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Syncing with Atlas...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedUsers.map((user) => (
                   <TableRow key={user.id} className="group border-b last:border-0 hover:bg-muted/5 transition-colors">
                     <TableCell className="py-4 pl-6">
                       <div className="flex items-center gap-3">
@@ -327,9 +351,6 @@ export default function AdminUsersPage() {
                       <TableCell>
                         <div className="flex flex-col gap-0.5">
                           <span className="text-[11px] font-bold text-foreground">{user.testsTaken} Tests Completed</span>
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-1 font-medium">
-                            <Calendar className="h-2.5 w-2.5" /> Joined {user.joinedDate}
-                          </div>
                         </div>
                       </TableCell>
                     )}
@@ -364,10 +385,9 @@ export default function AdminUsersPage() {
             </Table>
           </div>
 
-          {/* Pagination Controls */}
           <div className="p-4 bg-muted/10 border-t flex items-center justify-between">
             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-              Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)}</span> of <span className="font-bold text-foreground">{filteredUsers.length}</span> students
+              Showing <span className="font-bold text-foreground">{Math.max(0, (currentPage - 1) * ITEMS_PER_PAGE + 1)}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)}</span> of <span className="font-bold text-foreground">{filteredUsers.length}</span> students
             </p>
             <div className="flex items-center gap-2">
               <Button 
@@ -380,7 +400,7 @@ export default function AdminUsersPage() {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                {Array.from({ length: Math.max(1, totalPages) }, (_, i) => i + 1).map(page => (
                   <Button 
                     key={page}
                     variant={currentPage === page ? "default" : "outline"}
@@ -399,7 +419,7 @@ export default function AdminUsersPage() {
                 size="icon" 
                 className="h-8 w-8 rounded-lg"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
+                disabled={currentPage === totalPages || totalPages === 0}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -490,7 +510,6 @@ export default function AdminUsersPage() {
                       setEditingUser({
                         ...editingUser, 
                         isPremium: isNowPremium,
-                        // Set default expiry if becoming premium and none exists
                         premiumExpiry: isNowPremium && !editingUser.premiumExpiry ? new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0] : editingUser.premiumExpiry
                       });
                     }}

@@ -1,12 +1,11 @@
-
 "use client";
 
 import { useParams } from 'next/navigation';
-import { EXAMS } from '@/lib/api';
+import { getExams, Exam } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Sparkles, Zap } from 'lucide-react';
+import { Crown, Sparkles, Zap, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
@@ -15,19 +14,37 @@ import Link from 'next/link';
 export default function ExamOverview() {
   const params = useParams();
   const slug = params.exam_slug as string;
-  const exam = EXAMS.find(e => e.slug === slug);
+  const [exam, setExam] = useState<Exam | null>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Sync with global premium state
+    async function load() {
+      try {
+        const exams = await getExams();
+        const found = exams.find(e => e.slug === slug);
+        if (found) setExam(found);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+
     const handleUnlock = () => setIsUnlocked(true);
     window.addEventListener('premium-unlocked', handleUnlock);
     return () => window.removeEventListener('premium-unlocked', handleUnlock);
-  }, []);
+  }, [slug]);
+
+  if (isLoading) return (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
 
   if (!exam) return null;
 
-  // Generate markdown if overviewMdx is missing
   const markdownContent = exam.overviewMdx || `
 # ${exam.title}
 ${exam.description}
@@ -60,7 +77,7 @@ Success in this competitive examination requires a disciplined approach, a thoro
         )}>
           <CardContent className="p-8">
             <div className="flex justify-between items-start mb-6">
-              <h3 className="text-2xl font-headline font-bold">Preparation Kit</h3>
+              <h3 className="text-2xl font-headline font-bold text-card-foreground">Preparation Kit</h3>
               {isUnlocked ? (
                 <div className="bg-amber-600 p-2 rounded-2xl text-white shadow-lg shadow-amber-600/20">
                   <Crown className="h-6 w-6" />
