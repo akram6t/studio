@@ -6,7 +6,10 @@ import { AdminSidebar } from "@/components/admin-sidebar";
 import { Bell, Search, User, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { useUser, UserButton, RedirectToSignIn } from "@clerk/nextjs";
+import { useUser, UserButton } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+
+const ADMIN_EMAIL = "developeruniqe@gmail.com";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useUser();
@@ -31,9 +34,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!isLoaded) return null;
 
   // Final safety check for Admin Route
-  const isAdmin = user?.primaryEmailAddress?.emailAddress === "developeruniqe@gmail.com";
+  const isAdmin = user?.primaryEmailAddress?.emailAddress === ADMIN_EMAIL;
   if (!isAdmin) {
-    return <RedirectToSignIn />;
+    // If authenticated but not admin, send to public exams page instead of sign-in loop
+    redirect("/exams");
   }
 
   return (
