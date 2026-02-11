@@ -87,12 +87,30 @@ export interface Question {
   mdx?: boolean;
 }
 
+/**
+ * Helper to convert MongoDB documents to plain serializable objects.
+ * This removes _id and other non-serializable fields.
+ */
+function flatten<T>(doc: any): T {
+  if (!doc) return doc;
+  const obj = doc.toObject ? doc.toObject() : doc;
+  const { _id, __v, createdAt, updatedAt, ...rest } = obj;
+  return {
+    ...rest,
+    id: _id.toString(),
+    // Convert dates to strings if they exist
+    createdAt: createdAt?.toISOString(),
+    updatedAt: updatedAt?.toISOString(),
+    premiumExpiry: rest.premiumExpiry?.toISOString()?.split('T')[0],
+  } as unknown as T;
+}
+
 // Data Fetching Actions
 export async function getExams(): Promise<Exam[]> {
   await connectDB();
   const exams = await ExamModel.find().lean();
   if (exams.length === 0) return seedExams();
-  return exams.map((e: any) => ({ ...e, id: e._id.toString() }));
+  return exams.map(e => flatten<Exam>(e));
 }
 
 export async function getCategories(): Promise<string[]> {
@@ -105,21 +123,21 @@ export async function getMockTests(slug: string): Promise<TestItem[]> {
   const query = slug === 'all' ? { type: 'mock' } : { type: 'mock', examSlug: slug };
   const tests = await TestModel.find(query).lean();
   if (tests.length === 0 && slug === 'all') return seedTests();
-  return tests.map((t: any) => ({ ...t, id: t._id.toString() }));
+  return tests.map(t => flatten<TestItem>(t));
 }
 
 export async function getTests(slug: string): Promise<TestItem[]> {
   await connectDB();
   const query = slug === 'all' ? { type: 'test' } : { type: 'test', examSlug: slug };
   const tests = await TestModel.find(query).lean();
-  return tests.map((t: any) => ({ ...t, id: t._id.toString() }));
+  return tests.map(t => flatten<TestItem>(t));
 }
 
 export async function getPrevPapers(slug: string): Promise<TestItem[]> {
   await connectDB();
   const query = slug === 'all' ? { type: 'previous' } : { type: 'previous', examSlug: slug };
   const tests = await TestModel.find(query).lean();
-  return tests.map((t: any) => ({ ...t, id: t._id.toString() }));
+  return tests.map(t => flatten<TestItem>(t));
 }
 
 export async function getQuizzes(slug: string): Promise<QuizItem[]> {
@@ -127,7 +145,7 @@ export async function getQuizzes(slug: string): Promise<QuizItem[]> {
   const query = slug === 'all' ? {} : { examSlug: slug };
   const quizzes = await QuizModel.find(query).lean();
   if (quizzes.length === 0 && slug === 'all') return seedQuizzes();
-  return quizzes.map((q: any) => ({ ...q, id: q._id.toString() }));
+  return quizzes.map(q => flatten<QuizItem>(q));
 }
 
 export async function getContent(slug: string): Promise<ContentItem[]> {
@@ -135,14 +153,14 @@ export async function getContent(slug: string): Promise<ContentItem[]> {
   const query = slug === 'all' ? {} : { examSlug: slug };
   const content = await ContentModel.find(query).lean();
   if (content.length === 0 && slug === 'all') return seedContent();
-  return content.map((c: any) => ({ ...c, id: c._id.toString() }));
+  return content.map(c => flatten<ContentItem>(c));
 }
 
 export async function getBooks(): Promise<Book[]> {
   await connectDB();
   const books = await BookModel.find().lean();
   if (books.length === 0) return seedBooks();
-  return books.map((b: any) => ({ ...b, id: b._id.toString() }));
+  return books.map(b => flatten<Book>(b));
 }
 
 export async function getBookCategories(): Promise<string[]> {
@@ -151,6 +169,7 @@ export async function getBookCategories(): Promise<string[]> {
 }
 
 export async function getQuestions(setId: string): Promise<Question[]> {
+  // Currently returning static questions, ensuring they are serializable
   return [
     { id: 'q1', q: 'Find the value of $x$ in the equation $2^x = 1024$.', options: ['8', '9', '10', '12'], answer: 2, mdx: true },
     { id: 'q2', q: 'What is the largest 3-digit prime number?', options: ['991', '997', '993', '987'], answer: 1, mdx: false },
@@ -169,7 +188,7 @@ async function seedExams() {
     { slug: 'upsc-civil-services', title: 'UPSC Civil Services', category: 'Civil Services', description: 'The premier exam for IAS, IPS, and IPS services in India.', trending: true, image: 'https://picsum.photos/seed/upsc-exam/600/400', stages: ['Prelims Paper I', 'Prelims Paper II (CSAT)'], subjects: ['History', 'Geography', 'Polity', 'Economics', 'Science', 'Current Affairs'] }
   ];
   const inserted = await ExamModel.insertMany(initial);
-  return inserted.map((e: any) => ({ ...e.toObject(), id: e._id.toString() }));
+  return inserted.map((e: any) => flatten<Exam>(e));
 }
 
 async function seedTests() {
@@ -179,7 +198,7 @@ async function seedTests() {
     { title: 'Official Paper 2024 (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', subject: '2024', status: 'published', examSlug: 'ssc-gd-constable' }
   ];
   const inserted = await TestModel.insertMany(initial);
-  return inserted.map((t: any) => ({ ...t.toObject(), id: t._id.toString() }));
+  return inserted.map((t: any) => flatten<TestItem>(t));
 }
 
 async function seedBooks() {
@@ -188,7 +207,7 @@ async function seedBooks() {
     { title: 'Modern Reasoning', author: 'Dr. R.S. Aggarwal', category: 'Reasoning', price: 380, rating: 4.7, image: 'https://picsum.photos/seed/book2/300/400', pages: 620, language: 'English' }
   ];
   const inserted = await BookModel.insertMany(initial);
-  return inserted.map((b: any) => ({ ...b.toObject(), id: b._id.toString() }));
+  return inserted.map((b: any) => flatten<Book>(b));
 }
 
 async function seedQuizzes() {
@@ -197,7 +216,7 @@ async function seedQuizzes() {
     { title: 'Numerical Ability Mini Quiz', questions: 15, timeLimit: 12, tags: ['Quant', 'Math'], examSlug: 'ssc-gd-constable' }
   ];
   const inserted = await QuizModel.insertMany(initial);
-  return inserted.map((q: any) => ({ ...q.toObject(), id: q._id.toString() }));
+  return inserted.map((q: any) => flatten<QuizItem>(q));
 }
 
 async function seedContent() {
@@ -206,17 +225,13 @@ async function seedContent() {
     { title: '10 Year Exam Analysis', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/analysis-1/300/400', isFree: false, contentMdx: '# Analysis\nPatterns matter.', examSlug: 'ssc-gd-constable' }
   ];
   const inserted = await ContentModel.insertMany(initial);
-  return inserted.map((c: any) => ({ ...c.toObject(), id: c._id.toString() }));
+  return inserted.map((c: any) => flatten<ContentItem>(c));
 }
 
 export async function getUsers(): Promise<SystemUser[]> {
   await connectDB();
   const users = await UserModel.find().lean();
-  return users.map((u: any) => ({ 
-    ...u, 
-    id: u._id.toString(),
-    premiumExpiry: u.premiumExpiry ? u.premiumExpiry.toISOString().split('T')[0] : undefined
-  }));
+  return users.map(u => flatten<SystemUser>(u));
 }
 
 export async function syncUser(clerkUser: any) {
@@ -233,12 +248,13 @@ export async function syncUser(clerkUser: any) {
       isPremium: false,
       status: 'active'
     });
-    return { ...dbUser.toObject(), id: dbUser._id.toString() };
+    return flatten<SystemUser>(dbUser);
   }
-  return { ...existing.toObject(), id: existing._id.toString() };
+  return flatten<SystemUser>(existing);
 }
 
 export async function getTopicSets(topicId: string) {
+  // Static practice sets for now
   return [
     { id: 's1', title: 'Practice Set 1: Basic Level', questions: 10, timeLimit: 10, isCompleted: true, isFree: true },
     { id: 's2', title: 'Practice Set 2: Intermediate', questions: 15, timeLimit: 15, isCompleted: false, isFree: true },
@@ -247,6 +263,7 @@ export async function getTopicSets(topicId: string) {
 }
 
 export async function getPracticeSets(subjectId: string) {
+  // Static practice topics for now
   return [
     { id: 'number-systems', title: 'Number Systems', totalQuestions: 30, completedQuestions: 12, difficulty: 'Easy' },
     { id: 'profit-loss', title: 'Profit & Loss', totalQuestions: 50, completedQuestions: 0, difficulty: 'Medium' }
@@ -254,6 +271,7 @@ export async function getPracticeSets(subjectId: string) {
 }
 
 export async function getMediaItems() {
+  // Static media library for now
   return [
     { id: 'm1', name: 'ssc-banner.jpg', type: 'image', url: 'https://picsum.photos/seed/ssc-exam/600/400', size: '1.2MB', createdAt: '2024-03-15' }
   ];
