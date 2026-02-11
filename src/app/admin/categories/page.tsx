@@ -1,7 +1,7 @@
 
 "use client";
 
-import { CATEGORIES, EXAMS } from "@/lib/api";
+import { getExams, getCategories, Exam } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +21,7 @@ import {
   Save,
   Check,
   Image as ImageIcon,
-  ChevronRight,
-  Settings
+  Loader2
 } from "lucide-react";
 import { 
   Sheet, 
@@ -41,7 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MediaLibraryDialog } from "@/components/MediaLibraryDialog";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface CategoryData {
@@ -53,16 +52,9 @@ interface CategoryData {
 }
 
 export default function AdminCategoriesPage() {
-  const initialData = CATEGORIES.map((cat, index) => ({
-    id: `cat-${index + 1}`,
-    name: cat,
-    examCount: EXAMS.filter(e => e.category === cat).length,
-    status: 'active',
-    iconUrl: undefined
-  }));
-
-  const [categories, setCategories] = useState<CategoryData[]>(initialData);
+  const [categories, setCategories] = useState<CategoryData[]>([]);
   const [search, setSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   
   // Drawer & Media State
   const [editingCategory, setEditingCategory] = useState<CategoryData | null>(null);
@@ -71,6 +63,27 @@ export default function AdminCategoriesPage() {
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [examData, catNames] = await Promise.all([getExams(), getCategories()]);
+        const mapped = catNames.map((cat, index) => ({
+          id: `cat-${index + 1}`,
+          name: cat,
+          examCount: examData.filter(e => e.category === cat).length,
+          status: 'active',
+          iconUrl: undefined
+        }));
+        setCategories(mapped);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const filteredCategories = useMemo(() => {
     return categories.filter(cat => cat.name.toLowerCase().includes(search.toLowerCase()));
@@ -106,6 +119,14 @@ export default function AdminCategoriesPage() {
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

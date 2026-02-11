@@ -1,7 +1,7 @@
 
 "use client";
 
-import { getMockTests, TestItem, EXAMS } from "@/lib/api";
+import { getMockTests, TestItem, getExams, Exam } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,8 @@ import {
   ChevronRight,
   Settings2,
   Filter,
-  GraduationCap
+  GraduationCap,
+  Loader2
 } from "lucide-react";
 import { 
   Sheet, 
@@ -48,17 +49,18 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 5;
 
 export default function AdminMocksPage() {
-  const mocksData = getMockTests('all');
-  const [mocks, setMocks] = useState<TestItem[]>(mocksData);
+  const [mocks, setMocks] = useState<TestItem[]>([]);
+  const [exams, setExams] = useState<Exam[]>([]);
   const [search, setSearch] = useState("");
   const [sectionFilter, setSectionFilter] = useState("all");
   const [examFilter, setExamFilter] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,6 +80,24 @@ export default function AdminMocksPage() {
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [mocksData, examsData] = await Promise.all([
+          getMockTests('all'),
+          getExams()
+        ]);
+        setMocks(mocksData);
+        setExams(examsData);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   // Dynamic Sections based on selected exam
   const availableSections = useMemo(() => {
@@ -123,6 +143,14 @@ export default function AdminMocksPage() {
       setIsSheetOpen(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -190,7 +218,7 @@ export default function AdminMocksPage() {
                   value={examFilter} 
                   onValueChange={(val) => {
                     setExamFilter(val);
-                    setSectionFilter("all"); // Reset section filter when exam changes
+                    setSectionFilter("all"); 
                     setCurrentPage(1);
                   }}
                 >
@@ -202,7 +230,7 @@ export default function AdminMocksPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Exams</SelectItem>
-                    {EXAMS.map(exam => (
+                    {exams.map(exam => (
                       <SelectItem key={exam.id} value={exam.slug}>{exam.title}</SelectItem>
                     ))}
                   </SelectContent>
@@ -267,7 +295,7 @@ export default function AdminMocksPage() {
                     {visibleColumns.exam && (
                       <TableCell>
                         <span className="text-xs font-bold text-primary">
-                          {EXAMS.find(e => e.slug === mock.examSlug)?.title || "General"}
+                          {exams.find(e => e.slug === mock.examSlug)?.title || "General"}
                         </span>
                       </TableCell>
                     )}
@@ -382,7 +410,7 @@ export default function AdminMocksPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None (General)</SelectItem>
-                    {EXAMS.map(exam => (
+                    {exams.map(exam => (
                       <SelectItem key={exam.id} value={exam.slug}>{exam.title}</SelectItem>
                     ))}
                   </SelectContent>
@@ -452,4 +480,3 @@ export default function AdminMocksPage() {
     </div>
   );
 }
-

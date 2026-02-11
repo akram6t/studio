@@ -1,3 +1,4 @@
+
 "use client";
 
 import { getTests, TestItem } from "@/lib/api";
@@ -22,7 +23,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings2,
-  Filter
+  Filter,
+  Loader2
 } from "lucide-react";
 import { 
   Sheet, 
@@ -48,17 +50,17 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 5;
 
 export default function AdminTestsPage() {
-  const testsData = getTests('all');
-  const [tests, setTests] = useState<TestItem[]>(testsData);
+  const [tests, setTests] = useState<TestItem[]>([]);
   const [search, setSearch] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("all");
   const [accessFilter, setAccessFilter] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -77,6 +79,20 @@ export default function AdminTestsPage() {
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getTests('all');
+        setTests(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const filteredTests = useMemo(() => {
     return tests.filter(test => {
@@ -115,7 +131,15 @@ export default function AdminTestsPage() {
     }
   };
 
-  const subjects = Array.from(new Set(testsData.map(t => t.subject))).filter(Boolean);
+  const subjects = useMemo(() => Array.from(new Set(tests.map(t => t.subject))).filter(Boolean), [tests]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -175,7 +199,7 @@ export default function AdminTestsPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="w-[200px]">
+              <div className="w-[180px]">
                 <Select value={subjectFilter} onValueChange={(val) => { setSubjectFilter(val); setCurrentPage(1); }}>
                   <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
                     <div className="flex items-center gap-2">

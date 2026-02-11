@@ -1,3 +1,4 @@
+
 "use client";
 
 import { getContent, ContentItem } from "@/lib/api";
@@ -21,7 +22,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings2,
-  Filter
+  Filter,
+  Loader2
 } from "lucide-react";
 import { 
   Sheet, 
@@ -47,17 +49,17 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 5;
 
 export default function AdminContentPage() {
-  const contentItemsData = getContent('all');
-  const [content, setContent] = useState<ContentItem[]>(contentItemsData);
+  const [content, setContent] = useState<ContentItem[]>([]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [accessFilter, setAccessFilter] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -75,6 +77,20 @@ export default function AdminContentPage() {
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getContent('all');
+        setContent(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const filteredContent = useMemo(() => {
     return content.filter(item => {
@@ -120,6 +136,14 @@ export default function AdminContentPage() {
       default: return <BookOpen className="h-4 w-4 text-blue-500" />;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

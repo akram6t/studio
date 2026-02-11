@@ -1,7 +1,7 @@
 
 "use client";
 
-import { BOOKS, Book } from "@/lib/api";
+import { getBooks, Book } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,8 @@ import {
   Save,
   TrendingUp,
   Tag,
-  Check
+  Check,
+  Loader2
 } from "lucide-react";
 import { 
   Sheet, 
@@ -29,12 +30,13 @@ import {
   SheetFooter,
   SheetClose
 } from "@/components/ui/sheet";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export default function AdminBooksPage() {
-  const [books, setBooks] = useState<Book[]>(BOOKS);
+  const [books, setBooks] = useState<Book[]>([]);
   const [search, setSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   // Drawer State
   const [editingBook, setEditingBook] = useState<Book | null>(null);
@@ -42,6 +44,20 @@ export default function AdminBooksPage() {
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getBooks();
+        setBooks(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const filteredBooks = useMemo(() => {
     return books.filter(book => 
@@ -71,6 +87,14 @@ export default function AdminBooksPage() {
       setIsSheetOpen(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

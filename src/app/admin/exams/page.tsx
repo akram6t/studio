@@ -1,6 +1,7 @@
+
 "use client";
 
-import { EXAMS, CATEGORIES, Exam, getMockTests, getTests, getPrevPapers, getQuizzes, getContent } from "@/lib/api";
+import { getExams, getCategories, Exam, getMockTests, getTests, getPrevPapers, getQuizzes, getContent } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,8 @@ import {
   ClipboardCheck,
   History,
   LibraryBig,
-  BarChart3
+  BarChart3,
+  Loader2
 } from "lucide-react";
 import { 
   Sheet, 
@@ -47,16 +49,21 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { MediaLibraryDialog } from "@/components/MediaLibraryDialog";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export default function AdminExamsPage() {
-  const [exams, setExams] = useState<Exam[]>(EXAMS);
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
 
   // Analytics Visibility State
   const [activeAnalyticsId, setActiveAnalyticsId] = useState<string | null>(null);
+
+  // Analytics Cache
+  const [analytics, setAnalytics] = useState<Record<string, any>>({});
 
   // Drawer State
   const [editingExam, setEditingExam] = useState<Exam | null>(null);
@@ -69,6 +76,21 @@ export default function AdminExamsPage() {
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [examData, catData] = await Promise.all([getExams(), getCategories()]);
+        setExams(examData);
+        setCategories(catData);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const filteredExams = useMemo(() => {
     return exams.filter(exam => {
@@ -93,7 +115,7 @@ export default function AdminExamsPage() {
       id: newId,
       slug: `new-exam-${newId}`,
       title: "New Exam Title",
-      category: CATEGORIES[0],
+      category: categories[0] || "General",
       description: "Brief description of the exam.",
       trending: false,
       image: `https://picsum.photos/seed/${newId}/600/400`,
@@ -160,9 +182,41 @@ export default function AdminExamsPage() {
     }
   };
 
-  const toggleAnalytics = (id: string) => {
-    setActiveAnalyticsId(activeAnalyticsId === id ? null : id);
+  const toggleAnalytics = async (exam: Exam) => {
+    if (activeAnalyticsId === exam.id) {
+      setActiveAnalyticsId(null);
+      return;
+    }
+
+    setActiveAnalyticsId(exam.id);
+    if (!analytics[exam.id]) {
+      const [mock, sectional, prev, quiz, content] = await Promise.all([
+        getMockTests(exam.slug),
+        getTests(exam.slug),
+        getPrevPapers(exam.slug),
+        getQuizzes(exam.slug),
+        getContent(exam.slug)
+      ]);
+      setAnalytics(prevCache => ({
+        ...prevCache,
+        [exam.id]: {
+          mockCount: mock.length,
+          sectionalCount: sectional.length,
+          prevCount: prev.length,
+          quizCount: quiz.length,
+          contentCount: content.length
+        }
+      }));
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -197,7 +251,7 @@ export default function AdminExamsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {CATEGORIES.map(cat => (
+              {categories.map(cat => (
                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
               ))}
             </SelectContent>
@@ -208,13 +262,7 @@ export default function AdminExamsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredExams.map((exam) => {
           const isAnalyticsOpen = activeAnalyticsId === exam.id;
-          
-          // Analytics calculations
-          const mockCount = getMockTests(exam.slug).length;
-          const sectionalCount = getTests(exam.slug).length;
-          const prevCount = getPrevPapers(exam.slug).length;
-          const quizCount = getQuizzes(exam.slug).length;
-          const contentCount = getContent(exam.slug).length;
+          const examStats = analytics[exam.id];
 
           return (
             <Card key={exam.id} className="group overflow-hidden border-none shadow-md hover:shadow-xl transition-all flex flex-col bg-card">
@@ -255,37 +303,42 @@ export default function AdminExamsPage() {
                     </div>
                   </div>
                   
-                  {/* Toggleable Preparation Analytics Section */}
                   {isAnalyticsOpen && (
                     <div className="pt-3 border-t animate-in fade-in slide-in-from-top-2 duration-300">
                       <span className="text-[9px] uppercase font-black text-muted-foreground tracking-widest block mb-2">Preparation Analytics</span>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="flex flex-col items-center justify-center p-1.5 bg-amber-500/5 rounded-xl border border-amber-500/10">
-                          <Trophy className="h-3 w-3 text-amber-600 mb-1" />
-                          <span className="text-[10px] font-black text-amber-700">{mockCount}</span>
-                          <span className="text-[7px] uppercase font-bold text-amber-600/70">Mocks</span>
+                      {!examStats ? (
+                        <div className="flex justify-center p-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                         </div>
-                        <div className="flex flex-col items-center justify-center p-1.5 bg-blue-500/5 rounded-xl border border-blue-500/10">
-                          <ClipboardCheck className="h-3 w-3 text-blue-600 mb-1" />
-                          <span className="text-[10px] font-black text-blue-700">{sectionalCount}</span>
-                          <span className="text-[7px] uppercase font-bold text-blue-600/70">Tests</span>
+                      ) : (
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="flex flex-col items-center justify-center p-1.5 bg-amber-500/5 rounded-xl border border-amber-500/10">
+                            <Trophy className="h-3 w-3 text-amber-600 mb-1" />
+                            <span className="text-[10px] font-black text-amber-700">{examStats.mockCount}</span>
+                            <span className="text-[7px] uppercase font-bold text-amber-600/70">Mocks</span>
+                          </div>
+                          <div className="flex flex-col items-center justify-center p-1.5 bg-blue-500/5 rounded-xl border border-blue-500/10">
+                            <ClipboardCheck className="h-3 w-3 text-blue-600 mb-1" />
+                            <span className="text-[10px] font-black text-blue-700">{examStats.sectionalCount}</span>
+                            <span className="text-[7px] uppercase font-bold text-blue-600/70">Tests</span>
+                          </div>
+                          <div className="flex flex-col items-center justify-center p-1.5 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
+                            <History className="h-3 w-3 text-emerald-600 mb-1" />
+                            <span className="text-[10px] font-black text-emerald-700">{examStats.prevCount}</span>
+                            <span className="text-[7px] uppercase font-bold text-emerald-600/70">Papers</span>
+                          </div>
+                          <div className="flex flex-col items-center justify-center p-1.5 bg-purple-500/5 rounded-xl border border-purple-500/10">
+                            <LibraryBig className="h-3 w-3 text-purple-600 mb-1" />
+                            <span className="text-[10px] font-black text-purple-700">{examStats.contentCount}</span>
+                            <span className="text-[7px] uppercase font-bold text-purple-600/70">Files</span>
+                          </div>
+                          <div className="flex flex-col items-center justify-center p-1.5 bg-orange-500/5 rounded-xl border border-orange-500/10">
+                            <Layout className="h-3 w-3 text-orange-600 mb-1" />
+                            <span className="text-[10px] font-black text-orange-700">{examStats.quizCount}</span>
+                            <span className="text-[7px] uppercase font-bold text-orange-600/70">Quiz</span>
+                          </div>
                         </div>
-                        <div className="flex flex-col items-center justify-center p-1.5 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
-                          <History className="h-3 w-3 text-emerald-600 mb-1" />
-                          <span className="text-[10px] font-black text-emerald-700">{prevCount}</span>
-                          <span className="text-[7px] uppercase font-bold text-emerald-600/70">Papers</span>
-                        </div>
-                        <div className="flex flex-col items-center justify-center p-1.5 bg-purple-500/5 rounded-xl border border-purple-500/10">
-                          <LibraryBig className="h-3 w-3 text-purple-600 mb-1" />
-                          <span className="text-[10px] font-black text-purple-700">{contentCount}</span>
-                          <span className="text-[7px] uppercase font-bold text-purple-600/70">Files</span>
-                        </div>
-                        <div className="flex flex-col items-center justify-center p-1.5 bg-orange-500/5 rounded-xl border border-orange-500/10">
-                          <Layout className="h-3 w-3 text-orange-600 mb-1" />
-                          <span className="text-[10px] font-black text-orange-700">{quizCount}</span>
-                          <span className="text-[7px] uppercase font-bold text-orange-600/70">Quiz</span>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -303,7 +356,7 @@ export default function AdminExamsPage() {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    onClick={() => toggleAnalytics(exam.id)}
+                    onClick={() => toggleAnalytics(exam)}
                     className={cn(
                       "h-8 w-8 rounded-lg transition-all",
                       isAnalyticsOpen ? "bg-primary text-primary-foreground shadow-md" : "hover:bg-primary/10 hover:text-primary"
@@ -413,7 +466,7 @@ export default function AdminExamsPage() {
                         <SelectValue placeholder="Select Category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {CATEGORIES.map(cat => (
+                        {categories.map(cat => (
                           <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                         ))}
                       </SelectContent>
