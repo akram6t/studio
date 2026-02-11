@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -6,14 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Search, Menu, BookOpen, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs';
 
 export default function Navbar() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { user } = useUser();
+
+  const isAdmin = user?.primaryEmailAddress?.emailAddress === "developeruniqe@gmail.com";
 
   useEffect(() => {
     setMounted(true);
-    // Sync initial theme state if needed
     if (typeof window !== 'undefined' && document.documentElement.classList.contains('dark')) {
       setIsDarkMode(true);
     }
@@ -43,7 +47,9 @@ export default function Navbar() {
             <Link href="/practice" className="transition-colors hover:text-accent font-semibold text-foreground/80 hover:text-foreground">Practice</Link>
             <Link href="/books" className="transition-colors hover:text-accent font-semibold text-foreground/80 hover:text-foreground">Books</Link>
             <Link href="/pricing" className="transition-colors hover:text-accent font-semibold text-foreground/80 hover:text-foreground">Pricing</Link>
-            <Link href="/about" className="transition-colors hover:text-accent font-semibold text-foreground/80 hover:text-foreground">About</Link>
+            {isAdmin && (
+              <Link href="/admin" className="text-primary font-bold hover:underline">Admin</Link>
+            )}
           </nav>
         </div>
 
@@ -66,13 +72,25 @@ export default function Navbar() {
             )}
           </Button>
           
-          <div className="hidden md:flex items-center gap-2">
-            <Link href="/login">
-              <Button variant="ghost" className="font-bold">Log In</Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="font-bold shadow-lg shadow-primary/20">Sign Up</Button>
-            </Link>
+          <div className="hidden md:flex items-center gap-4">
+            <SignedOut>
+              <Link href="/login">
+                <Button variant="ghost" className="font-bold">Log In</Button>
+              </Link>
+              <Link href="/signup">
+                <Button className="font-bold shadow-lg shadow-primary/20">Sign Up</Button>
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <UserButton 
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: 'h-10 w-10 border-2 border-primary/20'
+                  }
+                }}
+              />
+            </SignedIn>
           </div>
 
           <Sheet>
@@ -92,10 +110,18 @@ export default function Navbar() {
                 <Link href="/practice" className="text-lg font-bold">Practice</Link>
                 <Link href="/books" className="text-lg font-bold">Books</Link>
                 <Link href="/pricing" className="text-lg font-bold">Pricing</Link>
-                <Link href="/about" className="text-lg font-bold">About</Link>
+                {isAdmin && <Link href="/admin" className="text-lg font-bold text-primary">Admin Dashboard</Link>}
                 <hr className="opacity-20" />
-                <Link href="/login" className="text-lg font-bold">Log In</Link>
-                <Link href="/signup" className="text-lg font-bold text-accent">Sign Up</Link>
+                <SignedOut>
+                  <Link href="/login" className="text-lg font-bold">Log In</Link>
+                  <Link href="/signup" className="text-lg font-bold text-accent">Sign Up</Link>
+                </SignedOut>
+                <SignedIn>
+                  <div className="flex items-center gap-3 p-2 bg-muted/50 rounded-xl">
+                    <UserButton afterSignOutUrl="/" />
+                    <span className="font-bold text-sm">Account Settings</span>
+                  </div>
+                </SignedIn>
               </div>
             </SheetContent>
           </Sheet>

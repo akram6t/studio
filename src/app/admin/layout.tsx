@@ -1,14 +1,15 @@
+
 "use client";
 
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin-sidebar";
-import { Badge } from "@/components/ui/badge";
 import { Bell, Search, User, Sun, Moon } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { useUser, UserButton, RedirectToSignIn } from "@clerk/nextjs";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { user, isLoaded } = useUser();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -26,6 +27,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       document.documentElement.classList.toggle('dark', newMode);
     }
   };
+
+  if (!isLoaded) return null;
+
+  // Final safety check for Admin Route
+  const isAdmin = user?.primaryEmailAddress?.emailAddress === "developeruniqe@gmail.com";
+  if (!isAdmin) {
+    return <RedirectToSignIn />;
+  }
 
   return (
     <SidebarProvider>
@@ -64,12 +73,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               
               <div className="flex items-center gap-3 pl-1">
                 <div className="hidden lg:flex flex-col text-right">
-                  <span className="text-xs font-bold leading-none">Admin Vikram</span>
+                  <span className="text-xs font-bold leading-none">{user?.fullName || 'Admin User'}</span>
                   <span className="text-[10px] text-muted-foreground font-semibold">Super Administrator</span>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-background">
-                  <User className="h-5 w-5" />
-                </div>
+                <UserButton 
+                  afterSignOutUrl="/" 
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox: 'h-10 w-10 ring-2 ring-primary/20'
+                    }
+                  }}
+                />
               </div>
             </div>
           </header>
