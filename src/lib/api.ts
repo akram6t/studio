@@ -28,6 +28,7 @@ export interface TestItem {
   subject?: string;
   status?: 'published' | 'draft';
   examSlug?: string;
+  examSlugs?: string[];
 }
 
 export interface QuizItem {
@@ -117,9 +118,9 @@ const STATIC_EXAMS: Exam[] = [
 ];
 
 const STATIC_TESTS: TestItem[] = [
-  { id: 't1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length', examSlug: 'ssc-gd-constable' },
-  { id: 't2', title: 'Percentage & Fractions', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude', examSlug: 'ssc-gd-constable' },
-  { id: 't3', title: 'Official Paper 2024 (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', subject: '2024', examSlug: 'ssc-gd-constable' }
+  { id: 't1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length', examSlug: 'ssc-gd-constable', examSlugs: ['ssc-gd-constable'] },
+  { id: 't2', title: 'Percentage & Fractions', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude', examSlug: 'ssc-gd-constable', examSlugs: ['ssc-gd-constable', 'ccat-exam'] },
+  { id: 't3', title: 'Official Paper 2024 (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', subject: '2024', examSlug: 'ssc-gd-constable', examSlugs: ['ssc-gd-constable'] }
 ];
 
 const STATIC_BOOKS: Book[] = [

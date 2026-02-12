@@ -1,13 +1,13 @@
-
 "use client";
 
-import { getTests, TestItem } from "@/lib/api";
+import { getTests, TestItem, getExams, Exam } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Search, 
   Plus, 
@@ -24,7 +24,8 @@ import {
   ChevronRight,
   Settings2,
   Filter,
-  Loader2
+  Loader2,
+  GraduationCap
 } from "lucide-react";
 import { 
   Sheet, 
@@ -57,6 +58,7 @@ const ITEMS_PER_PAGE = 5;
 
 export default function AdminTestsPage() {
   const [tests, setTests] = useState<TestItem[]>([]);
+  const [exams, setExams] = useState<Exam[]>([]);
   const [search, setSearch] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("all");
   const [accessFilter, setAccessFilter] = useState("all");
@@ -67,7 +69,8 @@ export default function AdminTestsPage() {
 
   // Column Selector
   const [visibleColumns, setVisibleColumns] = useState({
-    category: true,
+    subject: true,
+    exams: true,
     stats: true,
     access: true,
     status: true
@@ -83,8 +86,10 @@ export default function AdminTestsPage() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getTests('all');
-        setTests(data);
+        const testsData = getTests('all');
+        const examsData = getExams();
+        setTests(testsData);
+        setExams(examsData);
       } catch (err) {
         console.error(err);
       } finally {
@@ -110,7 +115,10 @@ export default function AdminTestsPage() {
   );
 
   const handleEdit = (test: TestItem) => {
-    setEditingTest(test);
+    setEditingTest({
+      ...test,
+      examSlugs: test.examSlugs || (test.examSlug ? [test.examSlug] : [])
+    });
     setIsSheetOpen(true);
   };
 
@@ -128,6 +136,16 @@ export default function AdminTestsPage() {
     if (editingTest) {
       setTests(tests.map(t => t.id === editingTest.id ? editingTest : t));
       setIsSheetOpen(false);
+    }
+  };
+
+  const toggleExamSelection = (slug: string) => {
+    if (!editingTest) return;
+    const currentSlugs = editingTest.examSlugs || [];
+    if (currentSlugs.includes(slug)) {
+      setEditingTest({ ...editingTest, examSlugs: currentSlugs.filter(s => s !== slug) });
+    } else {
+      setEditingTest({ ...editingTest, examSlugs: [...currentSlugs, slug] });
     }
   };
 
@@ -181,8 +199,11 @@ export default function AdminTestsPage() {
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuLabel>Visible Columns</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked={visibleColumns.category} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, category: v }))}>
-                      Category
+                    <DropdownMenuCheckboxItem checked={visibleColumns.subject} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, subject: v }))}>
+                      Subject
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={visibleColumns.exams} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, exams: v }))}>
+                      Associated Exams
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuCheckboxItem checked={visibleColumns.stats} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, stats: v }))}>
                       Stats (Qs/Time)
@@ -235,7 +256,8 @@ export default function AdminTestsPage() {
               <TableHeader className="bg-muted/10">
                 <TableRow className="hover:bg-transparent border-b">
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Test Details</TableHead>
-                  {visibleColumns.category && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Category</TableHead>}
+                  {visibleColumns.subject && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Subject</TableHead>}
+                  {visibleColumns.exams && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Exams</TableHead>}
                   {visibleColumns.stats && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Stats</TableHead>}
                   {visibleColumns.access && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Access</TableHead>}
                   {visibleColumns.status && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Status</TableHead>}
@@ -258,11 +280,26 @@ export default function AdminTestsPage() {
                         </div>
                       </div>
                     </TableCell>
-                    {visibleColumns.category && (
+                    {visibleColumns.subject && (
                       <TableCell>
                         <Badge variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-bold">
                           {test.subject}
                         </Badge>
+                      </TableCell>
+                    )}
+                    {visibleColumns.exams && (
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1 max-w-[200px]">
+                          {(test.examSlugs || (test.examSlug ? [test.examSlug] : [])).map(slug => {
+                            const exam = exams.find(e => e.slug === slug);
+                            return (
+                              <Badge key={slug} variant="outline" className="text-[9px] font-bold border-primary/20 text-primary py-0">
+                                {exam?.title || slug}
+                              </Badge>
+                            );
+                          })}
+                          {(!test.examSlugs && !test.examSlug) && <span className="text-[10px] text-muted-foreground italic">General</span>}
+                        </div>
                       </TableCell>
                     )}
                     {visibleColumns.stats && (
@@ -349,10 +386,10 @@ export default function AdminTestsPage() {
 
       {/* Edit Test Drawer */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent side="right" className="sm:max-w-md">
+        <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle className="text-xl">Edit Sectional Test</SheetTitle>
-            <SheetDescription>Update test parameters, questions, and access levels.</SheetDescription>
+            <SheetDescription>Update test parameters, subjects, and exam associations.</SheetDescription>
           </SheetHeader>
           
           {editingTest && (
@@ -364,6 +401,17 @@ export default function AdminTestsPage() {
                   value={editingTest.title} 
                   onChange={(e) => setEditingTest({...editingTest, title: e.target.value})}
                   className="rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-test-subject">Subject</Label>
+                <Input 
+                  id="edit-test-subject" 
+                  value={editingTest.subject || ""} 
+                  onChange={(e) => setEditingTest({...editingTest, subject: e.target.value})}
+                  className="rounded-xl"
+                  placeholder="e.g. Mathematics, Reasoning"
                 />
               </div>
 
@@ -388,6 +436,34 @@ export default function AdminTestsPage() {
                 </div>
               </div>
 
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-primary" />
+                  <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Associated Exams</Label>
+                </div>
+                <div className="grid grid-cols-1 gap-2 p-4 bg-muted/30 rounded-2xl border">
+                  {exams.map(exam => {
+                    const isSelected = editingTest.examSlugs?.includes(exam.slug);
+                    return (
+                      <div key={exam.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-background/50 transition-colors">
+                        <Checkbox 
+                          id={`exam-${exam.slug}`} 
+                          checked={isSelected}
+                          onCheckedChange={() => toggleExamSelection(exam.slug)}
+                        />
+                        <Label 
+                          htmlFor={`exam-${exam.slug}`} 
+                          className="text-sm font-semibold cursor-pointer flex-grow"
+                        >
+                          {exam.title}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-muted-foreground italic px-1">This test will be visible in the selected exam pages.</p>
+              </div>
+
               <div className="space-y-2">
                 <Label>Access Level</Label>
                 <Select 
@@ -406,11 +482,11 @@ export default function AdminTestsPage() {
             </div>
           )}
 
-          <SheetFooter className="mt-8 gap-2">
+          <SheetFooter className="mt-8 gap-2 pb-8">
             <SheetClose asChild>
-              <Button variant="outline" className="w-full rounded-xl">Cancel</Button>
+              <Button variant="outline" className="w-full rounded-xl h-11 font-bold">Cancel</Button>
             </SheetClose>
-            <Button onClick={handleSave} className="w-full gap-2 rounded-xl shadow-lg">
+            <Button onClick={handleSave} className="w-full gap-2 rounded-xl h-11 font-bold shadow-lg shadow-primary/20">
               <Save className="h-4 w-4" />
               Save Changes
             </Button>
