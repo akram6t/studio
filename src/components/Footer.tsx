@@ -24,19 +24,19 @@ export default function Footer() {
               Empowering aspirants with the best-in-class study materials, mock tests, and expert guidance to crack competitive exams with confidence.
             </p>
             <div className="flex items-center gap-3">
-              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
+              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Facebook">
                 <Facebook className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
+              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Twitter">
                 <Twitter className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
+              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Instagram">
                 <Instagram className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
+              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Youtube">
                 <Youtube className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
+              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="LinkedIn">
                 <Linkedin className="h-4 w-4" />
               </Link>
             </div>
@@ -88,7 +88,7 @@ export default function Footer() {
             <div>
               <h4 className="text-sm font-bold mb-2">Subscribe to Newsletter</h4>
               <div className="flex gap-2">
-                <Input placeholder="Your email" className="h-9 text-xs rounded-lg" />
+                <Input placeholder="Your email" className="h-9 text-xs rounded-lg" aria-label="Email address for newsletter" />
                 <Button size="sm" className="rounded-lg px-4 font-bold">Join</Button>
               </div>
             </div>

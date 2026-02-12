@@ -133,7 +133,7 @@ export default function Home() {
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {trendingExams.map(exam => (
+          {trendingExams.map((exam, idx) => (
             <Link key={exam.id} href={`/${exam.slug}`}>
               <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-500 h-full border-none shadow-md bg-card">
                 <div className="aspect-[16/10] relative overflow-hidden">
@@ -143,6 +143,7 @@ export default function Home() {
                     fill 
                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                     data-ai-hint="exam preparation"
+                    priority={idx < 4}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4">

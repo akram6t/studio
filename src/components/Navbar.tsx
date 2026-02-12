@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -58,11 +57,12 @@ export default function Navbar() {
           <Input 
             placeholder="Search for exams..." 
             className="pl-9 bg-muted/50 border-none focus-visible:ring-1"
+            aria-label="Search exams"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full" aria-label="Toggle theme">
             {!mounted ? (
               <Moon className="h-5 w-5" />
             ) : isDarkMode ? (
@@ -95,7 +95,7 @@ export default function Navbar() {
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
+              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
