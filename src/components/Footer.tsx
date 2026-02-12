@@ -24,19 +24,19 @@ export default function Footer() {
               Empowering aspirants with the best-in-class study materials, mock tests, and expert guidance to crack competitive exams with confidence.
             </p>
             <div className="flex items-center gap-3">
-              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Facebook">
+              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Follow us on Facebook">
                 <Facebook className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Twitter">
+              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Follow us on Twitter">
                 <Twitter className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Instagram">
+              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Follow us on Instagram">
                 <Instagram className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Youtube">
+              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Follow us on Youtube">
                 <Youtube className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="LinkedIn">
+              <Link href="#" className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all" aria-label="Follow us on LinkedIn">
                 <Linkedin className="h-4 w-4" />
               </Link>
             </div>
@@ -72,24 +72,24 @@ export default function Footer() {
               <h3 className="font-headline font-bold text-lg mb-4">Contact Us</h3>
               <ul className="space-y-2">
                 <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Mail className="h-4 w-4 text-primary" />
+                  <Mail className="h-4 w-4 text-primary" aria-hidden="true" />
                   <span className="font-medium">support@logicalbook.com</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Phone className="h-4 w-4 text-primary" />
+                  <Phone className="h-4 w-4 text-primary" aria-hidden="true" />
                   <span className="font-medium">+91 98765 43210</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4 text-primary" />
+                  <MapPin className="h-4 w-4 text-primary" aria-hidden="true" />
                   <span className="font-medium">Knowledge Hub, New Delhi, India</span>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-bold mb-2">Subscribe to Newsletter</h4>
+              <label htmlFor="newsletter-email" className="text-sm font-bold mb-2 block">Subscribe to Newsletter</label>
               <div className="flex gap-2">
-                <Input placeholder="Your email" className="h-9 text-xs rounded-lg" aria-label="Email address for newsletter" />
-                <Button size="sm" className="rounded-lg px-4 font-bold">Join</Button>
+                <Input id="newsletter-email" placeholder="Your email address" className="h-9 text-xs rounded-lg" />
+                <Button size="sm" className="rounded-lg px-4 font-bold" aria-label="Join newsletter">Join</Button>
               </div>
             </div>
           </div>

@@ -89,7 +89,7 @@ export interface Question {
 
 /**
  * Robust JSON-safe transformation helper.
- * Ensures only plain objects are passed to Client Components.
+ * High-performance version using JSON round-trip to ensure zero Mongoose internal objects remain.
  */
 function flatten<T>(doc: any): T {
   if (!doc) return doc;

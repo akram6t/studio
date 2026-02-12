@@ -53,16 +53,17 @@ export default function Navbar() {
         </div>
 
         <div className="flex-1 max-w-md hidden lg:flex relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <label htmlFor="navbar-search" className="sr-only">Search exams</label>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input 
+            id="navbar-search"
             placeholder="Search for exams..." 
             className="pl-9 bg-muted/50 border-none focus-visible:ring-1"
-            aria-label="Search exams"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full" aria-label="Toggle theme">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full" aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} theme`}>
             {!mounted ? (
               <Moon className="h-5 w-5" />
             ) : isDarkMode ? (
@@ -95,7 +96,7 @@ export default function Navbar() {
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open navigation menu">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
