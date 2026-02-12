@@ -1,6 +1,9 @@
-'use server';
+/**
+ * @fileOverview Standardized Data Layer for the ExamPrep platform.
+ * All functions return static mock data synchronously to ensure high performance
+ * and stability in a backend-free environment.
+ */
 
-// Standardized Data Interfaces
 export interface Exam {
   id: string;
   slug: string;
@@ -78,6 +81,15 @@ export interface Question {
   mdx?: boolean;
 }
 
+export interface MediaItem {
+  id: string;
+  name: string;
+  type: 'image' | 'pdf' | 'video' | 'other';
+  url: string;
+  size: string;
+  createdAt: string;
+}
+
 // STATIC MOCK DATA
 const STATIC_EXAMS: Exam[] = [
   { id: '1', slug: 'ssc-gd-constable', title: 'SSC GD Constable', category: 'SSC Exams', description: 'Staff Selection Commission - General Duty Constable Exam Preparation.', trending: true, image: 'https://picsum.photos/seed/ssc-exam/600/400', stages: ['Full Length'], subjects: ['General Intelligence', 'English Language', 'Quantitative Aptitude', 'General Awareness'] },
@@ -112,49 +124,54 @@ const STATIC_USERS: SystemUser[] = [
   { id: 'u2', name: 'Demo Student', email: 'student@example.com', role: 'user', isPremium: false, status: 'active', testsTaken: 12 }
 ];
 
-// Data Fetching Actions (Async wrappers for static data)
-export async function getExams(): Promise<Exam[]> {
+const STATIC_MEDIA: MediaItem[] = [
+  { id: 'm1', name: 'ssc-banner.jpg', type: 'image', url: 'https://picsum.photos/seed/ssc-exam/600/400', size: '1.2MB', createdAt: '2024-03-15' },
+  { id: 'm2', name: 'guide-thumbnail.png', type: 'image', url: 'https://picsum.photos/seed/guide-1/300/400', size: '450KB', createdAt: '2024-03-14' }
+];
+
+// Data Fetching Actions
+export function getExams(): Exam[] {
   return STATIC_EXAMS;
 }
 
-export async function getCategories(): Promise<string[]> {
+export function getCategories(): string[] {
   return Array.from(new Set(STATIC_EXAMS.map(e => e.category)));
 }
 
-export async function getMockTests(slug: string): Promise<TestItem[]> {
+export function getMockTests(slug: string): TestItem[] {
   if (slug === 'all') return STATIC_TESTS.filter(t => t.type === 'mock');
   return STATIC_TESTS.filter(t => t.type === 'mock' && t.examSlug === slug);
 }
 
-export async function getTests(slug: string): Promise<TestItem[]> {
+export function getTests(slug: string): TestItem[] {
   if (slug === 'all') return STATIC_TESTS.filter(t => t.type === 'test');
   return STATIC_TESTS.filter(t => t.type === 'test' && t.examSlug === slug);
 }
 
-export async function getPrevPapers(slug: string): Promise<TestItem[]> {
+export function getPrevPapers(slug: string): TestItem[] {
   if (slug === 'all') return STATIC_TESTS.filter(t => t.type === 'previous');
   return STATIC_TESTS.filter(t => t.type === 'previous' && t.examSlug === slug);
 }
 
-export async function getQuizzes(slug: string): Promise<QuizItem[]> {
+export function getQuizzes(slug: string): QuizItem[] {
   if (slug === 'all' || !slug) return STATIC_QUIZZES;
   return STATIC_QUIZZES.filter(q => q.examSlug === slug);
 }
 
-export async function getContent(slug: string): Promise<ContentItem[]> {
+export function getContent(slug: string): ContentItem[] {
   if (slug === 'all' || !slug) return STATIC_CONTENT;
   return STATIC_CONTENT.filter(c => c.examSlug === slug);
 }
 
-export async function getBooks(): Promise<Book[]> {
+export function getBooks(): Book[] {
   return STATIC_BOOKS;
 }
 
-export async function getBookCategories(): Promise<string[]> {
+export function getBookCategories(): string[] {
   return Array.from(new Set(STATIC_BOOKS.map(b => b.category)));
 }
 
-export async function getQuestions(setId: string): Promise<Question[]> {
+export function getQuestions(setId: string): Question[] {
   return [
     { id: 'q1', q: 'Find the value of $x$ in the equation $2^x = 1024$.', options: ['8', '9', '10', '12'], answer: 2, mdx: true },
     { id: 'q2', q: 'What is the largest 3-digit prime number?', options: ['991', '997', '993', '987'], answer: 1, mdx: false },
@@ -164,15 +181,15 @@ export async function getQuestions(setId: string): Promise<Question[]> {
   ];
 }
 
-export async function getUsers(): Promise<SystemUser[]> {
+export function getUsers(): SystemUser[] {
   return STATIC_USERS;
 }
 
-export async function syncUser(clerkUser: any): Promise<SystemUser> {
-  return STATIC_USERS[1];
+export function getMediaItems(): MediaItem[] {
+  return STATIC_MEDIA;
 }
 
-export async function getTopicSets(topicId: string) {
+export function getTopicSets(topicId: string) {
   return [
     { id: 's1', title: 'Practice Set 1: Basic Level', questions: 10, timeLimit: 10, isCompleted: true, isFree: true },
     { id: 's2', title: 'Practice Set 2: Intermediate', questions: 15, timeLimit: 15, isCompleted: false, isFree: true },
@@ -180,15 +197,9 @@ export async function getTopicSets(topicId: string) {
   ];
 }
 
-export async function getPracticeSets(subjectId: string) {
+export function getPracticeSets(subjectId: string) {
   return [
     { id: 'number-systems', title: 'Number Systems', totalQuestions: 30, completedQuestions: 12, difficulty: 'Easy' },
     { id: 'profit-loss', title: 'Profit & Loss', totalQuestions: 50, completedQuestions: 0, difficulty: 'Medium' }
-  ];
-}
-
-export async function getMediaItems() {
-  return [
-    { id: 'm1', name: 'ssc-banner.jpg', type: 'image', url: 'https://picsum.photos/seed/ssc-exam/600/400', size: '1.2MB', createdAt: '2024-03-15' }
   ];
 }

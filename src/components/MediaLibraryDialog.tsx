@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { 
   Dialog, 
   DialogContent, 
@@ -26,13 +26,20 @@ interface MediaLibraryDialogProps {
 const ITEMS_PER_PAGE = 10;
 
 export function MediaLibraryDialog({ open, onOpenChange, onSelect, allowedTypes = ['image'] }: MediaLibraryDialogProps) {
-  const [mediaItems, setMediaItems] = useState<MediaItem[]>(getMediaItems());
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filterType, setFilterFilterType] = useState<string>("all");
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    if (open) {
+      const data = getMediaItems();
+      setMediaItems(data);
+    }
+  }, [open]);
 
   const filteredItems = useMemo(() => {
     return mediaItems.filter(item => {

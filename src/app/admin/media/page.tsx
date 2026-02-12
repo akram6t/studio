@@ -40,20 +40,27 @@ import {
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-// Set to a smaller number like 6 so pagination is visible with mock data (7 items)
 const ITEMS_PER_PAGE = 6;
 
 export default function AdminMediaPage() {
-  const [media, setMedia] = useState<MediaItem[]>(getMediaItems());
+  const [media, setMedia] = useState<MediaItem[]>([]);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isLoading, setIsLoading] = useState(true);
   
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    // Synchronous data retrieval from API layer
+    const data = getMediaItems();
+    setMedia(data);
+    setIsLoading(false);
+  }, []);
 
   const filteredMedia = useMemo(() => {
     return media.filter(item => {
@@ -88,6 +95,10 @@ export default function AdminMediaPage() {
     }
   };
 
+  if (isLoading) {
+    return <div className="p-8 text-center animate-pulse font-bold">Loading Media...</div>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -113,7 +124,7 @@ export default function AdminMediaPage() {
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value);
-                    setCurrentPage(1); // Reset to first page on search
+                    setCurrentPage(1);
                   }}
                 />
               </div>
@@ -146,7 +157,7 @@ export default function AdminMediaPage() {
                   value={filterType} 
                   onValueChange={(val) => { 
                     setFilterType(val); 
-                    setCurrentPage(1); // Reset to first page on filter
+                    setCurrentPage(1);
                   }}
                 >
                   <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4 ring-offset-background">
