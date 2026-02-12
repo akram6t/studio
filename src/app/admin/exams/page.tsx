@@ -16,6 +16,7 @@ import {
   Trash2, 
   Save, 
   Check, 
+  ChevronLeft, 
   ChevronRight, 
   Filter, 
   GraduationCap, 
@@ -80,7 +81,8 @@ export default function AdminExamsPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [examData, catData] = await Promise.all([getExams(), getCategories()]);
+        const examData = getExams();
+        const catData = getCategories();
         setExams(examData);
         setCategories(catData);
       } catch (err) {
@@ -190,13 +192,12 @@ export default function AdminExamsPage() {
 
     setActiveAnalyticsId(exam.id);
     if (!analytics[exam.id]) {
-      const [mock, sectional, prev, quiz, content] = await Promise.all([
-        getMockTests(exam.slug),
-        getTests(exam.slug),
-        getPrevPapers(exam.slug),
-        getQuizzes(exam.slug),
-        getContent(exam.slug)
-      ]);
+      const mock = getMockTests(exam.slug);
+      const sectional = getTests(exam.slug);
+      const prev = getPrevPapers(exam.slug);
+      const quiz = getQuizzes(exam.slug);
+      const content = getContent(exam.slug);
+      
       setAnalytics(prevCache => ({
         ...prevCache,
         [exam.id]: {
@@ -208,6 +209,16 @@ export default function AdminExamsPage() {
         }
       }));
     }
+  };
+
+  const moveExam = (index: number, direction: 'left' | 'right') => {
+    const newIndex = direction === 'left' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= exams.length) return;
+
+    const newExams = [...exams];
+    const [movedItem] = newExams.splice(index, 1);
+    newExams.splice(newIndex, 0, movedItem);
+    setExams(newExams);
   };
 
   if (isLoading) {
@@ -260,7 +271,7 @@ export default function AdminExamsPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredExams.map((exam) => {
+        {filteredExams.map((exam, index) => {
           const isAnalyticsOpen = activeAnalyticsId === exam.id;
           const examStats = analytics[exam.id];
 
@@ -280,6 +291,28 @@ export default function AdminExamsPage() {
                     </Badge>
                   </div>
                 )}
+
+                {/* Reordering Controls overlay - Horizontal */}
+                <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/60 to-transparent flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button 
+                    variant="secondary" 
+                    size="icon" 
+                    className="h-7 w-7 rounded-lg shadow-lg"
+                    disabled={index === 0}
+                    onClick={() => moveExam(index, 'left')}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="icon" 
+                    className="h-7 w-7 rounded-lg shadow-lg"
+                    disabled={index === filteredExams.length - 1}
+                    onClick={() => moveExam(index, 'right')}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <CardHeader className="p-4 pb-2">
                 <h3 className="font-bold text-base leading-tight group-hover:text-primary transition-colors">{exam.title}</h3>

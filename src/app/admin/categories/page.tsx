@@ -21,7 +21,9 @@ import {
   Save,
   Check,
   Image as ImageIcon,
-  Loader2
+  Loader2,
+  ChevronUp,
+  ChevronDown
 } from "lucide-react";
 import { 
   Sheet, 
@@ -120,6 +122,16 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const moveCategory = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= categories.length) return;
+
+    const newCategories = [...categories];
+    const [movedItem] = newCategories.splice(index, 1);
+    newCategories.splice(newIndex, 0, movedItem);
+    setCategories(newCategories);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -177,16 +189,39 @@ export default function AdminCategoriesPage() {
             <Table>
               <TableHeader className="bg-muted/10">
                 <TableRow className="hover:bg-transparent border-b">
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6 h-14">Category & Icon</TableHead>
+                  <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6 h-14 w-20">Order</TableHead>
+                  <TableHead className="font-bold text-[10px] uppercase tracking-widest">Category & Icon</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest">Active Exams</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest">Visibility Status</TableHead>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest text-right pr-6">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCategories.map((category) => (
+                {filteredCategories.map((category, index) => (
                   <TableRow key={category.id} className="group border-b last:border-0 hover:bg-muted/5 transition-colors">
-                    <TableCell className="py-4 pl-6">
+                    <TableCell className="pl-6">
+                      <div className="flex flex-col gap-0.5">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 rounded-md hover:bg-primary/10"
+                          disabled={index === 0}
+                          onClick={() => moveCategory(index, 'up')}
+                        >
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 rounded-md hover:bg-primary/10"
+                          disabled={index === filteredCategories.length - 1}
+                          onClick={() => moveCategory(index, 'down')}
+                        >
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center ring-1 ring-primary/20 shadow-sm overflow-hidden shrink-0">
                           {category.iconUrl ? (
