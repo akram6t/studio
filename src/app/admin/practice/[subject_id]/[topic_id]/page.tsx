@@ -44,8 +44,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export default function AdminTopicSetsPage() {
@@ -114,7 +115,7 @@ export default function AdminTopicSetsPage() {
 
   const handleManageQuestions = (set: TopicSet) => {
     setManagingQuestionsSet(set);
-    // In a real app, fetch questions for this set. For now, use dummy data.
+    // Use standard questions from API for initialization
     const initialQuestions: Question[] = [
       { id: 'q1', q: 'Find the value of $x$ in the equation $2^x = 1024$.', options: ['8', '9', '10', '12'], answer: 2, mdx: true },
       { id: 'q2', q: 'What is the largest 3-digit prime number?', options: ['991', '997', '993', '987'], answer: 1, mdx: false },
@@ -134,7 +135,6 @@ export default function AdminTopicSetsPage() {
         const parsed = JSON.parse(questionsJson);
         if (!Array.isArray(parsed)) throw new Error("Questions must be an array");
         setQuestions(parsed);
-        // Update the set's question count
         if (managingQuestionsSet) {
           setSets(sets.map(s => s.id === managingQuestionsSet.id ? { ...s, questions: parsed.length } : s));
         }
@@ -186,7 +186,6 @@ export default function AdminTopicSetsPage() {
           >
             <CardContent className="p-0">
               <div className="flex flex-col md:flex-row items-center p-5 gap-6">
-                {/* Reordering Controls - Vertical */}
                 <div className="flex flex-col gap-1 shrink-0">
                   <Button 
                     variant="ghost" 
@@ -208,7 +207,6 @@ export default function AdminTopicSetsPage() {
                   </Button>
                 </div>
 
-                {/* Index / Visual */}
                 <div className={cn(
                   "h-14 w-14 shrink-0 flex items-center justify-center rounded-2xl font-headline text-xl font-bold transition-colors",
                   "bg-primary/5 text-primary group-hover:bg-primary group-hover:text-primary-foreground"
@@ -216,7 +214,6 @@ export default function AdminTopicSetsPage() {
                   {index + 1}
                 </div>
 
-                {/* Info */}
                 <div className="flex-grow text-center md:text-left">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
                     <h3 className="text-lg font-bold text-foreground">{set.title}</h3>
@@ -247,7 +244,6 @@ export default function AdminTopicSetsPage() {
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="shrink-0 flex items-center gap-2">
                   <Button 
                     variant="outline"
@@ -284,7 +280,6 @@ export default function AdminTopicSetsPage() {
         ))}
       </div>
 
-      {/* Edit/Add Set Drawer */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
           <SheetHeader className="mb-6 border-b pb-4">
@@ -359,7 +354,6 @@ export default function AdminTopicSetsPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Questions Management Drawer */}
       <Sheet open={isQuestionsSheetOpen} onOpenChange={setIsQuestionsSheetOpen}>
         <SheetContent side="right" className="sm:max-w-2xl overflow-y-auto">
           <SheetHeader className="mb-6 border-b pb-4">
@@ -412,9 +406,6 @@ export default function AdminTopicSetsPage() {
                   className="min-h-[400px] font-mono text-xs p-4 rounded-xl leading-relaxed resize-none border-primary/10"
                   placeholder='[ { "id": "q1", "q": "Question text...", "options": [...], "answer": 0, "mdx": true } ]'
                 />
-                <p className="text-[10px] text-muted-foreground italic">
-                  Paste your test data here. Ensure the JSON follows the schema: id, q, options (string[]), answer (number index), mdx (boolean).
-                </p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -424,14 +415,29 @@ export default function AdminTopicSetsPage() {
                       <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase">Q{idx + 1}</Badge>
                       <span className="text-[10px] font-mono text-muted-foreground">ID: {q.id}</span>
                     </div>
-                    <p className="text-sm font-bold leading-relaxed line-clamp-2">{q.q}</p>
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    
+                    <div className="mb-4">
+                      {q.mdx ? (
+                        <MarkdownRenderer content={q.q} className="prose-sm font-bold" />
+                      ) : (
+                        <p className="text-sm font-bold leading-relaxed line-clamp-3">{q.q}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {q.options.map((opt, oIdx) => (
                         <div key={oIdx} className={cn(
-                          "px-2 py-1 rounded text-[10px] font-bold border",
+                          "p-2 rounded-lg text-[10px] font-bold border transition-colors flex items-center gap-2",
                           q.answer === oIdx ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-background text-muted-foreground"
                         )}>
-                          {opt}
+                          <span className="opacity-50 shrink-0">{String.fromCharCode(65 + oIdx)}.</span>
+                          <div className="flex-grow">
+                            {q.mdx ? (
+                              <MarkdownRenderer content={opt} className="prose-sm prose-p:m-0" />
+                            ) : (
+                              <span>{opt}</span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
