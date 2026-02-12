@@ -81,6 +81,24 @@ export interface Question {
   mdx?: boolean;
 }
 
+export interface TopicSet {
+  id: string;
+  title: string;
+  questions: number;
+  timeLimit: number;
+  isCompleted: boolean;
+  isFree: boolean;
+  languages?: string[];
+}
+
+export interface PracticeSet {
+  id: string;
+  title: string;
+  totalQuestions: number;
+  completedQuestions: number;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+}
+
 export interface MediaItem {
   id: string;
   name: string;
@@ -189,15 +207,15 @@ export function getMediaItems(): MediaItem[] {
   return STATIC_MEDIA;
 }
 
-export function getTopicSets(topicId: string) {
+export function getTopicSets(topicId: string): TopicSet[] {
   return [
-    { id: 's1', title: 'Practice Set 1: Basic Level', questions: 10, timeLimit: 10, isCompleted: true, isFree: true },
-    { id: 's2', title: 'Practice Set 2: Intermediate', questions: 15, timeLimit: 15, isCompleted: false, isFree: true },
-    { id: 's3', title: 'Practice Set 3: Advanced Concepts', questions: 20, timeLimit: 20, isCompleted: false, isFree: false }
+    { id: 's1', title: 'Practice Set 1: Basic Level', questions: 10, timeLimit: 10, isCompleted: true, isFree: true, languages: ['English', 'Hindi'] },
+    { id: 's2', title: 'Practice Set 2: Intermediate', questions: 15, timeLimit: 15, isCompleted: false, isFree: true, languages: ['English'] },
+    { id: 's3', title: 'Practice Set 3: Advanced Concepts', questions: 20, timeLimit: 20, isCompleted: false, isFree: false, languages: ['English', 'Hindi', 'Marathi'] }
   ];
 }
 
-export function getPracticeSets(subjectId: string) {
+export function getPracticeSets(subjectId: string): PracticeSet[] {
   return [
     { id: 'number-systems', title: 'Number Systems', totalQuestions: 30, completedQuestions: 12, difficulty: 'Easy' },
     { id: 'profit-loss', title: 'Profit & Loss', totalQuestions: 50, completedQuestions: 0, difficulty: 'Medium' }
