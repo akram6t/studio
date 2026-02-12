@@ -50,6 +50,9 @@ export interface ContentItem {
   isFree: boolean;
   contentMdx?: string;
   examSlug?: string;
+  examSlugs?: string[];
+  status?: 'published' | 'draft';
+  createdAt: string;
 }
 
 export interface Book {
@@ -135,8 +138,8 @@ const STATIC_QUIZZES: QuizItem[] = [
 ];
 
 const STATIC_CONTENT: ContentItem[] = [
-  { id: 'c1', title: 'SSC GD Preparation Strategy', type: 'pdf', url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', thumbnail: 'https://picsum.photos/seed/guide-1/300/400', isFree: true, examSlug: 'ssc-gd-constable' },
-  { id: 'c2', title: '10 Year Exam Analysis', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/analysis-1/300/400', isFree: false, contentMdx: '# Analysis\nPatterns matter.', examSlug: 'ssc-gd-constable' }
+  { id: 'c1', title: 'SSC GD Preparation Strategy', type: 'pdf', url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', thumbnail: 'https://picsum.photos/seed/guide-1/300/400', isFree: true, examSlug: 'ssc-gd-constable', examSlugs: ['ssc-gd-constable'], status: 'published', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString() },
+  { id: 'c2', title: '10 Year Exam Analysis', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/analysis-1/300/400', isFree: false, contentMdx: '# Analysis\nPatterns matter.', examSlug: 'ssc-gd-constable', examSlugs: ['ssc-gd-constable', 'ccat-exam'], status: 'published', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString() }
 ];
 
 const STATIC_USERS: SystemUser[] = [
@@ -180,7 +183,7 @@ export function getQuizzes(slug: string): QuizItem[] {
 
 export function getContent(slug: string): ContentItem[] {
   if (slug === 'all' || !slug) return STATIC_CONTENT;
-  return STATIC_CONTENT.filter(c => c.examSlug === slug);
+  return STATIC_CONTENT.filter(c => c.examSlug === slug || c.examSlugs?.includes(slug));
 }
 
 export function getBooks(): Book[] {
