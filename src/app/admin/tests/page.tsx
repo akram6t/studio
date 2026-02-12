@@ -25,7 +25,8 @@ import {
   Settings2,
   Filter,
   Loader2,
-  GraduationCap
+  GraduationCap,
+  CircleDashed
 } from "lucide-react";
 import { 
   Sheet, 
@@ -117,6 +118,7 @@ export default function AdminTestsPage() {
   const handleEdit = (test: TestItem) => {
     setEditingTest({
       ...test,
+      status: test.status || 'published',
       examSlugs: test.examSlugs || (test.examSlug ? [test.examSlug] : [])
     });
     setIsSheetOpen(true);
@@ -149,7 +151,7 @@ export default function AdminTestsPage() {
     }
   };
 
-  const subjects = useMemo(() => Array.from(new Set(tests.map(t => t.subject))).filter(Boolean), [tests]);
+  const subjects = useMemo(() => Array.from(new Set(tests.map(t => t.subject))).filter(Boolean) as string[], [tests]);
 
   if (isLoading) {
     return (
@@ -230,7 +232,7 @@ export default function AdminTestsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Subjects</SelectItem>
-                    {subjects.map(s => <SelectItem key={s!} value={s!}>{s}</SelectItem>)}
+                    {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -325,9 +327,15 @@ export default function AdminTestsPage() {
                     )}
                     {visibleColumns.status && (
                       <TableCell>
-                        <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
-                          <CheckCircle2 className="h-3 w-3" /> Published
-                        </div>
+                        {test.status === 'published' ? (
+                          <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
+                            <CheckCircle2 className="h-3 w-3" /> Published
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-muted-foreground font-bold text-[11px]">
+                            <CircleDashed className="h-3 w-3" /> Draft
+                          </div>
+                        )}
                       </TableCell>
                     )}
                     <TableCell className="text-right pr-6">
@@ -405,14 +413,21 @@ export default function AdminTestsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-test-subject">Subject</Label>
-                <Input 
-                  id="edit-test-subject" 
-                  value={editingTest.subject || ""} 
-                  onChange={(e) => setEditingTest({...editingTest, subject: e.target.value})}
-                  className="rounded-xl"
-                  placeholder="e.g. Mathematics, Reasoning"
-                />
+                <Label>Subject</Label>
+                <Select 
+                  value={editingTest.subject || "none"} 
+                  onValueChange={(val) => setEditingTest({...editingTest, subject: val === "none" ? undefined : val})}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select subject" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Uncategorized</SelectItem>
+                    {subjects.map(s => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -464,20 +479,38 @@ export default function AdminTestsPage() {
                 <p className="text-[10px] text-muted-foreground italic px-1">This test will be visible in the selected exam pages.</p>
               </div>
 
-              <div className="space-y-2">
-                <Label>Access Level</Label>
-                <Select 
-                  value={editingTest.isFree ? "free" : "premium"} 
-                  onValueChange={(val: any) => setEditingTest({...editingTest, isFree: val === "free"})}
-                >
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="Select access" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">Free Access</SelectItem>
-                    <SelectItem value="premium">Premium Only</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Access Level</Label>
+                  <Select 
+                    value={editingTest.isFree ? "free" : "premium"} 
+                    onValueChange={(val: any) => setEditingTest({...editingTest, isFree: val === "free"})}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select access" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free Access</SelectItem>
+                      <SelectItem value="premium">Premium Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Publication Status</Label>
+                  <Select 
+                    value={editingTest.status || "published"} 
+                    onValueChange={(val: any) => setEditingTest({...editingTest, status: val})}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="draft">Draft (Hidden)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           )}
