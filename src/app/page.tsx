@@ -1,6 +1,5 @@
-"use client";
 
-import { getExams, getBooks, Exam, Book } from '@/lib/api';
+import { getExams, getBooks } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,33 +14,14 @@ import {
   Star,
   ChevronRight,
   Zap,
-  Layout,
-  Loader2
+  Layout
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { useState, useEffect } from 'react';
 
-export default function Home() {
-  const [exams, setExams] = useState<Exam[]>([]);
-  const [books, setBooks] = useState<Book[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function init() {
-      try {
-        const [exData, bkData] = await Promise.all([getExams(), getBooks()]);
-        setExams(exData);
-        setBooks(bkData);
-      } catch (error) {
-        console.error("Failed to load home data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    init();
-  }, []);
+export default async function Home() {
+  const [exams, books] = await Promise.all([getExams(), getBooks()]);
 
   const trendingExams = exams.filter(e => e.trending).slice(0, 4);
   const featuredBooks = books.slice(0, 4);
@@ -53,21 +33,13 @@ export default function Home() {
     { id: 'gk', title: 'General Knowledge', icon: <Layout className="h-6 w-6" />, color: 'bg-orange-500', count: '2000+' },
   ];
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-20 pb-20">
       {/* Hero Section */}
       <section className="relative pt-12 md:pt-24 overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-8">
-            <Badge variant="outline" className="px-4 py-1.5 border-accent/20 bg-accent/5 text-accent font-bold uppercase tracking-widest text-[10px] animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <Badge variant="outline" className="px-4 py-1.5 border-accent/20 bg-accent/5 text-accent font-bold uppercase tracking-widest text-[10px]">
               <Zap className="h-3 w-3 mr-2 fill-current" />
               Trusted by 1M+ Aspirants
             </Badge>
@@ -273,7 +245,7 @@ export default function Home() {
             </div>
             
             <div className="hidden lg:block relative aspect-square">
-              <div className="absolute inset-0 bg-white/5 rounded-[40px] backdrop-blur-3xl border border-white/10 p-12 space-y-8 animate-in zoom-in-95 duration-1000">
+              <div className="absolute inset-0 bg-white/5 rounded-[40px] backdrop-blur-3xl border border-white/10 p-12 space-y-8">
                 <div className="flex items-center gap-4 border-b border-white/10 pb-6">
                   <div className="w-12 h-12 rounded-full bg-accent" />
                   <div className="space-y-1">

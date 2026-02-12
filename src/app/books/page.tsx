@@ -1,69 +1,15 @@
-"use client";
 
-import { getBooks, getBookCategories, Book } from '@/lib/api';
+import { getBooks, getBookCategories } from '@/lib/api';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, BookOpen, Star, Filter, ChevronRight, ChevronLeft, ShoppingCart, Loader2 } from 'lucide-react';
+import { Search, BookOpen, Star, ChevronRight, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
-const ITEMS_PER_PAGE = 8;
-
-export default function BooksPage() {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const [bkData, catData] = await Promise.all([getBooks(), getBookCategories()]);
-        setBooks(bkData);
-        setCategories(['All', ...catData]);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    load();
-  }, []);
-
-  const filteredBooks = useMemo(() => {
-    return books.filter(book => {
-      const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          book.author.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'All' || book.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-  }, [books, searchQuery, selectedCategory]);
-
-  const totalPages = Math.ceil(filteredBooks.length / ITEMS_PER_PAGE);
-  const paginatedBooks = filteredBooks.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
+export default async function BooksPage() {
+  const [books, categories] = await Promise.all([getBooks(), getBookCategories()]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -78,36 +24,11 @@ export default function BooksPage() {
           <Input 
             placeholder="Search by book or author..." 
             className="pl-10 h-12 bg-card rounded-2xl border-none shadow-sm"
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
           />
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Mobile Filter */}
-        <div className="lg:hidden">
-          <Select value={selectedCategory} onValueChange={(val) => {
-            setSelectedCategory(val);
-            setCurrentPage(1);
-          }}>
-            <SelectTrigger className="w-full bg-card h-12 rounded-xl border-none shadow-sm">
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-primary" />
-                <SelectValue placeholder="All Categories" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map(cat => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* Desktop Sidebar */}
         <aside className="hidden lg:block w-64 shrink-0">
           <div className="sticky top-24 space-y-6">
@@ -117,22 +38,18 @@ export default function BooksPage() {
               </div>
               <CardContent className="p-2">
                 <div className="space-y-1">
-                  {categories.map(cat => (
+                  {['All', ...categories].map(cat => (
                     <button
                       key={cat}
-                      onClick={() => {
-                        setSelectedCategory(cat);
-                        setCurrentPage(1);
-                      }}
                       className={cn(
                         "w-full flex items-center justify-between p-3 rounded-lg text-sm font-semibold transition-all group",
-                        selectedCategory === cat 
+                        cat === 'All'
                           ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
                           : "hover:bg-muted text-muted-foreground"
                       )}
                     >
                       <span>{cat}</span>
-                      {selectedCategory === cat && <ChevronRight className="h-4 w-4" />}
+                      {cat === 'All' && <ChevronRight className="h-4 w-4" />}
                     </button>
                   ))}
                 </div>
@@ -154,9 +71,9 @@ export default function BooksPage() {
 
         {/* Book Grid */}
         <div className="flex-grow">
-          {paginatedBooks.length > 0 ? (
+          {books.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-              {paginatedBooks.map((book) => (
+              {books.map((book) => (
                 <BookCard key={book.id} book={book} />
               ))}
             </div>
@@ -167,54 +84,13 @@ export default function BooksPage() {
               <p className="text-muted-foreground">Try adjusting your filters or search terms.</p>
             </div>
           )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-12">
-              <Button
-                variant="outline"
-                size="icon"
-                disabled={currentPage === 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-                className="rounded-xl"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              
-              <div className="flex items-center gap-1 mx-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "ghost"}
-                    onClick={() => handlePageChange(page)}
-                    className={cn(
-                      "w-10 h-10 rounded-xl font-bold",
-                      currentPage === page && "shadow-lg shadow-primary/20"
-                    )}
-                  >
-                    {page}
-                  </Button>
-                ))}
-              </div>
-
-              <Button
-                variant="outline"
-                size="icon"
-                disabled={currentPage === totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-                className="rounded-xl"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </div>
   );
 }
 
-function BookCard({ book }: { book: Book }) {
+function BookCard({ book }: { book: any }) {
   return (
     <Card className="group flex flex-col border-none shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 bg-card">
       <div className="aspect-square relative overflow-hidden bg-muted">

@@ -1,47 +1,16 @@
-"use client";
 
-import { useParams } from 'next/navigation';
-import { getExams, Exam } from '@/lib/api';
+import { getExams } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Sparkles, Zap, Loader2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import { Zap } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import Link from 'next/link';
 
-export default function ExamOverview() {
-  const params = useParams();
-  const slug = params.exam_slug as string;
-  const [exam, setExam] = useState<Exam | null>(null);
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const exams = await getExams();
-        const found = exams.find(e => e.slug === slug);
-        if (found) setExam(found);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    load();
-
-    const handleUnlock = () => setIsUnlocked(true);
-    window.addEventListener('premium-unlocked', handleUnlock);
-    return () => window.removeEventListener('premium-unlocked', handleUnlock);
-  }, [slug]);
-
-  if (isLoading) return (
-    <div className="flex items-center justify-center py-20">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
-  );
+export default async function ExamOverview({ params }: { params: Promise<{ exam_slug: string }> }) {
+  const { exam_slug: slug } = await params;
+  const exams = await getExams();
+  const exam = exams.find(e => e.slug === slug);
 
   if (!exam) return null;
 
@@ -69,76 +38,38 @@ Success in this competitive examination requires a disciplined approach, a thoro
       </div>
 
       <div className="space-y-6">
-        <Card className={cn(
-          "sticky top-40 overflow-hidden transition-all duration-500 rounded-[2.5rem] border shadow-xl",
-          isUnlocked 
-            ? "border-amber-600/30 bg-amber-50/50 dark:bg-amber-950/10" 
-            : "border-primary/10 bg-card"
-        )}>
+        <Card className="sticky top-40 overflow-hidden transition-all duration-500 rounded-[2.5rem] border shadow-xl border-primary/10 bg-card">
           <CardContent className="p-8">
             <div className="flex justify-between items-start mb-6">
               <h3 className="text-2xl font-headline font-bold text-card-foreground">Preparation Kit</h3>
-              {isUnlocked ? (
-                <div className="bg-amber-600 p-2 rounded-2xl text-white shadow-lg shadow-amber-600/20">
-                  <Crown className="h-6 w-6" />
-                </div>
-              ) : (
-                <div className="bg-primary p-2 rounded-2xl text-primary-foreground shadow-lg shadow-primary/20">
-                  <Zap className="h-6 w-6" />
-                </div>
-              )}
+              <div className="bg-primary p-2 rounded-2xl text-primary-foreground shadow-lg shadow-primary/20">
+                <Zap className="h-6 w-6" />
+              </div>
             </div>
 
-            {isUnlocked ? (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <div className="p-5 bg-white dark:bg-slate-900/50 rounded-[1.5rem] border-2 border-amber-600/20 shadow-inner">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Sparkles className="h-5 w-5 text-amber-600" />
-                    <span className="font-black text-amber-600 uppercase tracking-widest text-[10px]">Elite Status</span>
-                  </div>
-                  <p className="text-sm font-bold leading-relaxed text-foreground">Your account has unrestricted access to all 250+ premium tests!</p>
+            <div className="space-y-8">
+              <div className="space-y-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xs font-bold text-muted-foreground">Starting at</span>
+                  <span className="text-4xl font-black tracking-tight text-foreground">₹199</span>
+                  <span className="text-sm font-bold text-muted-foreground">/mo</span>
                 </div>
-                
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.2em]">
-                    <span className="text-muted-foreground">Pass Type</span>
-                    <Badge className="bg-amber-600 text-white border-none px-3 py-1 font-black">ULTIMATE</Badge>
-                  </div>
-                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.2em]">
-                    <span className="text-muted-foreground">Days Left</span>
-                    <span className="text-amber-700 dark:text-amber-400">364 Days</span>
-                  </div>
-                </div>
-                
-                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white h-12 rounded-2xl font-black text-xs uppercase tracking-widest" disabled>
-                  Elite Member Active
-                </Button>
+                <Badge variant="outline" className="text-[9px] font-black text-emerald-600 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 h-5">BEST VALUE</Badge>
               </div>
-            ) : (
-              <div className="space-y-8">
-                <div className="space-y-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-xs font-bold text-muted-foreground">Starting at</span>
-                    <span className="text-4xl font-black tracking-tight text-foreground">₹199</span>
-                    <span className="text-sm font-bold text-muted-foreground">/mo</span>
-                  </div>
-                  <Badge variant="outline" className="text-[9px] font-black text-emerald-600 border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 h-5">BEST VALUE</Badge>
-                </div>
-                
-                <p className="text-sm text-muted-foreground font-medium leading-relaxed">Unlock the full potential of your preparation with expert strategy guides and official pattern mocks.</p>
-                
-                <div className="space-y-4">
-                  <Link href="/pricing" className="block w-full">
-                    <Button 
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-14 text-lg font-black rounded-2xl shadow-xl shadow-primary/20"
-                    >
-                      Unlock Pro Prep
-                    </Button>
-                  </Link>
-                  <p className="text-[10px] text-center text-muted-foreground font-bold italic tracking-wide uppercase">Choose a plan that works for you • Instant activation</p>
-                </div>
+              
+              <p className="text-sm text-muted-foreground font-medium leading-relaxed">Unlock the full potential of your preparation with expert strategy guides and official pattern mocks.</p>
+              
+              <div className="space-y-4">
+                <Link href="/pricing" className="block w-full">
+                  <Button 
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-14 text-lg font-black rounded-2xl shadow-xl shadow-primary/20"
+                  >
+                    Unlock Pro Prep
+                  </Button>
+                </Link>
+                <p className="text-[10px] text-center text-muted-foreground font-bold italic tracking-wide uppercase">Choose a plan that works for you • Instant activation</p>
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -1,42 +1,14 @@
-"use client";
 
-import { getExams, getCategories, Exam } from '@/lib/api';
+import { getExams, getCategories } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { TrendingUp, LayoutGrid, ChevronRight, Loader2 } from 'lucide-react';
+import { TrendingUp, LayoutGrid, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
 
-export default function ExamsPage() {
-  const [exams, setExams] = useState<Exam[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [examData, catData] = await Promise.all([getExams(), getCategories()]);
-        setExams(examData);
-        setCategories(catData);
-      } catch (error) {
-        console.error("Failed to fetch exams:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
-
+export default async function ExamsPage() {
+  const [exams, categories] = await Promise.all([getExams(), getCategories()]);
   const trendingExams = exams.filter(e => e.trending);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -61,6 +33,7 @@ export default function ExamsPage() {
                     fill 
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                     data-ai-hint="exam preparation"
+                    priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <Badge className="absolute top-3 right-3 bg-accent text-white border-none text-[10px]">Trending</Badge>
