@@ -9,7 +9,7 @@ export interface ITest extends Document {
   type: 'mock' | 'test' | 'previous';
   subject?: string;
   status: 'published' | 'draft';
-  examSlug?: string;
+  examSlugs: string[]; // Supports multiple associated exams
 }
 
 const TestSchema: Schema = new Schema({
@@ -21,7 +21,7 @@ const TestSchema: Schema = new Schema({
   type: { type: String, enum: ['mock', 'test', 'previous'], required: true },
   subject: { type: String },
   status: { type: String, enum: ['published', 'draft'], default: 'published' },
-  examSlug: { type: String }
+  examSlugs: [{ type: String }]
 }, { timestamps: true });
 
 export default mongoose.models.Test || mongoose.model<ITest>('Test', TestSchema);

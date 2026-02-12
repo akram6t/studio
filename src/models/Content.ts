@@ -7,7 +7,7 @@ export interface IContent extends Document {
   thumbnail?: string;
   isFree: boolean;
   contentMdx?: string;
-  examSlug?: string;
+  examSlugs: string[];
 }
 
 const ContentSchema: Schema = new Schema({
@@ -17,7 +17,7 @@ const ContentSchema: Schema = new Schema({
   thumbnail: { type: String },
   isFree: { type: Boolean, default: false },
   contentMdx: { type: String },
-  examSlug: { type: String }
+  examSlugs: [{ type: String }]
 }, { timestamps: true });
 
 export default mongoose.models.Content || mongoose.model<IContent>('Content', ContentSchema);

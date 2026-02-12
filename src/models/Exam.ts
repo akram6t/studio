@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IExam extends Document {
-  id: string;
   slug: string;
   title: string;
   category: string;
@@ -11,6 +10,7 @@ export interface IExam extends Document {
   image: string;
   stages: string[];
   subjects: string[];
+  order: number;
 }
 
 const ExamSchema: Schema = new Schema({
@@ -22,7 +22,8 @@ const ExamSchema: Schema = new Schema({
   trending: { type: Boolean, default: false },
   image: { type: String, required: true },
   stages: [{ type: String }],
-  subjects: [{ type: String }]
+  subjects: [{ type: String }],
+  order: { type: Number, default: 0 }
 }, { timestamps: true });
 
 export default mongoose.models.Exam || mongoose.model<IExam>('Exam', ExamSchema);

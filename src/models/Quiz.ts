@@ -2,18 +2,20 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IQuiz extends Document {
   title: string;
-  questions: number;
+  numberOfQuestions: number;
   timeLimit: number;
   tags: string[];
-  examSlug?: string;
+  examSlugs: string[];
+  isActive: boolean;
 }
 
 const QuizSchema: Schema = new Schema({
   title: { type: String, required: true },
-  questions: { type: Number, required: true },
+  numberOfQuestions: { type: Number, required: true },
   timeLimit: { type: Number, required: true },
   tags: [{ type: String }],
-  examSlug: { type: String }
+  examSlugs: [{ type: String }],
+  isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 
 export default mongoose.models.Quiz || mongoose.model<IQuiz>('Quiz', QuizSchema);

@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
-  clerkId: string;
+  clerkId: string; // Integration with Auth provider
   name: string;
   email: string;
   role: 'admin' | 'creator' | 'user';
@@ -9,6 +9,7 @@ export interface IUser extends Document {
   premiumExpiry?: Date;
   status: 'active' | 'inactive';
   testsTaken: number;
+  lastLogin?: Date;
 }
 
 const UserSchema: Schema = new Schema({
@@ -19,7 +20,8 @@ const UserSchema: Schema = new Schema({
   isPremium: { type: Boolean, default: false },
   premiumExpiry: { type: Date },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
-  testsTaken: { type: Number, default: 0 }
+  testsTaken: { type: Number, default: 0 },
+  lastLogin: { type: Date }
 }, { timestamps: true });
 
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
