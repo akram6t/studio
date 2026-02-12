@@ -1,18 +1,12 @@
-
 "use client";
 
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin-sidebar";
-import { Bell, Search, User, Sun, Moon } from "lucide-react";
+import { Bell, Search, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { useUser, UserButton } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
-
-const ADMIN_EMAIL = "developeruniqe@gmail.com";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, isLoaded } = useUser();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -30,15 +24,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       document.documentElement.classList.toggle('dark', newMode);
     }
   };
-
-  if (!isLoaded) return null;
-
-  // Final safety check for Admin Route
-  const isAdmin = user?.primaryEmailAddress?.emailAddress === ADMIN_EMAIL;
-  if (!isAdmin) {
-    // If authenticated but not admin, send to public exams page instead of sign-in loop
-    redirect("/exams");
-  }
 
   return (
     <SidebarProvider>
@@ -77,17 +62,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               
               <div className="flex items-center gap-3 pl-1">
                 <div className="hidden lg:flex flex-col text-right">
-                  <span className="text-xs font-bold leading-none">{user?.fullName || 'Admin User'}</span>
+                  <span className="text-xs font-bold leading-none">Admin User</span>
                   <span className="text-[10px] text-muted-foreground font-semibold">Super Administrator</span>
                 </div>
-                <UserButton 
-                  afterSignOutUrl="/" 
-                  appearance={{
-                    elements: {
-                      userButtonAvatarBox: 'h-10 w-10 ring-2 ring-primary/20'
-                    }
-                  }}
-                />
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border-2 border-primary/20">
+                  A
+                </div>
               </div>
             </div>
           </header>

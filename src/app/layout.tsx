@@ -1,7 +1,6 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import LayoutWrapper from '@/components/layout-wrapper';
-import { ClerkProvider } from '@clerk/nextjs';
 import { Inter, Space_Grotesk } from 'next/font/google';
 
 const inter = Inter({
@@ -27,14 +26,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
-        <body className="antialiased min-h-screen bg-background text-foreground flex flex-col font-sans">
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+      <body className="antialiased min-h-screen bg-background text-foreground flex flex-col font-sans">
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
+      </body>
+    </html>
   );
 }

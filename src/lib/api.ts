@@ -1,13 +1,4 @@
-
 'use server';
-
-import connectDB from './db';
-import ExamModel from '@/models/Exam';
-import TestModel from '@/models/Test';
-import UserModel from '@/models/User';
-import BookModel from '@/models/Book';
-import QuizModel from '@/models/Quiz';
-import ContentModel from '@/models/Content';
 
 // Standardized Data Interfaces
 export interface Exam {
@@ -70,7 +61,6 @@ export interface Book {
 
 export interface SystemUser {
   id: string;
-  clerkId: string;
   name: string;
   email: string;
   role: 'admin' | 'creator' | 'user';
@@ -88,77 +78,80 @@ export interface Question {
   mdx?: boolean;
 }
 
-/**
- * Robust JSON-safe transformation helper.
- * Optimized to handle serialization for Next.js 15 Server Components.
- */
-function flatten<T>(doc: any): T {
-  if (!doc) return doc;
-  // Deep clone and handle ObjectIds/Dates by conversion to standard JSON types
-  return JSON.parse(JSON.stringify(doc)) as T;
-}
+// STATIC MOCK DATA
+const STATIC_EXAMS: Exam[] = [
+  { id: '1', slug: 'ssc-gd-constable', title: 'SSC GD Constable', category: 'SSC Exams', description: 'Staff Selection Commission - General Duty Constable Exam Preparation.', trending: true, image: 'https://picsum.photos/seed/ssc-exam/600/400', stages: ['Full Length'], subjects: ['General Intelligence', 'English Language', 'Quantitative Aptitude', 'General Awareness'] },
+  { id: '2', slug: 'gate-exam', title: 'GATE 2024', category: 'Engineering', description: 'Graduate Aptitude Test in Engineering for engineering graduates.', trending: true, image: 'https://picsum.photos/seed/gate-exam/600/400', stages: ['Technical Paper'], subjects: ['Engineering Mathematics', 'Technical Subject', 'General Aptitude'] },
+  { id: '3', slug: 'ccat-exam', title: 'CDAC C-CAT', category: 'IT/Software', description: 'CDAC Common Admission Test for PG Diploma courses.', trending: false, image: 'https://picsum.photos/seed/cdac-exam/600/400', stages: ['Section A', 'Section B', 'Section C'], subjects: ['English', 'Mathematics', 'Reasoning', 'Computer Fundamentals', 'Data Structures', 'C Programming', 'OS'] },
+  { id: '4', slug: 'upsc-civil-services', title: 'UPSC Civil Services', category: 'Civil Services', description: 'The premier exam for IAS, IPS, and IPS services in India.', trending: true, image: 'https://picsum.photos/seed/upsc-exam/600/400', stages: ['Prelims Paper I', 'Prelims Paper II (CSAT)'], subjects: ['History', 'Geography', 'Polity', 'Economics', 'Science', 'Current Affairs'] }
+];
 
-// Data Fetching Actions
+const STATIC_TESTS: TestItem[] = [
+  { id: 't1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length', examSlug: 'ssc-gd-constable' },
+  { id: 't2', title: 'Percentage & Fractions', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude', examSlug: 'ssc-gd-constable' },
+  { id: 't3', title: 'Official Paper 2024 (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', subject: '2024', examSlug: 'ssc-gd-constable' }
+];
+
+const STATIC_BOOKS: Book[] = [
+  { id: 'b1', title: 'Quantitative Aptitude', author: 'R.S. Aggarwal', category: 'SSC Exams', price: 450, rating: 4.8, image: 'https://picsum.photos/seed/book1/300/400', pages: 750, language: 'English' },
+  { id: 'b2', title: 'Modern Reasoning', author: 'Dr. R.S. Aggarwal', category: 'Reasoning', price: 380, rating: 4.7, image: 'https://picsum.photos/seed/book2/300/400', pages: 620, language: 'English' }
+];
+
+const STATIC_QUIZZES: QuizItem[] = [
+  { id: 'q1', title: 'Daily Current Affairs Quiz', questions: 10, timeLimit: 5, tags: ['CA', 'GK'], examSlug: 'ssc-gd-constable' },
+  { id: 'q2', title: 'Numerical Ability Mini Quiz', questions: 15, timeLimit: 12, tags: ['Quant'], examSlug: 'ssc-gd-constable' }
+];
+
+const STATIC_CONTENT: ContentItem[] = [
+  { id: 'c1', title: 'SSC GD Preparation Strategy', type: 'pdf', url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', thumbnail: 'https://picsum.photos/seed/guide-1/300/400', isFree: true, examSlug: 'ssc-gd-constable' },
+  { id: 'c2', title: '10 Year Exam Analysis', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/analysis-1/300/400', isFree: false, contentMdx: '# Analysis\nPatterns matter.', examSlug: 'ssc-gd-constable' }
+];
+
+const STATIC_USERS: SystemUser[] = [
+  { id: 'u1', name: 'Admin User', email: 'admin@logicalbook.com', role: 'admin', isPremium: true, status: 'active', testsTaken: 45 },
+  { id: 'u2', name: 'Demo Student', email: 'student@example.com', role: 'user', isPremium: false, status: 'active', testsTaken: 12 }
+];
+
+// Data Fetching Actions (Async wrappers for static data)
 export async function getExams(): Promise<Exam[]> {
-  await connectDB();
-  const exams = await ExamModel.find().lean();
-  if (exams.length === 0) return await seedExams();
-  return exams.map(e => flatten<Exam>(e));
+  return STATIC_EXAMS;
 }
 
 export async function getCategories(): Promise<string[]> {
-  const exams = await getExams();
-  return Array.from(new Set(exams.map(e => e.category)));
+  return Array.from(new Set(STATIC_EXAMS.map(e => e.category)));
 }
 
 export async function getMockTests(slug: string): Promise<TestItem[]> {
-  await connectDB();
-  const query = slug === 'all' ? { type: 'mock' } : { type: 'mock', examSlug: slug };
-  const tests = await TestModel.find(query).lean();
-  if (tests.length === 0 && slug === 'all') return await seedTests();
-  return tests.map(t => flatten<TestItem>(t));
+  if (slug === 'all') return STATIC_TESTS.filter(t => t.type === 'mock');
+  return STATIC_TESTS.filter(t => t.type === 'mock' && t.examSlug === slug);
 }
 
 export async function getTests(slug: string): Promise<TestItem[]> {
-  await connectDB();
-  const query = slug === 'all' ? { type: 'test' } : { type: 'test', examSlug: slug };
-  const tests = await TestModel.find(query).lean();
-  return tests.map(t => flatten<TestItem>(t));
+  if (slug === 'all') return STATIC_TESTS.filter(t => t.type === 'test');
+  return STATIC_TESTS.filter(t => t.type === 'test' && t.examSlug === slug);
 }
 
 export async function getPrevPapers(slug: string): Promise<TestItem[]> {
-  await connectDB();
-  const query = slug === 'all' ? { type: 'previous' } : { type: 'previous', examSlug: slug };
-  const tests = await TestModel.find(query).lean();
-  return tests.map(t => flatten<TestItem>(t));
+  if (slug === 'all') return STATIC_TESTS.filter(t => t.type === 'previous');
+  return STATIC_TESTS.filter(t => t.type === 'previous' && t.examSlug === slug);
 }
 
 export async function getQuizzes(slug: string): Promise<QuizItem[]> {
-  await connectDB();
-  const query = (slug === 'all' || !slug) ? {} : { examSlug: slug };
-  const quizzes = await QuizModel.find(query).lean();
-  if (quizzes.length === 0 && (!slug || slug === 'all')) return await seedQuizzes();
-  return quizzes.map(q => flatten<QuizItem>(q));
+  if (slug === 'all' || !slug) return STATIC_QUIZZES;
+  return STATIC_QUIZZES.filter(q => q.examSlug === slug);
 }
 
 export async function getContent(slug: string): Promise<ContentItem[]> {
-  await connectDB();
-  const query = (slug === 'all' || !slug) ? {} : { examSlug: slug };
-  const content = await ContentModel.find(query).lean();
-  if (content.length === 0 && (!slug || slug === 'all')) return await seedContent();
-  return content.map(c => flatten<ContentItem>(c));
+  if (slug === 'all' || !slug) return STATIC_CONTENT;
+  return STATIC_CONTENT.filter(c => c.examSlug === slug);
 }
 
 export async function getBooks(): Promise<Book[]> {
-  await connectDB();
-  const books = await BookModel.find().lean();
-  if (books.length === 0) return await seedBooks();
-  return books.map(b => flatten<Book>(b));
+  return STATIC_BOOKS;
 }
 
 export async function getBookCategories(): Promise<string[]> {
-  const books = await getBooks();
-  return Array.from(new Set(books.map(b => b.category)));
+  return Array.from(new Set(STATIC_BOOKS.map(b => b.category)));
 }
 
 export async function getQuestions(setId: string): Promise<Question[]> {
@@ -171,84 +164,12 @@ export async function getQuestions(setId: string): Promise<Question[]> {
   ];
 }
 
-// Seeding Functions
-async function seedExams() {
-  await connectDB();
-  const initial = [
-    { slug: 'ssc-gd-constable', title: 'SSC GD Constable', category: 'SSC Exams', description: 'Staff Selection Commission - General Duty Constable Exam Preparation.', trending: true, image: 'https://picsum.photos/seed/ssc-exam/600/400', stages: ['Full Length'], subjects: ['General Intelligence', 'English Language', 'Quantitative Aptitude', 'General Awareness'] },
-    { slug: 'gate-exam', title: 'GATE 2024', category: 'Engineering', description: 'Graduate Aptitude Test in Engineering for engineering graduates.', trending: true, image: 'https://picsum.photos/seed/gate-exam/600/400', stages: ['Technical Paper'], subjects: ['Engineering Mathematics', 'Technical Subject', 'General Aptitude'] },
-    { slug: 'ccat-exam', title: 'CDAC C-CAT', category: 'IT/Software', description: 'CDAC Common Admission Test for PG Diploma courses.', trending: false, image: 'https://picsum.photos/seed/cdac-exam/600/400', stages: ['Section A', 'Section B', 'Section C'], subjects: ['English', 'Mathematics', 'Reasoning', 'Computer Fundamentals', 'Data Structures', 'C Programming', 'OS'] },
-    { slug: 'upsc-civil-services', title: 'UPSC Civil Services', category: 'Civil Services', description: 'The premier exam for IAS, IPS, and IPS services in India.', trending: true, image: 'https://picsum.photos/seed/upsc-exam/600/400', stages: ['Prelims Paper I', 'Prelims Paper II (CSAT)'], subjects: ['History', 'Geography', 'Polity', 'Economics', 'Science', 'Current Affairs'] }
-  ];
-  const inserted = await ExamModel.insertMany(initial);
-  return inserted.map((e: any) => flatten<Exam>(e));
-}
-
-async function seedTests() {
-  await connectDB();
-  const initial = [
-    { title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length', status: 'published', examSlug: 'ssc-gd-constable' },
-    { title: 'Percentage & Fractions', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude', status: 'published', examSlug: 'ssc-gd-constable' },
-    { title: 'Official Paper 2024 (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', subject: '2024', status: 'published', examSlug: 'ssc-gd-constable' }
-  ];
-  const inserted = await TestModel.insertMany(initial);
-  return inserted.map((t: any) => flatten<TestItem>(t));
-}
-
-async function seedBooks() {
-  await connectDB();
-  const initial = [
-    { title: 'Quantitative Aptitude', author: 'R.S. Aggarwal', category: 'SSC Exams', price: 450, rating: 4.8, image: 'https://picsum.photos/seed/book1/300/400', pages: 750, language: 'English' },
-    { title: 'Modern Reasoning', author: 'Dr. R.S. Aggarwal', category: 'Reasoning', price: 380, rating: 4.7, image: 'https://picsum.photos/seed/book2/300/400', pages: 620, language: 'English' }
-  ];
-  const inserted = await BookModel.insertMany(initial);
-  return inserted.map((b: any) => flatten<Book>(b));
-}
-
-async function seedQuizzes() {
-  await connectDB();
-  const initial = [
-    { title: 'Daily Current Affairs Quiz', questions: 10, timeLimit: 5, tags: ['CA', 'General Knowledge'], examSlug: 'ssc-gd-constable' },
-    { title: 'Numerical Ability Mini Quiz', questions: 15, timeLimit: 12, tags: ['Quant', 'Math'], examSlug: 'ssc-gd-constable' }
-  ];
-  const inserted = await QuizModel.insertMany(initial);
-  return inserted.map((q: any) => flatten<QuizItem>(q));
-}
-
-async function seedContent() {
-  await connectDB();
-  const initial = [
-    { title: 'SSC GD Preparation Strategy', type: 'pdf', url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', thumbnail: 'https://picsum.photos/seed/guide-1/300/400', isFree: true, examSlug: 'ssc-gd-constable' },
-    { title: '10 Year Exam Analysis', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/analysis-1/300/400', isFree: false, contentMdx: '# Analysis\nPatterns matter.', examSlug: 'ssc-gd-constable' }
-  ];
-  const inserted = await ContentModel.insertMany(initial);
-  return inserted.map((c: any) => flatten<ContentItem>(c));
-}
-
 export async function getUsers(): Promise<SystemUser[]> {
-  await connectDB();
-  const users = await UserModel.find().lean();
-  return users.map(u => flatten<SystemUser>(u));
+  return STATIC_USERS;
 }
 
-export async function syncUser(clerkUser: any) {
-  await connectDB();
-  const email = clerkUser.primaryEmailAddress?.emailAddress;
-  const existing = await UserModel.findOne({ email: email });
-  
-  if (!existing) {
-    const adminEmail = "developeruniqe@gmail.com";
-    const dbUser = await UserModel.create({
-      clerkId: clerkUser.id,
-      name: clerkUser.fullName || email.split('@')[0],
-      email: email,
-      role: email === adminEmail ? 'admin' : 'user',
-      isPremium: false,
-      status: 'active'
-    });
-    return flatten<SystemUser>(dbUser);
-  }
-  return flatten<SystemUser>(existing);
+export async function syncUser(clerkUser: any): Promise<SystemUser> {
+  return STATIC_USERS[1];
 }
 
 export async function getTopicSets(topicId: string) {
