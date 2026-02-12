@@ -1,12 +1,14 @@
+
 "use client";
 
 import { useParams } from "next/navigation";
-import { getTopicSets, getPracticeSets, TopicSet } from "@/lib/api";
+import { getTopicSets, getPracticeSets, TopicSet, Question } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   ArrowLeft, 
   Lock, 
@@ -16,12 +18,14 @@ import {
   Plus, 
   Edit2, 
   Trash2,
-  Settings,
   Layers,
   ChevronUp,
   ChevronDown,
   Save,
-  Check
+  Check,
+  FileJson,
+  ListOrdered,
+  AlertCircle
 } from "lucide-react";
 import { 
   Sheet, 
@@ -39,8 +43,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export default function AdminTopicSetsPage() {
@@ -55,6 +60,15 @@ export default function AdminTopicSetsPage() {
   // CRUD State
   const [editingSet, setEditingSet] = useState<TopicSet | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  
+  // Questions Management State
+  const [managingQuestionsSet, setManagingQuestionsSet] = useState<TopicSet | null>(null);
+  const [isQuestionsSheetOpen, setIsQuestionsSheetOpen] = useState(false);
+  const [isJsonMode, setIsJsonMode] = useState(false);
+  const [questionsJson, setQuestionsJson] = useState("");
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
+
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const handleEdit = (set: TopicSet) => {
@@ -67,7 +81,7 @@ export default function AdminTopicSetsPage() {
     setEditingSet({
       id: newId,
       title: "New Practice Set",
-      questions: 10,
+      questions: 0,
       timeLimit: 10,
       isCompleted: false,
       isFree: true
@@ -95,6 +109,40 @@ export default function AdminTopicSetsPage() {
     } else {
       setConfirmDeleteId(id);
       setTimeout(() => setConfirmDeleteId(prev => prev === id ? null : prev), 3000);
+    }
+  };
+
+  const handleManageQuestions = (set: TopicSet) => {
+    setManagingQuestionsSet(set);
+    // In a real app, fetch questions for this set. For now, use dummy data.
+    const initialQuestions: Question[] = [
+      { id: 'q1', q: 'Find the value of $x$ in the equation $2^x = 1024$.', options: ['8', '9', '10', '12'], answer: 2, mdx: true },
+      { id: 'q2', q: 'What is the largest 3-digit prime number?', options: ['991', '997', '993', '987'], answer: 1, mdx: false },
+      { id: 'q3', q: 'Evaluate the integral: $\\int_{0}^{1} x^2 dx$', options: ['$1/2$', '$1/3$', '$1/4$', '$1$'], answer: 1, mdx: true },
+      { id: 'q4', q: 'The sum of the first $n$ natural numbers is given by which formula?', options: ['$n^2$', '$\\frac{n(n+1)}{2}$', '$n(n+1)$', '$\\frac{n(n-1)}{2}$'], answer: 1, mdx: true },
+      { id: 'q5', q: 'Which of these is NOT an irrational number?', options: ['$\\sqrt{2}$', '$\\pi$', '$\\sqrt{9}$', '$e$'], answer: 2, mdx: true }
+    ];
+    setQuestions(initialQuestions);
+    setQuestionsJson(JSON.stringify(initialQuestions, null, 2));
+    setIsQuestionsSheetOpen(true);
+    setJsonError(null);
+  };
+
+  const handleSaveQuestions = () => {
+    try {
+      if (isJsonMode) {
+        const parsed = JSON.parse(questionsJson);
+        if (!Array.isArray(parsed)) throw new Error("Questions must be an array");
+        setQuestions(parsed);
+        // Update the set's question count
+        if (managingQuestionsSet) {
+          setSets(sets.map(s => s.id === managingQuestionsSet.id ? { ...s, questions: parsed.length } : s));
+        }
+      }
+      setIsQuestionsSheetOpen(false);
+      setManagingQuestionsSet(null);
+    } catch (e: any) {
+      setJsonError(e.message);
     }
   };
 
@@ -202,6 +250,13 @@ export default function AdminTopicSetsPage() {
                 {/* Actions */}
                 <div className="shrink-0 flex items-center gap-2">
                   <Button 
+                    variant="outline"
+                    className="rounded-xl h-10 px-4 font-bold border-primary/20 text-primary hover:bg-primary/5"
+                    onClick={() => handleManageQuestions(set)}
+                  >
+                    Manage Questions
+                  </Button>
+                  <Button 
                     variant="ghost" 
                     size="icon" 
                     onClick={() => handleEdit(set)}
@@ -228,14 +283,6 @@ export default function AdminTopicSetsPage() {
           </Card>
         ))}
       </div>
-
-      {sets.length === 0 && (
-        <div className="text-center py-20 bg-muted/20 rounded-3xl border-2 border-dashed">
-          <Layers className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-          <h3 className="text-xl font-bold mb-2">No sets configured</h3>
-          <p className="text-muted-foreground">Get started by creating your first practice set for this topic.</p>
-        </div>
-      )}
 
       {/* Edit/Add Set Drawer */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -273,16 +320,6 @@ export default function AdminTopicSetsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Questions</Label>
-                  <Input 
-                    type="number"
-                    value={editingSet.questions} 
-                    onChange={(e) => setEditingSet({...editingSet, questions: parseInt(e.target.value) || 0})}
-                    className="rounded-xl h-11"
-                  />
-                </div>
-
-                <div className="space-y-2">
                   <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Time (Mins)</Label>
                   <Input 
                     type="number"
@@ -291,42 +328,20 @@ export default function AdminTopicSetsPage() {
                     className="rounded-xl h-11"
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Access Mode</Label>
-                <Select 
-                  value={editingSet.isFree ? "free" : "premium"} 
-                  onValueChange={(val: any) => setEditingSet({...editingSet, isFree: val === "free"})}
-                >
-                  <SelectTrigger className="rounded-xl h-11">
-                    <SelectValue placeholder="Select access" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">Free Access</SelectItem>
-                    <SelectItem value="premium">Premium Holders Only</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="p-6 bg-muted/30 rounded-2xl border space-y-4">
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground text-center">Set Preview</p>
-                <div className="bg-background p-4 rounded-xl border shadow-sm">
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="h-10 w-10 bg-primary/5 rounded-lg flex items-center justify-center text-primary font-bold">
-                      #
-                    </div>
-                    {editingSet.isFree ? (
-                      <Badge className="bg-emerald-500 text-white text-[8px] uppercase font-black">Free</Badge>
-                    ) : (
-                      <Badge className="bg-amber-600 text-white text-[8px] uppercase font-black">Premium</Badge>
-                    )}
-                  </div>
-                  <p className="font-bold text-base">{editingSet.title || 'Untitled Set'}</p>
-                  <div className="flex gap-4 mt-2 text-[10px] text-muted-foreground font-bold">
-                    <span>{editingSet.questions} Qs</span>
-                    <span>{editingSet.timeLimit} Mins</span>
-                  </div>
+                <div className="space-y-2">
+                  <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Access Mode</Label>
+                  <Select 
+                    value={editingSet.isFree ? "free" : "premium"} 
+                    onValueChange={(val: any) => setEditingSet({...editingSet, isFree: val === "free"})}
+                  >
+                    <SelectTrigger className="rounded-xl h-11">
+                      <SelectValue placeholder="Select access" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free Access</SelectItem>
+                      <SelectItem value="premium">Premium Only</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
@@ -339,6 +354,103 @@ export default function AdminTopicSetsPage() {
             <Button onClick={handleSave} className="w-full gap-2 rounded-xl h-11 font-bold shadow-lg shadow-primary/20">
               <Save className="h-4 w-4" />
               Save Practice Set
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      {/* Questions Management Drawer */}
+      <Sheet open={isQuestionsSheetOpen} onOpenChange={setIsQuestionsSheetOpen}>
+        <SheetContent side="right" className="sm:max-w-2xl overflow-y-auto">
+          <SheetHeader className="mb-6 border-b pb-4">
+            <SheetTitle className="text-xl font-headline font-bold flex items-center gap-2">
+              <FileJson className="h-5 w-5 text-primary" /> Manage Questions
+            </SheetTitle>
+            <SheetDescription className="font-medium">
+              Update test questions for <span className="text-foreground font-bold">"{managingQuestionsSet?.title}"</span>.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="flex items-center justify-between bg-muted/30 p-1 rounded-xl border">
+              <Button 
+                variant={isJsonMode ? "ghost" : "secondary"} 
+                className={cn("flex-1 gap-2 rounded-lg", !isJsonMode && "shadow-sm")}
+                onClick={() => setIsJsonMode(false)}
+              >
+                <ListOrdered className="h-4 w-4" /> List View
+              </Button>
+              <Button 
+                variant={isJsonMode ? "secondary" : "ghost"} 
+                className={cn("flex-1 gap-2 rounded-lg", isJsonMode && "shadow-sm")}
+                onClick={() => setIsJsonMode(true)}
+              >
+                <FileJson className="h-4 w-4" /> JSON Editor
+              </Button>
+            </div>
+
+            {jsonError && (
+              <Alert variant="destructive" className="rounded-xl">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>JSON Error</AlertTitle>
+                <AlertDescription className="text-xs font-mono">{jsonError}</AlertDescription>
+              </Alert>
+            )}
+
+            {isJsonMode ? (
+              <div className="space-y-4">
+                <div className="flex justify-between items-end">
+                  <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Raw Question Bank (JSON)</Label>
+                  <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded uppercase font-bold">Array Format</span>
+                </div>
+                <Textarea 
+                  value={questionsJson}
+                  onChange={(e) => {
+                    setQuestionsJson(e.target.value);
+                    setJsonError(null);
+                  }}
+                  className="min-h-[400px] font-mono text-xs p-4 rounded-xl leading-relaxed resize-none border-primary/10"
+                  placeholder='[ { "id": "q1", "q": "Question text...", "options": [...], "answer": 0, "mdx": true } ]'
+                />
+                <p className="text-[10px] text-muted-foreground italic">
+                  Paste your test data here. Ensure the JSON follows the schema: id, q, options (string[]), answer (number index), mdx (boolean).
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {questions.map((q, idx) => (
+                  <div key={q.id} className="p-4 bg-muted/20 border rounded-2xl group relative hover:border-primary/20 transition-colors">
+                    <div className="flex justify-between items-start mb-2">
+                      <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase">Q{idx + 1}</Badge>
+                      <span className="text-[10px] font-mono text-muted-foreground">ID: {q.id}</span>
+                    </div>
+                    <p className="text-sm font-bold leading-relaxed line-clamp-2">{q.q}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {q.options.map((opt, oIdx) => (
+                        <div key={oIdx} className={cn(
+                          "px-2 py-1 rounded text-[10px] font-bold border",
+                          q.answer === oIdx ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-background text-muted-foreground"
+                        )}>
+                          {opt}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <Button variant="outline" className="w-full border-dashed rounded-xl h-12 gap-2 text-muted-foreground hover:text-primary">
+                  <Plus className="h-4 w-4" /> Add Individual Question
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <SheetFooter className="mt-8 gap-2 pb-8">
+            <SheetClose asChild>
+              <Button variant="outline" className="w-full rounded-xl h-11 font-bold">Discard</Button>
+            </SheetClose>
+            <Button onClick={handleSaveQuestions} className="w-full gap-2 rounded-xl h-11 font-bold shadow-lg shadow-primary/20">
+              <Save className="h-4 w-4" />
+              Commit Changes
             </Button>
           </SheetFooter>
         </SheetContent>
