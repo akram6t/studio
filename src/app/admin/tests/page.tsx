@@ -26,7 +26,11 @@ import {
   Filter,
   Loader2,
   GraduationCap,
-  CircleDashed
+  CircleDashed,
+  Calendar,
+  SortAsc,
+  SortDesc,
+  ArrowUpDown
 } from "lucide-react";
 import { 
   Sheet, 
@@ -54,15 +58,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
 
 const ITEMS_PER_PAGE = 5;
+
+type SortOption = 'newest' | 'oldest' | 'date-asc' | 'date-desc';
 
 export default function AdminTestsPage() {
   const [tests, setTests] = useState<TestItem[]>([]);
   const [exams, setExams] = useState<Exam[]>([]);
   const [search, setSearch] = useState("");
+  const [examFilter, setExamFilter] = useState("all");
   const [subjectFilter, setSubjectFilter] = useState("all");
   const [accessFilter, setAccessFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [isLoading, setIsLoading] = useState(true);
   
   // Pagination
@@ -100,17 +109,34 @@ export default function AdminTestsPage() {
     load();
   }, []);
 
-  const filteredTests = useMemo(() => {
-    return tests.filter(test => {
+  const filteredAndSortedTests = useMemo(() => {
+    let result = tests.filter(test => {
       const matchesSearch = test.title.toLowerCase().includes(search.toLowerCase());
+      const matchesExam = examFilter === "all" || (test.examSlugs?.includes(examFilter) || test.examSlug === examFilter);
       const matchesSubject = subjectFilter === "all" || test.subject === subjectFilter;
       const matchesAccess = accessFilter === "all" || (accessFilter === "free" ? test.isFree : !test.isFree);
-      return matchesSearch && matchesSubject && matchesAccess;
+      return matchesSearch && matchesExam && matchesSubject && matchesAccess;
     });
-  }, [tests, search, subjectFilter, accessFilter]);
 
-  const totalPages = Math.ceil(filteredTests.length / ITEMS_PER_PAGE);
-  const paginatedTests = filteredTests.slice(
+    // Sorting logic
+    result.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      
+      switch (sortBy) {
+        case 'newest': return dateB - dateA;
+        case 'oldest': return dateA - dateB;
+        case 'date-asc': return dateA - dateB;
+        case 'date-desc': return dateB - dateA;
+        default: return 0;
+      }
+    });
+
+    return result;
+  }, [tests, search, examFilter, subjectFilter, accessFilter, sortBy]);
+
+  const totalPages = Math.ceil(filteredAndSortedTests.length / ITEMS_PER_PAGE);
+  const paginatedTests = filteredAndSortedTests.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -191,6 +217,22 @@ export default function AdminTestsPage() {
                 />
               </div>
               <div className="flex items-center gap-2">
+                <div className="w-[180px]">
+                  <Select value={sortBy} onValueChange={(val: SortOption) => setSortBy(val)}>
+                    <SelectTrigger className="h-11 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                      <div className="flex items-center gap-2">
+                        <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+                        <SelectValue placeholder="Sort By" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="oldest">Oldest First</SelectItem>
+                      <SelectItem value="date-asc">Date ASC</SelectItem>
+                      <SelectItem value="date-desc">Date DESC</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="gap-2 h-11 rounded-xl">
@@ -222,6 +264,23 @@ export default function AdminTestsPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              <div className="w-[180px]">
+                <Select value={examFilter} onValueChange={(val) => { setExamFilter(val); setCurrentPage(1); }}>
+                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="h-3 w-3 text-muted-foreground" />
+                      <SelectValue placeholder="All Exams" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Exams</SelectItem>
+                    {exams.map(exam => (
+                      <SelectItem key={exam.id} value={exam.slug}>{exam.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="w-[180px]">
                 <Select value={subjectFilter} onValueChange={(val) => { setSubjectFilter(val); setCurrentPage(1); }}>
                   <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
@@ -276,9 +335,13 @@ export default function AdminTestsPage() {
                         </div>
                         <div className="flex flex-col">
                           <span className="font-bold text-sm leading-tight">{test.title}</span>
-                          <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1 mt-0.5">
-                            ID: {test.id}
-                          </span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] text-muted-foreground font-semibold">ID: {test.id}</span>
+                            <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
+                              <Calendar className="h-2.5 w-2.5" />
+                              {formatDistanceToNow(new Date(test.createdAt), { addSuffix: true })}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -371,7 +434,7 @@ export default function AdminTestsPage() {
 
           <div className="p-4 bg-muted/10 border-t flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
-              Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredTests.length)}</span> of <span className="font-bold text-foreground">{filteredTests.length}</span> tests
+              Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedTests.length)}</span> of <span className="font-bold text-foreground">{filteredAndSortedTests.length}</span> tests
             </p>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>

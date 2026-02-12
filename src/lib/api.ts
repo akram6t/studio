@@ -29,6 +29,7 @@ export interface TestItem {
   status?: 'published' | 'draft';
   examSlug?: string;
   examSlugs?: string[];
+  createdAt: string;
 }
 
 export interface QuizItem {
@@ -118,9 +119,9 @@ const STATIC_EXAMS: Exam[] = [
 ];
 
 const STATIC_TESTS: TestItem[] = [
-  { id: 't1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length', examSlug: 'ssc-gd-constable', examSlugs: ['ssc-gd-constable'] },
-  { id: 't2', title: 'Percentage & Fractions', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude', examSlug: 'ssc-gd-constable', examSlugs: ['ssc-gd-constable', 'ccat-exam'] },
-  { id: 't3', title: 'Official Paper 2024 (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', subject: '2024', examSlug: 'ssc-gd-constable', examSlugs: ['ssc-gd-constable'] }
+  { id: 't1', title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length', examSlug: 'ssc-gd-constable', examSlugs: ['ssc-gd-constable'], createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() },
+  { id: 't2', title: 'Percentage & Fractions', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude', examSlug: 'ssc-gd-constable', examSlugs: ['ssc-gd-constable', 'ccat-exam'], createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() },
+  { id: 't3', title: 'Official Paper 2024 (Shift 1)', durationInMinutes: 90, marks: 160, numberOfQuestions: 80, isFree: true, type: 'previous', subject: '2024', examSlug: 'ssc-gd-constable', examSlugs: ['ssc-gd-constable'], createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString() }
 ];
 
 const STATIC_BOOKS: Book[] = [
@@ -164,7 +165,7 @@ export function getMockTests(slug: string): TestItem[] {
 
 export function getTests(slug: string): TestItem[] {
   if (slug === 'all') return STATIC_TESTS.filter(t => t.type === 'test');
-  return STATIC_TESTS.filter(t => t.type === 'test' && t.examSlug === slug);
+  return STATIC_TESTS.filter(t => t.type === 'test' && (t.examSlug === slug || t.examSlugs?.includes(slug)));
 }
 
 export function getPrevPapers(slug: string): TestItem[] {
