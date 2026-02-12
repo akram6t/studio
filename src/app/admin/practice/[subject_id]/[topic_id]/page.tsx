@@ -27,8 +27,7 @@ import {
   FileJson,
   ListOrdered,
   AlertCircle,
-  X,
-  GripVertical
+  X
 } from "lucide-react";
 import { 
   Sheet, 
@@ -49,7 +48,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export default function AdminTopicSetsPage() {
@@ -122,7 +121,7 @@ export default function AdminTopicSetsPage() {
 
   const handleManageQuestions = (set: TopicSet) => {
     setManagingQuestionsSet(set);
-    // Dummy initial data for prototype
+    // Initial dummy questions for prototype
     const initialQuestions: Question[] = [
       { id: 'q1', q: 'Find the value of $x$ in the equation $2^x = 1024$.', options: ['8', '9', '10', '12'], answer: 2, mdx: true },
       { id: 'q2', q: 'What is the largest 3-digit prime number?', options: ['991', '997', '993', '987'], answer: 1, mdx: false },
@@ -194,6 +193,23 @@ export default function AdminTopicSetsPage() {
     updated.splice(index, 1);
     setQuestions(updated);
     setQuestionsJson(JSON.stringify(updated, null, 2));
+  };
+
+  const handleAddQuestionManually = () => {
+    const newQ: Question = { 
+      id: `q-${Date.now()}`, 
+      q: "", 
+      options: ["", "", "", ""], 
+      answer: 0, 
+      mdx: false 
+    };
+    const updatedQuestions = [...questions, newQ];
+    setQuestions(updatedQuestions);
+    setQuestionsJson(JSON.stringify(updatedQuestions, null, 2));
+    
+    // Immediately enter edit mode for the new question
+    setEditingQuestionIndex(updatedQuestions.length - 1);
+    setTempQuestion({ ...newQ });
   };
 
   return (
@@ -291,7 +307,7 @@ export default function AdminTopicSetsPage() {
                     className="rounded-xl h-10 px-4 font-bold border-primary/20 text-primary hover:bg-primary/5 shadow-sm"
                     onClick={() => handleManageQuestions(set)}
                   >
-                    Questions Bank
+                    Manage Questions
                   </Button>
                   <Button 
                     variant="ghost" 
@@ -476,7 +492,7 @@ export default function AdminTopicSetsPage() {
                 <div className="space-y-4">
                   <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground block mb-4">Multiple Choice Options (Select Correct Answer)</Label>
                   <RadioGroup 
-                    value={tempQuestion.answer.toString()} 
+                    value={tempQuestion.answer?.toString() ?? "0"} 
                     onValueChange={(val) => setTempQuestion({...tempQuestion, answer: parseInt(val)})}
                     className="space-y-3"
                   >
@@ -615,11 +631,7 @@ export default function AdminTopicSetsPage() {
                 ))}
                 
                 <Button 
-                  onClick={() => {
-                    const newQ: Question = { id: `q-${Date.now()}`, q: "", options: ["", "", "", ""], answer: 0, mdx: false };
-                    setQuestions([...questions, newQ]);
-                    startEditQuestion(questions.length);
-                  }}
+                  onClick={handleAddQuestionManually}
                   variant="outline" 
                   className="w-full border-dashed rounded-2xl h-14 gap-2 text-muted-foreground hover:text-primary transition-all hover:bg-primary/5 hover:border-primary/30"
                 >
