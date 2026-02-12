@@ -1,4 +1,3 @@
-
 "use client";
 
 import { getMockTests, TestItem, getExams, Exam } from "@/lib/api";
@@ -23,7 +22,11 @@ import {
   Settings2,
   Filter,
   GraduationCap,
-  Loader2
+  Loader2,
+  CheckCircle2,
+  CircleDashed,
+  Calendar,
+  ArrowUpDown
 } from "lucide-react";
 import { 
   Sheet, 
@@ -51,8 +54,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
 
 const ITEMS_PER_PAGE = 5;
+
+type SortOption = 'newest' | 'oldest' | 'date-asc' | 'date-desc';
 
 export default function AdminMocksPage() {
   const [mocks, setMocks] = useState<TestItem[]>([]);
@@ -60,6 +66,7 @@ export default function AdminMocksPage() {
   const [search, setSearch] = useState("");
   const [sectionFilter, setSectionFilter] = useState("all");
   const [examFilter, setExamFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [isLoading, setIsLoading] = useState(true);
   
   // Pagination
@@ -71,7 +78,8 @@ export default function AdminMocksPage() {
     section: true,
     questions: true,
     time: true,
-    access: true
+    access: true,
+    status: true
   });
 
   // Drawer State
@@ -107,23 +115,42 @@ export default function AdminMocksPage() {
     return Array.from(new Set(relevantTests.map(m => m.subject))).filter(Boolean) as string[];
   }, [mocks, examFilter]);
 
-  const filteredMocks = useMemo(() => {
-    return mocks.filter(mock => {
+  const filteredAndSortedMocks = useMemo(() => {
+    let result = mocks.filter(mock => {
       const matchesSearch = mock.title.toLowerCase().includes(search.toLowerCase());
       const matchesExam = examFilter === "all" || mock.examSlug === examFilter;
       const matchesSection = sectionFilter === "all" || mock.subject === sectionFilter;
       return matchesSearch && matchesExam && matchesSection;
     });
-  }, [mocks, search, sectionFilter, examFilter]);
 
-  const totalPages = Math.ceil(filteredMocks.length / ITEMS_PER_PAGE);
-  const paginatedMocks = filteredMocks.slice(
+    // Sorting logic
+    result.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      
+      switch (sortBy) {
+        case 'newest': return dateB - dateA;
+        case 'oldest': return dateA - dateB;
+        case 'date-asc': return dateA - dateB;
+        case 'date-desc': return dateB - dateA;
+        default: return 0;
+      }
+    });
+
+    return result;
+  }, [mocks, search, sectionFilter, examFilter, sortBy]);
+
+  const totalPages = Math.ceil(filteredAndSortedMocks.length / ITEMS_PER_PAGE);
+  const paginatedMocks = filteredAndSortedMocks.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
   const handleEdit = (mock: TestItem) => {
-    setEditingMock(mock);
+    setEditingMock({
+      ...mock,
+      status: mock.status || 'published'
+    });
     setIsSheetOpen(true);
   };
 
@@ -182,6 +209,22 @@ export default function AdminMocksPage() {
                 />
               </div>
               <div className="flex items-center gap-2">
+                <div className="w-[180px]">
+                  <Select value={sortBy} onValueChange={(val: SortOption) => setSortBy(val)}>
+                    <SelectTrigger className="h-11 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
+                      <div className="flex items-center gap-2">
+                        <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+                        <SelectValue placeholder="Sort By" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="oldest">Oldest First</SelectItem>
+                      <SelectItem value="date-asc">Date ASC</SelectItem>
+                      <SelectItem value="date-desc">Date DESC</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="gap-2 h-11 rounded-xl">
@@ -206,6 +249,9 @@ export default function AdminMocksPage() {
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuCheckboxItem checked={visibleColumns.access} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, access: v }))}>
                       Access
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem checked={visibleColumns.status} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, status: v }))}>
+                      Status
                     </DropdownMenuCheckboxItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -273,6 +319,7 @@ export default function AdminMocksPage() {
                   {visibleColumns.questions && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Questions</TableHead>}
                   {visibleColumns.time && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Time</TableHead>}
                   {visibleColumns.access && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Access</TableHead>}
+                  {visibleColumns.status && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Status</TableHead>}
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest text-right pr-6">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -286,9 +333,13 @@ export default function AdminMocksPage() {
                         </div>
                         <div className="flex flex-col">
                           <span className="font-bold text-sm leading-tight">{mock.title}</span>
-                          <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1 mt-0.5">
-                            ID: {mock.id}
-                          </span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] text-muted-foreground font-semibold">ID: {mock.id}</span>
+                            <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
+                              <Calendar className="h-2.5 w-2.5" />
+                              {formatDistanceToNow(new Date(mock.createdAt), { addSuffix: true })}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -325,6 +376,19 @@ export default function AdminMocksPage() {
                         )}
                       </TableCell>
                     )}
+                    {visibleColumns.status && (
+                      <TableCell>
+                        {mock.status === 'published' ? (
+                          <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
+                            <CheckCircle2 className="h-3 w-3" /> Published
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-muted-foreground font-bold text-[11px]">
+                            <CircleDashed className="h-3 w-3" /> Draft
+                          </div>
+                        )}
+                      </TableCell>
+                    )}
                     <TableCell className="text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
                         <Button 
@@ -358,7 +422,7 @@ export default function AdminMocksPage() {
 
           <div className="p-4 bg-muted/10 border-t flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
-              Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredMocks.length)}</span> of <span className="font-bold text-foreground">{filteredMocks.length}</span> mocks
+              Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedMocks.length)}</span> of <span className="font-bold text-foreground">{filteredAndSortedMocks.length}</span> mocks
             </p>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
@@ -381,7 +445,7 @@ export default function AdminMocksPage() {
 
       {/* Edit Mock Drawer */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent side="right" className="sm:max-w-md">
+        <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle className="text-xl">Edit Mock Test</SheetTitle>
             <SheetDescription>Update full-length mock test details and requirements.</SheetDescription>
@@ -448,20 +512,38 @@ export default function AdminMocksPage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Access Mode</Label>
-                <Select 
-                  value={editingMock.isFree ? "free" : "premium"} 
-                  onValueChange={(val: any) => setEditingMock({...editingMock, isFree: val === "free"})}
-                >
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="Select access" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="free">Free Access</SelectItem>
-                    <SelectItem value="premium">Premium Only</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Access Mode</Label>
+                  <Select 
+                    value={editingMock.isFree ? "free" : "premium"} 
+                    onValueChange={(val: any) => setEditingMock({...editingMock, isFree: val === "free"})}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select access" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="free">Free Access</SelectItem>
+                      <SelectItem value="premium">Premium Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Publication Status</Label>
+                  <Select 
+                    value={editingMock.status || "published"} 
+                    onValueChange={(val: any) => setEditingMock({...editingMock, status: val})}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="draft">Draft (Hidden)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           )}
