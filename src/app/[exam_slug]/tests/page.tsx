@@ -1,14 +1,13 @@
-
 "use client";
 
 import { useParams } from 'next/navigation';
-import { getTests } from '@/lib/api';
+import { getTests, TestItem } from '@/lib/api';
 import TestListView from '@/components/TestListView';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { ChevronRight, Filter } from 'lucide-react';
+import { ChevronRight, Filter, Loader2 } from 'lucide-react';
 
 const SUBJECTS = [
   "All Subjects",
@@ -20,14 +19,37 @@ const SUBJECTS = [
 
 export default function TestsPage() {
   const params = useParams();
+  const slug = params.exam_slug as string;
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
+  const [allTests, setAllTests] = useState<TestItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const allTests = getTests(params.exam_slug as string);
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getTests(slug);
+        setAllTests(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, [slug]);
   
   const filteredTests = useMemo(() => {
     if (selectedSubject === "All Subjects") return allTests;
     return allTests.filter(t => t.subject === selectedSubject);
   }, [allTests, selectedSubject]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

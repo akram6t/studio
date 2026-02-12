@@ -1,13 +1,13 @@
 "use client";
 
 import { useParams } from 'next/navigation';
-import { getPrevPapers } from '@/lib/api';
+import { getPrevPapers, TestItem } from '@/lib/api';
 import TestListView from '@/components/TestListView';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { ChevronRight, Filter } from 'lucide-react';
+import { ChevronRight, Filter, Loader2 } from 'lucide-react';
 
 const YEARS = [
   "All Papers",
@@ -20,9 +20,24 @@ const YEARS = [
 
 export default function PreviousPapersPage() {
   const params = useParams();
+  const slug = params.exam_slug as string;
   const [selectedYear, setSelectedYear] = useState("All Papers");
+  const [allTests, setAllTests] = useState<TestItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const allTests = getPrevPapers(params.exam_slug as string);
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getPrevPapers(slug);
+        setAllTests(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, [slug]);
   
   const filteredTests = useMemo(() => {
     if (selectedYear === "All Papers") return allTests;
@@ -31,6 +46,14 @@ export default function PreviousPapersPage() {
     }
     return allTests.filter(t => t.subject === selectedYear);
   }, [allTests, selectedYear]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

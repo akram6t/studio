@@ -1,9 +1,8 @@
-
 "use client";
 
 import { useParams } from 'next/navigation';
-import { getContent } from '@/lib/api';
-import { FileText, BookOpen, Lock, Unlock, Filter, ChevronRight } from 'lucide-react';
+import { getContent, ContentItem } from '@/lib/api';
+import { FileText, BookOpen, Lock, Unlock, Filter, ChevronRight, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Image from 'next/image';
@@ -19,15 +18,30 @@ const CATEGORIES = [
 
 export default function ContentPage() {
   const params = useParams();
-  const allContent = getContent(params.exam_slug as string);
+  const slug = params.exam_slug as string;
+  
+  const [allContent, setAllContent] = useState<ContentItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All Resources");
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    async function load() {
+      try {
+        const data = await getContent(slug);
+        setAllContent(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+
     const handleUnlock = () => setIsUnlocked(true);
     window.addEventListener('premium-unlocked', handleUnlock);
     return () => window.removeEventListener('premium-unlocked', handleUnlock);
-  }, []);
+  }, [slug]);
 
   const filteredContent = useMemo(() => {
     if (selectedCategory === "All Resources") return allContent;
@@ -46,6 +60,14 @@ export default function ContentPage() {
       default: return <BookOpen className="h-5 w-5 text-blue-500" />;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -1,4 +1,3 @@
-
 'use server';
 
 import connectDB from './db';
@@ -89,33 +88,41 @@ export interface Question {
 }
 
 /**
- * Robust helper to convert MongoDB documents to plain serializable objects.
- * Uses JSON stringify/parse to handle ObjectId buffers and non-POJO types effectively.
+ * Enhanced JSON-safe transformation helper.
+ * Strips all internal Mongoose/MongoDB metadata and ensures IDs are strings.
  */
 function flatten<T>(doc: any): T {
   if (!doc) return doc;
   
-  // Next.js 15 requires plain objects. JSON round-trip is the safest way 
-  // to strip Mongoose internal classes and convert ObjectIds to strings.
+  // Create a deep copy using JSON round-trip to strip non-serializable properties
   const plain = JSON.parse(JSON.stringify(doc));
   
-  // Rename _id to id if it exists
-  if (plain._id) {
-    plain.id = plain._id.toString();
-    delete plain._id;
-  }
-  
-  // Strip version key
-  if (plain.__v !== undefined) delete plain.__v;
+  // Recursively handle arrays and nested objects if needed
+  const transform = (obj: any) => {
+    if (Array.isArray(obj)) return obj.map(transform);
+    if (obj !== null && typeof obj === 'object') {
+      if (obj._id) {
+        obj.id = obj._id.toString();
+        delete obj._id;
+      }
+      delete obj.__v;
+      Object.keys(obj).forEach(key => {
+        obj[key] = transform(obj[key]);
+      });
+    }
+    return obj;
+  };
 
-  // Ensure dates are stringified consistently for the client
-  if (plain.createdAt) plain.createdAt = new Date(plain.createdAt).toISOString();
-  if (plain.updatedAt) plain.updatedAt = new Date(plain.updatedAt).toISOString();
-  if (plain.premiumExpiry) {
-    plain.premiumExpiry = new Date(plain.premiumExpiry).toISOString().split('T')[0];
+  const result = transform(plain);
+
+  // Format dates for specific fields if they exist
+  if (result.createdAt) result.createdAt = new Date(result.createdAt).toISOString();
+  if (result.updatedAt) result.updatedAt = new Date(result.updatedAt).toISOString();
+  if (result.premiumExpiry) {
+    result.premiumExpiry = new Date(result.premiumExpiry).toISOString().split('T')[0];
   }
   
-  return plain as T;
+  return result as T;
 }
 
 // Data Fetching Actions
@@ -155,17 +162,17 @@ export async function getPrevPapers(slug: string): Promise<TestItem[]> {
 
 export async function getQuizzes(slug: string): Promise<QuizItem[]> {
   await connectDB();
-  const query = slug === 'all' ? {} : { examSlug: slug };
+  const query = (slug === 'all' || !slug) ? {} : { examSlug: slug };
   const quizzes = await QuizModel.find(query).lean();
-  if (quizzes.length === 0 && slug === 'all') return await seedQuizzes();
+  if (quizzes.length === 0 && (!slug || slug === 'all')) return await seedQuizzes();
   return quizzes.map(q => flatten<QuizItem>(q));
 }
 
 export async function getContent(slug: string): Promise<ContentItem[]> {
   await connectDB();
-  const query = slug === 'all' ? {} : { examSlug: slug };
+  const query = (slug === 'all' || !slug) ? {} : { examSlug: slug };
   const content = await ContentModel.find(query).lean();
-  if (content.length === 0 && slug === 'all') return await seedContent();
+  if (content.length === 0 && (!slug || slug === 'all')) return await seedContent();
   return content.map(c => flatten<ContentItem>(c));
 }
 
@@ -182,6 +189,7 @@ export async function getBookCategories(): Promise<string[]> {
 }
 
 export async function getQuestions(setId: string): Promise<Question[]> {
+  // Static questions for prototype conduction engine
   return [
     { id: 'q1', q: 'Find the value of $x$ in the equation $2^x = 1024$.', options: ['8', '9', '10', '12'], answer: 2, mdx: true },
     { id: 'q2', q: 'What is the largest 3-digit prime number?', options: ['991', '997', '993', '987'], answer: 1, mdx: false },
@@ -191,7 +199,7 @@ export async function getQuestions(setId: string): Promise<Question[]> {
   ];
 }
 
-// Seeding Functions with Concurrent Protection
+// Seeding Functions
 async function seedExams() {
   await connectDB();
   const count = await ExamModel.countDocuments();
@@ -268,10 +276,11 @@ export async function getUsers(): Promise<SystemUser[]> {
 
 export async function syncUser(clerkUser: any) {
   await connectDB();
-  const existing = await UserModel.findOne({ clerkId: clerkUser.id });
+  const email = clerkUser.primaryEmailAddress?.emailAddress;
+  const existing = await UserModel.findOne({ email: email });
+  
   if (!existing) {
     const adminEmail = "developeruniqe@gmail.com";
-    const email = clerkUser.primaryEmailAddress?.emailAddress;
     const dbUser = await UserModel.create({
       clerkId: clerkUser.id,
       name: clerkUser.fullName || email.split('@')[0],
