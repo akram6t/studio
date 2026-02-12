@@ -467,7 +467,7 @@ export default function AdminMocksPage() {
                 <Label>Associated Exam</Label>
                 <Select 
                   value={editingMock.examSlug || "none"} 
-                  onValueChange={(val: any) => setEditingMock({...editingMock, examSlug: val === "none" ? undefined : val})}
+                  onValueChange={(val: any) => setEditingMock({...editingMock, examSlug: val === "none" ? undefined : val, subject: "Full Length"})}
                 >
                   <SelectTrigger className="rounded-xl">
                     <SelectValue placeholder="Select associated exam" />
@@ -503,13 +503,22 @@ export default function AdminMocksPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Mock Type/Section</Label>
-                <Input 
-                  value={editingMock.subject || ""} 
-                  onChange={(e) => setEditingMock({...editingMock, subject: e.target.value})}
-                  className="rounded-xl"
-                  placeholder="e.g. Full Length, Section A"
-                />
+                <Label>Mock Type / Section / Stage</Label>
+                <Select 
+                  value={editingMock.subject || "Full Length"} 
+                  onValueChange={(val) => setEditingMock({...editingMock, subject: val})}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Select section/stage" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {/* Dynamic options based on exam stages or fallback */}
+                    {(exams.find(e => e.slug === editingMock.examSlug)?.stages || ["Full Length"]).map(stage => (
+                      <SelectItem key={stage} value={stage}>{stage}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground italic px-1">Options vary based on the selected exam's curriculum.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
