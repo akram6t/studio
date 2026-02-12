@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { 
   Search, 
   Upload, 
@@ -20,7 +21,11 @@ import {
   List,
   ChevronLeft,
   ChevronRight,
-  Info
+  Info,
+  Link as LinkIcon,
+  CloudUpload,
+  X,
+  FileUp
 } from "lucide-react";
 import { 
   Select, 
@@ -37,6 +42,20 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -48,6 +67,13 @@ export default function AdminMediaPage() {
   const [filterType, setFilterType] = useState<string>("all");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Dialog States
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [uploadTab, setUploadTab] = useState("file");
+  
+  // Link Upload States
+  const [linkData, setLinkData] = useState({ name: "", url: "", type: "image" });
   
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -87,6 +113,23 @@ export default function AdminMediaPage() {
     }
   };
 
+  const handleLinkUpload = () => {
+    if (!linkData.url || !linkData.name) return;
+    
+    const newItem: MediaItem = {
+      id: `m-${Date.now()}`,
+      name: linkData.name,
+      url: linkData.url,
+      type: linkData.type as any,
+      size: "External",
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    
+    setMedia([newItem, ...media]);
+    setIsUploadDialogOpen(false);
+    setLinkData({ name: "", url: "", type: "image" });
+  };
+
   const getIcon = (type: string) => {
     switch (type) {
       case 'image': return <ImageIcon className="h-5 w-5" />;
@@ -96,7 +139,11 @@ export default function AdminMediaPage() {
   };
 
   if (isLoading) {
-    return <div className="p-8 text-center animate-pulse font-bold">Loading Media...</div>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
   }
 
   return (
@@ -106,7 +153,7 @@ export default function AdminMediaPage() {
           <h1 className="text-2xl font-headline font-bold text-foreground">Media Library</h1>
           <p className="text-muted-foreground text-sm font-medium">Upload and manage platform assets, icons, and documents.</p>
         </div>
-        <Button className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20 font-bold">
+        <Button onClick={() => setIsUploadDialogOpen(true)} className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20 font-bold">
           <Upload className="h-4 w-4" />
           Upload Assets
         </Button>
@@ -364,6 +411,133 @@ export default function AdminMediaPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Upload Dialog */}
+      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+        <DialogContent className="sm:max-w-md md:max-w-lg p-0 overflow-hidden border-none shadow-2xl rounded-[2rem]">
+          <div className="bg-primary p-8 text-primary-foreground relative">
+            <div className="absolute top-4 right-4">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setIsUploadDialogOpen(false)}
+                className="text-white hover:bg-white/10 rounded-full"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <DialogHeader>
+              <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4">
+                <CloudUpload className="h-6 w-6 text-white" />
+              </div>
+              <DialogTitle className="text-2xl font-headline font-bold">Add Platform Assets</DialogTitle>
+              <DialogDescription className="text-primary-foreground/70 font-medium">
+                Select your preferred method to import images, PDFs, or external resources.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="p-6">
+            <Tabs value={uploadTab} onValueChange={setUploadTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 h-12 bg-muted/50 p-1 rounded-xl mb-8">
+                <TabsTrigger value="file" className="rounded-lg gap-2 data-[state=active]:shadow-md">
+                  <FileUp className="h-4 w-4" />
+                  <span className="font-bold text-xs uppercase tracking-wider">File Upload</span>
+                </TabsTrigger>
+                <TabsTrigger value="link" className="rounded-lg gap-2 data-[state=active]:shadow-md">
+                  <LinkIcon className="h-4 w-4" />
+                  <span className="font-bold text-xs uppercase tracking-wider">Asset Link</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="file" className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+                <div className="border-2 border-dashed border-muted-foreground/20 rounded-3xl p-12 text-center hover:border-primary/40 transition-all group bg-muted/5">
+                  <div className="h-16 w-16 rounded-full bg-primary/5 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                    <Upload className="h-8 w-8 text-primary" />
+                  </div>
+                  <h4 className="font-bold text-lg mb-1">Click to select files</h4>
+                  <p className="text-xs text-muted-foreground max-w-[200px] mx-auto leading-relaxed">
+                    or drag and drop here (PDF, JPG, PNG up to 10MB)
+                  </p>
+                  <input type="file" className="hidden" id="media-file-input" />
+                  <Label htmlFor="media-file-input" className="absolute inset-0 cursor-pointer" />
+                </div>
+                
+                <div className="bg-amber-500/5 border border-amber-500/10 p-4 rounded-2xl flex gap-3">
+                  <Info className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-amber-700 font-medium leading-relaxed">
+                    Files uploaded directly will be stored in our distributed CDN for optimal performance across all regions.
+                  </p>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="link" className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Asset Display Name</Label>
+                    <Input 
+                      placeholder="e.g. Reasoning Cheat Sheet" 
+                      className="rounded-xl h-12 font-semibold"
+                      value={linkData.name}
+                      onChange={(e) => setLinkData({...linkData, name: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Resource URL</Label>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        placeholder="https://example.com/assets/file.pdf" 
+                        className="rounded-xl h-12 font-mono text-xs pl-10"
+                        value={linkData.url}
+                        onChange={(e) => setLinkData({...linkData, url: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Content Type</Label>
+                      <Select 
+                        value={linkData.type} 
+                        onValueChange={(val) => setLinkData({...linkData, type: val})}
+                      >
+                        <SelectTrigger className="rounded-xl h-12 font-bold">
+                          <SelectValue placeholder="Pick type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="image">Image Asset</SelectItem>
+                          <SelectItem value="pdf">PDF Document</SelectItem>
+                          <SelectItem value="other">Other Asset</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Privacy</Label>
+                      <div className="h-12 flex items-center justify-center bg-muted/30 rounded-xl text-[10px] font-bold text-muted-foreground">
+                        Public Link
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          <DialogFooter className="p-6 bg-muted/10 border-t flex items-center gap-2">
+            <Button variant="ghost" onClick={() => setIsUploadDialogOpen(false)} className="rounded-xl h-12 px-6 font-bold flex-1">
+              Discard
+            </Button>
+            <Button 
+              onClick={uploadTab === 'link' ? handleLinkUpload : undefined}
+              className="rounded-xl h-12 px-8 font-bold shadow-lg shadow-primary/20 flex-1"
+            >
+              {uploadTab === 'link' ? 'Add Link' : 'Confirm Upload'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
