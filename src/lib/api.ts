@@ -1,3 +1,4 @@
+
 'use server';
 
 import connectDB from './db';
@@ -89,27 +90,12 @@ export interface Question {
 
 /**
  * Robust JSON-safe transformation helper.
- * High-performance version using JSON round-trip to ensure zero Mongoose internal objects remain.
+ * Optimized to handle serialization for Next.js 15 Server Components.
  */
 function flatten<T>(doc: any): T {
   if (!doc) return doc;
-  const json = JSON.parse(JSON.stringify(doc));
-  
-  const transform = (obj: any) => {
-    if (Array.isArray(obj)) return obj.map(transform);
-    if (obj !== null && typeof obj === 'object') {
-      if (obj._id) {
-        obj.id = obj._id.toString();
-        delete obj._id;
-      }
-      Object.keys(obj).forEach(key => {
-        obj[key] = transform(obj[key]);
-      });
-    }
-    return obj;
-  };
-
-  return transform(json) as T;
+  // Deep clone and handle ObjectIds/Dates by conversion to standard JSON types
+  return JSON.parse(JSON.stringify(doc)) as T;
 }
 
 // Data Fetching Actions
@@ -188,9 +174,6 @@ export async function getQuestions(setId: string): Promise<Question[]> {
 // Seeding Functions
 async function seedExams() {
   await connectDB();
-  const count = await ExamModel.countDocuments();
-  if (count > 0) return (await ExamModel.find().lean()).map(e => flatten<Exam>(e));
-
   const initial = [
     { slug: 'ssc-gd-constable', title: 'SSC GD Constable', category: 'SSC Exams', description: 'Staff Selection Commission - General Duty Constable Exam Preparation.', trending: true, image: 'https://picsum.photos/seed/ssc-exam/600/400', stages: ['Full Length'], subjects: ['General Intelligence', 'English Language', 'Quantitative Aptitude', 'General Awareness'] },
     { slug: 'gate-exam', title: 'GATE 2024', category: 'Engineering', description: 'Graduate Aptitude Test in Engineering for engineering graduates.', trending: true, image: 'https://picsum.photos/seed/gate-exam/600/400', stages: ['Technical Paper'], subjects: ['Engineering Mathematics', 'Technical Subject', 'General Aptitude'] },
@@ -203,9 +186,6 @@ async function seedExams() {
 
 async function seedTests() {
   await connectDB();
-  const count = await TestModel.countDocuments({ type: 'mock' });
-  if (count > 0) return (await TestModel.find({ type: 'mock' }).lean()).map(t => flatten<TestItem>(t));
-
   const initial = [
     { title: 'Full Length Mock Test 1', durationInMinutes: 120, marks: 100, numberOfQuestions: 100, isFree: true, type: 'mock', subject: 'Full Length', status: 'published', examSlug: 'ssc-gd-constable' },
     { title: 'Percentage & Fractions', durationInMinutes: 30, marks: 25, numberOfQuestions: 25, isFree: false, type: 'test', subject: 'Quantitative Aptitude', status: 'published', examSlug: 'ssc-gd-constable' },
@@ -217,9 +197,6 @@ async function seedTests() {
 
 async function seedBooks() {
   await connectDB();
-  const count = await BookModel.countDocuments();
-  if (count > 0) return (await BookModel.find().lean()).map(b => flatten<Book>(b));
-
   const initial = [
     { title: 'Quantitative Aptitude', author: 'R.S. Aggarwal', category: 'SSC Exams', price: 450, rating: 4.8, image: 'https://picsum.photos/seed/book1/300/400', pages: 750, language: 'English' },
     { title: 'Modern Reasoning', author: 'Dr. R.S. Aggarwal', category: 'Reasoning', price: 380, rating: 4.7, image: 'https://picsum.photos/seed/book2/300/400', pages: 620, language: 'English' }
@@ -230,9 +207,6 @@ async function seedBooks() {
 
 async function seedQuizzes() {
   await connectDB();
-  const count = await QuizModel.countDocuments();
-  if (count > 0) return (await QuizModel.find().lean()).map(q => flatten<QuizItem>(q));
-
   const initial = [
     { title: 'Daily Current Affairs Quiz', questions: 10, timeLimit: 5, tags: ['CA', 'General Knowledge'], examSlug: 'ssc-gd-constable' },
     { title: 'Numerical Ability Mini Quiz', questions: 15, timeLimit: 12, tags: ['Quant', 'Math'], examSlug: 'ssc-gd-constable' }
@@ -243,9 +217,6 @@ async function seedQuizzes() {
 
 async function seedContent() {
   await connectDB();
-  const count = await ContentModel.countDocuments();
-  if (count > 0) return (await ContentModel.find().lean()).map(c => flatten<ContentItem>(c));
-
   const initial = [
     { title: 'SSC GD Preparation Strategy', type: 'pdf', url: 'https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf', thumbnail: 'https://picsum.photos/seed/guide-1/300/400', isFree: true, examSlug: 'ssc-gd-constable' },
     { title: '10 Year Exam Analysis', type: 'blog', url: '#', thumbnail: 'https://picsum.photos/seed/analysis-1/300/400', isFree: false, contentMdx: '# Analysis\nPatterns matter.', examSlug: 'ssc-gd-constable' }

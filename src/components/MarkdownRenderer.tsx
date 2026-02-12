@@ -1,8 +1,7 @@
+
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import { MDXRemote, type MDXRemoteSerializeResult } from 'next-mdx-remote';
-import { serialize } from 'next-mdx-remote/serialize';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
@@ -11,7 +10,93 @@ import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Custom components for MDX using ShadCN-style elements
+// Optimized MarkdownRenderer with dynamic initialization to reduce initial JS execution
+export function MarkdownRenderer({ content, className = '' }: { content: string; className?: string }) {
+  const [mdxSource, setMdxSource] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const serializeContent = useCallback(async (mdxContent: string) => {
+    if (!mdxContent || !mdxContent.trim()) {
+      setMdxSource(null);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Dynamic imports to split chunk and reduce main thread block during evaluation
+      const { serialize } = await import('next-mdx-remote/serialize');
+      
+      const source = await serialize(mdxContent, {
+        mdxOptions: {
+          remarkPlugins: [remarkGfm, remarkMath],
+          rehypePlugins: [rehypeKatex],
+          format: 'mdx',
+        },
+        parseFrontmatter: false,
+      });
+      setMdxSource(source);
+    } catch (err) {
+      console.error('MDX serialization error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to parse MDX content');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    serializeContent(content);
+  }, [content, serializeContent]);
+
+  if (isLoading) {
+    return (
+      <div className={cn("py-12 flex flex-col items-center justify-center min-h-[200px]", className)}>
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+        <span className="text-sm font-black uppercase tracking-widest text-muted-foreground">Preparing Content...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className={cn("p-6 border-destructive/20 bg-destructive/5", className)}>
+        <div className="text-destructive">
+          <h3 className="font-bold text-sm uppercase tracking-wider mb-1">Renderer Error</h3>
+          <p className="text-xs font-medium opacity-80">{error}</p>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!mdxSource) {
+    return <div className={cn("text-muted-foreground italic", className)}>{content}</div>;
+  }
+
+  // Load MDXRemote dynamically
+  return (
+    <div className={cn("prose dark:prose-invert max-w-none", className)}>
+      <DynamicMDX source={mdxSource} />
+    </div>
+  );
+}
+
+// Internal component to handle MDXRemote rendering
+function DynamicMDX({ source }: { source: any }) {
+  const [Component, setComponent] = useState<any>(null);
+
+  useEffect(() => {
+    import('next-mdx-remote').then((mod) => {
+      setComponent(() => mod.MDXRemote);
+    });
+  }, []);
+
+  if (!Component) return null;
+
+  return <Component {...source} components={MDXComponents} />;
+}
+
 const MDXComponents = {
   h1: (props: any) => <h1 className="text-2xl md:text-3xl font-bold mt-8 mb-4 text-foreground font-headline" {...props} />,
   h2: (props: any) => <h2 className="text-xl md:text-2xl font-semibold mt-6 mb-3 text-foreground font-headline" {...props} />,
@@ -67,75 +152,3 @@ const MDXComponents = {
     <td className="border-r border-border last:border-r-0 px-4 py-3 text-foreground font-medium" {...props} />
   ),
 };
-
-interface MarkdownRendererProps {
-  content: string;
-  className?: string;
-}
-
-export function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
-  const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const serializeContent = useCallback(async (mdxContent: string) => {
-    if (!mdxContent || !mdxContent.trim()) {
-      setMdxSource(null);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const source = await serialize(mdxContent, {
-        mdxOptions: {
-          remarkPlugins: [remarkGfm, remarkMath],
-          rehypePlugins: [rehypeKatex],
-          format: 'mdx',
-        },
-        parseFrontmatter: false,
-      });
-      setMdxSource(source);
-    } catch (err) {
-      console.error('MDX serialization error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to parse MDX content');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    serializeContent(content);
-  }, [content, serializeContent]);
-
-  if (isLoading) {
-    return (
-      <div className={cn("py-12 flex flex-col items-center justify-center min-h-[200px]", className)}>
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-        <span className="text-sm font-black uppercase tracking-widest text-muted-foreground">Preparing Content...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className={cn("p-6 border-destructive/20 bg-destructive/5", className)}>
-        <div className="text-destructive">
-          <h3 className="font-bold text-sm uppercase tracking-wider mb-1">Renderer Error</h3>
-          <p className="text-xs font-medium opacity-80">{error}</p>
-        </div>
-      </Card>
-    );
-  }
-
-  if (!mdxSource) {
-    return <div className={cn("text-muted-foreground italic", className)}>{content}</div>;
-  }
-
-  return (
-    <div className={cn("prose dark:prose-invert max-w-none", className)}>
-      <MDXRemote {...mdxSource} components={MDXComponents} />
-    </div>
-  );
-}

@@ -1,10 +1,13 @@
-"use client";
 
 import Link from 'next/link';
 import { BookOpen, Facebook, Twitter, Instagram, Youtube, Linkedin, Mail, MapPin, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+/**
+ * Converted to Server Component to minimize main-thread work.
+ * Removed "use client" as it only contains static links and standard components.
+ */
 export default function Footer() {
   const currentYear = 2025;
 
@@ -50,7 +53,7 @@ export default function Footer() {
               <li><Link href="/practice" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">Practice Dashboard</Link></li>
               <li><Link href="/books" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">Study Materials</Link></li>
               <li><Link href="/pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">Pricing Plans</Link></li>
-              <li><Link href="/previous-papers" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">Solved Papers</Link></li>
+              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">Solved Papers</Link></li>
             </ul>
           </div>
 
@@ -58,7 +61,7 @@ export default function Footer() {
           <div>
             <h3 className="font-headline font-bold text-lg mb-4">Company</h3>
             <ul className="space-y-2">
-              <li><Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">About Us</Link></li>
+              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">About Us</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">Our Team</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">Contact Support</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors font-medium">Privacy Policy</Link></li>
