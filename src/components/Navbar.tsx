@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Search, Menu, BookOpen, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { SignedIn, SignedOut, UserButton, SignInButton, SignUpButton } from "@clerk/nextjs";
 
 export default function Navbar() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -68,12 +69,23 @@ export default function Navbar() {
           </Button>
           
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost" className="font-bold">Log In</Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="font-bold shadow-lg shadow-primary/20">Sign Up</Button>
-            </Link>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button variant="ghost" className="font-bold">Log In</Button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <Button className="font-bold shadow-lg shadow-primary/20">Sign Up</Button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton 
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "h-10 w-10 ring-2 ring-primary/20"
+                  }
+                }}
+              />
+            </SignedIn>
           </div>
 
           {mounted ? (
@@ -96,8 +108,19 @@ export default function Navbar() {
                   <Link href="/pricing" className="text-lg font-bold">Pricing</Link>
                   <Link href="/admin" className="text-lg font-bold text-primary">Admin Dashboard</Link>
                   <hr className="opacity-20" />
-                  <Link href="/login" className="text-lg font-bold">Log In</Link>
-                  <Link href="/signup" className="text-lg font-bold text-accent">Sign Up</Link>
+                  <SignedOut>
+                    <SignInButton mode="modal">
+                      <Button variant="ghost" className="w-full justify-start text-lg font-bold h-auto p-0">Log In</Button>
+                    </SignInButton>
+                    <SignUpButton mode="modal">
+                      <Button variant="ghost" className="w-full justify-start text-lg font-bold h-auto p-0 text-accent">Sign Up</Button>
+                    </SignUpButton>
+                  </SignedOut>
+                  <SignedIn>
+                    <div className="flex items-center gap-3">
+                      <UserButton showName />
+                    </div>
+                  </SignedIn>
                 </div>
               </SheetContent>
             </Sheet>
