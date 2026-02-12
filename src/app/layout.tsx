@@ -1,6 +1,5 @@
 import type {Metadata} from 'next';
 import './globals.css';
-import LayoutWrapper from '@/components/layout-wrapper';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 
@@ -30,9 +29,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
         <body className="antialiased min-h-screen bg-background text-foreground flex flex-col font-sans">
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
+          {children}
         </body>
       </html>
     </ClerkProvider>
