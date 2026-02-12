@@ -88,16 +88,13 @@ export interface Question {
 }
 
 /**
- * Enhanced JSON-safe transformation helper.
- * Strips all internal Mongoose/MongoDB metadata and ensures IDs are strings.
+ * Robust JSON-safe transformation helper.
+ * Ensures only plain objects are passed to Client Components.
  */
 function flatten<T>(doc: any): T {
   if (!doc) return doc;
+  const json = JSON.parse(JSON.stringify(doc));
   
-  // Create a deep copy using JSON round-trip to strip non-serializable properties
-  const plain = JSON.parse(JSON.stringify(doc));
-  
-  // Recursively handle arrays and nested objects if needed
   const transform = (obj: any) => {
     if (Array.isArray(obj)) return obj.map(transform);
     if (obj !== null && typeof obj === 'object') {
@@ -105,7 +102,6 @@ function flatten<T>(doc: any): T {
         obj.id = obj._id.toString();
         delete obj._id;
       }
-      delete obj.__v;
       Object.keys(obj).forEach(key => {
         obj[key] = transform(obj[key]);
       });
@@ -113,16 +109,7 @@ function flatten<T>(doc: any): T {
     return obj;
   };
 
-  const result = transform(plain);
-
-  // Format dates for specific fields if they exist
-  if (result.createdAt) result.createdAt = new Date(result.createdAt).toISOString();
-  if (result.updatedAt) result.updatedAt = new Date(result.updatedAt).toISOString();
-  if (result.premiumExpiry) {
-    result.premiumExpiry = new Date(result.premiumExpiry).toISOString().split('T')[0];
-  }
-  
-  return result as T;
+  return transform(json) as T;
 }
 
 // Data Fetching Actions
@@ -189,7 +176,6 @@ export async function getBookCategories(): Promise<string[]> {
 }
 
 export async function getQuestions(setId: string): Promise<Question[]> {
-  // Static questions for prototype conduction engine
   return [
     { id: 'q1', q: 'Find the value of $x$ in the equation $2^x = 1024$.', options: ['8', '9', '10', '12'], answer: 2, mdx: true },
     { id: 'q2', q: 'What is the largest 3-digit prime number?', options: ['991', '997', '993', '987'], answer: 1, mdx: false },

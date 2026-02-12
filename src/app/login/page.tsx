@@ -1,4 +1,3 @@
-
 import { SignIn } from "@clerk/nextjs";
 
 export default function LoginPage() {
@@ -6,6 +5,7 @@ export default function LoginPage() {
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-10rem)] px-4 py-12">
       <div className="w-full max-w-md flex justify-center">
         <SignIn 
+          routing="hash"
           appearance={{
             elements: {
               formButtonPrimary: 'bg-primary hover:bg-primary/90 text-sm normal-case font-bold',
