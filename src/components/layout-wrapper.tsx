@@ -1,35 +1,26 @@
-
 "use client";
 
 import { usePathname } from "next/navigation";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import dynamic from 'next/dynamic';
+
+// Optimization: Dynamically import Navbar and Footer to reduce initial hydration size
+const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: true });
+const Footer = dynamic(() => import("@/components/Footer"), { ssr: true });
 
 /**
  * A client-side wrapper that conditionally renders the public Navbar and Footer.
- * It excludes them from:
- * - Admin routes (/admin)
- * - Active test sessions (/test-session/[id])
- * - Active quiz sessions (/quiz-session/[id])
- * - Secure content viewer (/viewer/[id])
+ * Optimized to use usePathname efficiently.
  */
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  // Check if current path is an admin route
-  const isAdmin = pathname?.startsWith('/admin');
-  
-  // Check if current path is a live test session (Universal Route)
-  const isTestSession = pathname?.startsWith('/test-session');
+  // High-performance route exclusion check
+  const isExcluded = pathname?.startsWith('/admin') || 
+                     pathname?.startsWith('/test-session') || 
+                     pathname?.startsWith('/quiz-session') || 
+                     pathname?.startsWith('/viewer');
 
-  // Check if current path is a live quiz session
-  const isQuizSession = pathname?.startsWith('/quiz-session');
-
-  // Check if current path is the secure viewer
-  const isViewer = pathname?.startsWith('/viewer');
-
-  // If either admin, test session, quiz session, or viewer, don't show standard layout
-  if (isAdmin || isTestSession || isQuizSession || isViewer) {
+  if (isExcluded) {
     return <>{children}</>;
   }
 

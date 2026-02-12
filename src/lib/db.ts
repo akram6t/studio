@@ -1,4 +1,3 @@
-
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI!;
@@ -28,9 +27,12 @@ async function connectDB() {
     const opts = {
       bufferCommands: false,
       dbName: DB_NAME || 'logical-book',
+      // Optimization: Aggressive connection pooling for faster server response
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000, // Faster timeout for better responsiveness
+      minPoolSize: 2,
+      serverSelectionTimeoutMS: 5000, 
       socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {

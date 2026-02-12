@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Optimization: Explicitly set trailingSlash to false to prevent extra redirects
+  trailingSlash: false,
+  // Optimization: React production build optimizations
+  reactStrictMode: true,
+  // Optimization: Compress large server responses
+  compress: true,
   images: {
     remotePatterns: [
       {

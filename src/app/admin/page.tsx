@@ -1,18 +1,12 @@
-
 "use client";
 
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   Users, 
-  FileCheck, 
-  TrendingUp, 
   CreditCard, 
   ArrowUpRight, 
   ArrowDownRight,
-  Activity,
-  Award,
-  BookOpen,
-  Clock,
   MousePointer2,
   UserPlus,
   Smartphone,
@@ -21,22 +15,22 @@ import {
   CheckCircle2,
   Zap
 } from "lucide-react";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area,
-  PieChart,
-  Pie,
-  Cell,
-  Legend
-} from "recharts";
 import { cn } from "@/lib/utils";
+
+// Performance Optimization: Dynamically import heavy Recharts components
+// This prevents the main bundle from including large charting logic on initial load
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+const AreaChart = dynamic(() => import('recharts').then(mod => mod.AreaChart), { ssr: false });
+const Area = dynamic(() => import('recharts').then(mod => mod.Area), { ssr: false });
+const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false });
+const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
+const BarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false });
+const Bar = dynamic(() => import('recharts').then(mod => mod.Bar), { ssr: false });
+const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false });
+const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false });
+const Cell = dynamic(() => import('recharts').then(mod => mod.Cell), { ssr: false });
 
 const REVENUE_DATA = [
   { name: "Mon", users: 400, revenue: 2400, projections: 2100 },
@@ -157,7 +151,6 @@ export default function AdminDashboard() {
 
       {/* Main Analytics Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Growth & Projections Area Chart */}
         <Card className="lg:col-span-2 border-none shadow-sm bg-card overflow-hidden">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -199,7 +192,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Live Activity Feed */}
         <Card className="border-none shadow-sm bg-card flex flex-col">
           <CardHeader className="border-b bg-muted/5">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -232,9 +224,7 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Secondary Analytics Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {/* Test Performance Bar Chart */}
         <Card className="border-none shadow-sm bg-card lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-lg font-bold">Preparation Velocity</CardTitle>
@@ -257,7 +247,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Device & Platform Breakdown */}
         <Card className="border-none shadow-sm bg-card">
           <CardHeader>
             <CardTitle className="text-lg font-bold">Aspirant Access</CardTitle>
@@ -292,67 +281,6 @@ export default function AdminDashboard() {
                   <span className="text-[8px] uppercase font-bold text-muted-foreground">{item.name}</span>
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Content Mastery & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <Card className="lg:col-span-3 border-none shadow-sm bg-card">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Curriculum Saturation</CardTitle>
-            <CardDescription>Resource allocation and student coverage by exam sector.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6">
-              {[
-                { label: "Engineering (GATE)", value: 75, icon: Award, color: "bg-blue-500" },
-                { label: "SSC Exams", value: 92, icon: BookOpen, color: "bg-emerald-500" },
-                { label: "Civil Services", value: 45, icon: Users, color: "bg-purple-500" },
-                { label: "IT & Software", value: 60, icon: Activity, color: "bg-orange-500" },
-              ].map((item) => (
-                <div key={item.label} className="space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className={cn("p-1.5 rounded-lg text-white", item.color)}>
-                        <item.icon className="h-3 w-3" />
-                      </div>
-                      <span className="font-bold text-xs">{item.label}</span>
-                    </div>
-                    <span className="text-muted-foreground font-black text-xs">{item.value}%</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className={cn("h-full transition-all duration-1000", item.color)} style={{ width: `${item.value}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* System Health Check */}
-        <Card className="border-none shadow-sm bg-primary text-primary-foreground overflow-hidden">
-          <CardContent className="p-6 h-full flex flex-col justify-between">
-            <div>
-              <div className="h-10 w-10 rounded-2xl bg-white/20 flex items-center justify-center mb-4">
-                <CheckCircle2 className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold font-headline">System Verified</h3>
-              <p className="text-sm opacity-80 mt-2 leading-relaxed">All core subsystems, including Payment Gateway and Conduction Engine, are operating within normal parameters.</p>
-            </div>
-            
-            <div className="mt-8 space-y-3">
-              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span>Server Health</span>
-                <span>99.9%</span>
-              </div>
-              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-400 w-[99.9%]" />
-              </div>
-              <button className="w-full bg-white text-primary font-black text-[10px] uppercase tracking-widest py-3 rounded-xl shadow-xl hover:bg-opacity-90 transition-all mt-4">
-                Run Diagnostic
-              </button>
             </div>
           </CardContent>
         </Card>
