@@ -451,7 +451,7 @@ export default function AdminMediaPage() {
               </TabsList>
 
               <TabsContent value="file" className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
-                <div className="border-2 border-dashed border-muted-foreground/20 rounded-3xl p-12 text-center hover:border-primary/40 transition-all group bg-muted/5">
+                <div className="relative border-2 border-dashed border-muted-foreground/20 rounded-3xl p-12 text-center hover:border-primary/40 transition-all group bg-muted/5">
                   <div className="h-16 w-16 rounded-full bg-primary/5 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                     <Upload className="h-8 w-8 text-primary" />
                   </div>
