@@ -20,26 +20,28 @@ if (!cached) {
 }
 
 async function connectDB() {
+  // If we already have a connection, return it immediately
   if (cached.conn) {
     return cached.conn;
   }
 
+  // If we don't have a promise, create a new connection promise
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
       dbName: DB_NAME || 'logical-book',
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      maxPoolSize: 10, // Optimize for serverless
+      serverSelectionTimeoutMS: 10000, // Wait up to 10s for initial connection
       socketTimeoutMS: 45000,
     };
 
-    console.log('🔄 Connecting to MongoDB Atlas...');
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log('✅ MongoDB Connected:', DB_NAME || 'logical-book');
-      return mongoose;
+    console.log('🔄 Initializing MongoDB Atlas connection...');
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
+      console.log('✅ MongoDB connection established');
+      return mongooseInstance;
     }).catch(err => {
-      console.error('❌ MongoDB Connection Error:', err);
-      cached.promise = null;
+      console.error('❌ MongoDB connection failed:', err.message);
+      cached.promise = null; // Reset cache so we can try again on next request
       throw err;
     });
   }

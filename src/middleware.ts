@@ -1,6 +1,7 @@
 
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
+// Standard public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
   '/',
   '/login(.*)',
@@ -12,6 +13,7 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
+  // If the route is not public, protect it
   if (!isPublicRoute(request)) {
     await auth.protect();
   }
@@ -19,9 +21,8 @@ export default clerkMiddleware(async (auth, request) => {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files
-    // Use a cleaner regex to exclude static assets from middleware execution
-    '/((?!_next/static|_next/image|assets|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|css)).*)',
+    // Skip Next.js internals and all static files, which improves performance significantly
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],

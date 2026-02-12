@@ -89,20 +89,33 @@ export interface Question {
 }
 
 /**
- * Helper to convert MongoDB documents to plain serializable objects.
+ * Robust helper to convert MongoDB documents to plain serializable objects.
+ * Uses JSON stringify/parse to handle ObjectId buffers and non-POJO types effectively.
  */
 function flatten<T>(doc: any): T {
   if (!doc) return doc;
-  const obj = doc.toObject ? doc.toObject() : JSON.parse(JSON.stringify(doc));
-  const { _id, __v, createdAt, updatedAt, ...rest } = obj;
   
-  return {
-    ...rest,
-    id: _id.toString(),
-    createdAt: createdAt ? new Date(createdAt).toISOString() : undefined,
-    updatedAt: updatedAt ? new Date(updatedAt).toISOString() : undefined,
-    premiumExpiry: rest.premiumExpiry ? new Date(rest.premiumExpiry).toISOString().split('T')[0] : undefined,
-  } as unknown as T;
+  // Next.js 15 requires plain objects. JSON round-trip is the safest way 
+  // to strip Mongoose internal classes and convert ObjectIds to strings.
+  const plain = JSON.parse(JSON.stringify(doc));
+  
+  // Rename _id to id if it exists
+  if (plain._id) {
+    plain.id = plain._id.toString();
+    delete plain._id;
+  }
+  
+  // Strip version key
+  if (plain.__v !== undefined) delete plain.__v;
+
+  // Ensure dates are stringified consistently for the client
+  if (plain.createdAt) plain.createdAt = new Date(plain.createdAt).toISOString();
+  if (plain.updatedAt) plain.updatedAt = new Date(plain.updatedAt).toISOString();
+  if (plain.premiumExpiry) {
+    plain.premiumExpiry = new Date(plain.premiumExpiry).toISOString().split('T')[0];
+  }
+  
+  return plain as T;
 }
 
 // Data Fetching Actions
