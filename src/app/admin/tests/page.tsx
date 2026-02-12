@@ -1,6 +1,6 @@
 "use client";
 
-import { getTests, TestItem, getExams, Exam } from "@/lib/api";
+import { getTests, TestItem, getExams, Exam, Question } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -8,14 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, 
   Plus, 
   FileText, 
   Timer, 
-  Award, 
-  HelpCircle,
-  CheckCircle2,
   Edit2,
   Trash2,
   Save,
@@ -28,9 +29,16 @@ import {
   GraduationCap,
   CircleDashed,
   Calendar,
-  SortAsc,
-  SortDesc,
-  ArrowUpDown
+  ArrowUpDown,
+  CheckCircle2,
+  ListOrdered,
+  FileJson,
+  X,
+  ChevronUp,
+  ChevronDown,
+  AlertCircle,
+  HelpCircle,
+  Settings
 } from "lucide-react";
 import { 
   Sheet, 
@@ -56,11 +64,14 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
 const ITEMS_PER_PAGE = 5;
+const AVAILABLE_LANGUAGES = ["English", "Hindi", "Marathi", "Bengali", "Telugu", "Tamil"];
 
 type SortOption = 'newest' | 'oldest' | 'date-asc' | 'date-desc';
 
@@ -86,9 +97,20 @@ export default function AdminTestsPage() {
     status: true
   });
 
-  // Drawer State
+  // Main Edit State
   const [editingTest, setEditingTest] = useState<TestItem | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  // Questions Management State
+  const [managingQuestionsTest, setManagingQuestionsTest] = useState<TestItem | null>(null);
+  const [isQuestionsSheetOpen, setIsQuestionsSheetOpen] = useState(false);
+  const [isJsonMode, setIsJsonMode] = useState(false);
+  const [activeLang, setActiveLang] = useState<string>("");
+  const [questionsByLang, setQuestionsByLang] = useState<Record<string, Question[]>>({});
+  const [jsonByLang, setJsonByLang] = useState<Record<string, string>>({});
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
+  const [tempQuestion, setTempQuestion] = useState<Question | null>(null);
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -118,11 +140,9 @@ export default function AdminTestsPage() {
       return matchesSearch && matchesExam && matchesSubject && matchesAccess;
     });
 
-    // Sorting logic
     result.sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
-      
       switch (sortBy) {
         case 'newest': return dateB - dateA;
         case 'oldest': return dateA - dateB;
@@ -145,18 +165,61 @@ export default function AdminTestsPage() {
     setEditingTest({
       ...test,
       status: test.status || 'published',
-      examSlugs: test.examSlugs || (test.examSlug ? [test.examSlug] : [])
+      examSlugs: test.examSlugs || (test.examSlug ? [test.examSlug] : []),
+      languages: test.languages || ['English']
     });
     setIsSheetOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirmDeleteId === id) {
-      setTests(tests.filter(t => t.id !== id));
-      setConfirmDeleteId(null);
-    } else {
-      setConfirmDeleteId(id);
-      setTimeout(() => setConfirmDeleteId(prev => prev === id ? null : prev), 3000);
+  const handleManageQuestions = (test: TestItem) => {
+    setManagingQuestionsTest(test);
+    const langs = test.languages || ['English'];
+    const initialQs: Record<string, Question[]> = {};
+    const initialJson: Record<string, string> = {};
+    
+    langs.forEach(lang => {
+      const mockQs: Question[] = [
+        { id: `q1-${test.id}-${lang}`, q: `[${lang}] Sample question content...`, options: ['Option A', 'Option B', 'Option C', 'Option D'], answer: 0, mdx: true },
+      ];
+      initialQs[lang] = mockQs;
+      initialJson[lang] = JSON.stringify(mockQs, null, 2);
+    });
+
+    setQuestionsByLang(initialQs);
+    setJsonByLang(initialJson);
+    setActiveLang(langs[0]);
+    setIsQuestionsSheetOpen(true);
+    setJsonError(null);
+    setEditingQuestionIndex(null);
+    setIsJsonMode(false);
+  };
+
+  const handleLanguageChange = (lang: string) => {
+    if (isJsonMode) {
+      try {
+        const parsed = JSON.parse(jsonByLang[activeLang]);
+        setQuestionsByLang({ ...questionsByLang, [activeLang]: parsed });
+      } catch (e) {
+        setJsonError(`Fix JSON errors in ${activeLang} before switching.`);
+        return;
+      }
+    }
+    setActiveLang(lang);
+    setJsonError(null);
+    setEditingQuestionIndex(null);
+  };
+
+  const handleSaveQuestions = () => {
+    try {
+      const finalQuestions = { ...questionsByLang };
+      if (isJsonMode) {
+        const parsed = JSON.parse(jsonByLang[activeLang]);
+        finalQuestions[activeLang] = parsed;
+      }
+      setIsQuestionsSheetOpen(false);
+      setManagingQuestionsTest(null);
+    } catch (e: any) {
+      setJsonError(e.message);
     }
   };
 
@@ -170,21 +233,38 @@ export default function AdminTestsPage() {
   const toggleExamSelection = (slug: string) => {
     if (!editingTest) return;
     const currentSlugs = editingTest.examSlugs || [];
-    if (currentSlugs.includes(slug)) {
-      setEditingTest({ ...editingTest, examSlugs: currentSlugs.filter(s => s !== slug) });
-    } else {
-      setEditingTest({ ...editingTest, examSlugs: [...currentSlugs, slug] });
+    setEditingTest({
+      ...editingTest,
+      examSlugs: currentSlugs.includes(slug) ? currentSlugs.filter(s => s !== slug) : [...currentSlugs, slug]
+    });
+  };
+
+  const toggleLanguage = (lang: string) => {
+    if (!editingTest) return;
+    const currentLangs = editingTest.languages || [];
+    setEditingTest({
+      ...editingTest,
+      languages: currentLangs.includes(lang) 
+        ? (currentLangs.length > 1 ? currentLangs.filter(l => l !== lang) : currentLangs)
+        : [...currentLangs, lang]
+    });
+  };
+
+  const moveQuestion = (index: number, direction: 'up' | 'down') => {
+    const updated = [...questionsByLang[activeLang]];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex >= 0 && newIndex < updated.length) {
+      [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+      const newQs = { ...questionsByLang, [activeLang]: updated };
+      setQuestionsByLang(newQs);
+      setJsonByLang({ ...jsonByLang, [activeLang]: JSON.stringify(updated, null, 2) });
     }
   };
 
   const subjects = useMemo(() => Array.from(new Set(tests.map(t => t.subject))).filter(Boolean) as string[], [tests]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
   return (
@@ -194,10 +274,7 @@ export default function AdminTestsPage() {
           <h1 className="text-2xl font-headline font-bold">Sectional Tests</h1>
           <p className="text-muted-foreground text-sm">Create and manage topic-specific practice assessments.</p>
         </div>
-        <Button className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20">
-          <Plus className="h-4 w-4" />
-          Create Test
-        </Button>
+        <Button className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20"><Plus className="h-4 w-4" />Create Test</Button>
       </div>
 
       <Card className="border-none shadow-sm overflow-hidden">
@@ -206,108 +283,19 @@ export default function AdminTestsPage() {
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="relative w-full md:w-96">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search tests..." 
-                  className="pl-10 rounded-xl bg-background border-none shadow-sm h-11"
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                />
+                <Input placeholder="Search tests..." className="pl-10 rounded-xl bg-background border-none shadow-sm h-11" value={search} onChange={(e) => setSearch(e.target.value)}/>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-[180px]">
-                  <Select value={sortBy} onValueChange={(val: SortOption) => setSortBy(val)}>
-                    <SelectTrigger className="h-11 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
-                      <div className="flex items-center gap-2">
-                        <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
-                        <SelectValue placeholder="Sort By" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="newest">Newest First</SelectItem>
-                      <SelectItem value="oldest">Oldest First</SelectItem>
-                      <SelectItem value="date-asc">Date ASC</SelectItem>
-                      <SelectItem value="date-desc">Date DESC</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-2 h-11 rounded-xl">
-                      <Settings2 className="h-4 w-4" />
-                      Columns
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuLabel>Visible Columns</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked={visibleColumns.subject} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, subject: v }))}>
-                      Subject
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={visibleColumns.exams} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, exams: v }))}>
-                      Associated Exams
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={visibleColumns.stats} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, stats: v }))}>
-                      Stats (Qs/Time)
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={visibleColumns.access} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, access: v }))}>
-                      Access Level
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={visibleColumns.status} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, status: v }))}>
-                      Status
-                    </DropdownMenuCheckboxItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+              <Select value={sortBy} onValueChange={(val: SortOption) => setSortBy(val)}>
+                <SelectTrigger className="h-11 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4 md:w-48">
+                  <div className="flex items-center gap-2"><ArrowUpDown className="h-3 w-3" /><SelectValue placeholder="Sort By" /></div>
+                </SelectTrigger>
+                <SelectContent><SelectItem value="newest">Newest First</SelectItem><SelectItem value="oldest">Oldest First</SelectItem><SelectItem value="date-asc">Date ASC</SelectItem><SelectItem value="date-desc">Date DESC</SelectItem></SelectContent>
+              </Select>
             </div>
-
             <div className="flex flex-wrap items-center gap-3">
-              <div className="w-[180px]">
-                <Select value={examFilter} onValueChange={(val) => { setExamFilter(val); setCurrentPage(1); }}>
-                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
-                    <div className="flex items-center gap-2">
-                      <GraduationCap className="h-3 w-3 text-muted-foreground" />
-                      <SelectValue placeholder="All Exams" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Exams</SelectItem>
-                    {exams.map(exam => (
-                      <SelectItem key={exam.id} value={exam.slug}>{exam.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="w-[180px]">
-                <Select value={subjectFilter} onValueChange={(val) => { setSubjectFilter(val); setCurrentPage(1); }}>
-                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
-                    <div className="flex items-center gap-2">
-                      <Filter className="h-3 w-3 text-muted-foreground" />
-                      <SelectValue placeholder="All Subjects" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Subjects</SelectItem>
-                    {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="w-[180px]">
-                <Select value={accessFilter} onValueChange={(val) => { setAccessFilter(val); setCurrentPage(1); }}>
-                  <SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
-                    <SelectValue placeholder="All Access" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Access</SelectItem>
-                    <SelectItem value="free">Free</SelectItem>
-                    <SelectItem value="premium">Premium</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select value={examFilter} onValueChange={setExamFilter}><SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4 w-40"><SelectValue placeholder="All Exams"/></SelectTrigger><SelectContent><SelectItem value="all">All Exams</SelectItem>{exams.map(e => <SelectItem key={e.id} value={e.slug}>{e.title}</SelectItem>)}</SelectContent></Select>
+              <Select value={subjectFilter} onValueChange={setSubjectFilter}><SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4 w-40"><SelectValue placeholder="All Subjects"/></SelectTrigger><SelectContent><SelectItem value="all">All Subjects</SelectItem>{subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
+              <Select value={accessFilter} onValueChange={setAccessFilter}><SelectTrigger className="h-10 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4 w-40"><SelectValue placeholder="All Access"/></SelectTrigger><SelectContent><SelectItem value="all">All Access</SelectItem><SelectItem value="free">Free</SelectItem><SelectItem value="premium">Premium</SelectItem></SelectContent></Select>
             </div>
           </div>
         </CardHeader>
@@ -315,115 +303,41 @@ export default function AdminTestsPage() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/10">
-                <TableRow className="hover:bg-transparent border-b">
+                <TableRow>
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Test Details</TableHead>
                   {visibleColumns.subject && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Subject</TableHead>}
-                  {visibleColumns.exams && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Exams</TableHead>}
                   {visibleColumns.stats && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Stats</TableHead>}
-                  {visibleColumns.access && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Access</TableHead>}
                   {visibleColumns.status && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Status</TableHead>}
                   <TableHead className="font-bold text-[10px] uppercase tracking-widest text-right pr-6">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedTests.map((test) => (
-                  <TableRow key={test.id} className="group border-b last:border-0 hover:bg-muted/5 transition-colors">
+                  <TableRow key={test.id} className="group hover:bg-muted/5">
                     <TableCell className="py-4 pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center">
-                          <FileText className="h-5 w-5" />
-                        </div>
+                        <div className="h-10 w-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center"><FileText className="h-5 w-5" /></div>
                         <div className="flex flex-col">
                           <span className="font-bold text-sm leading-tight">{test.title}</span>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] text-muted-foreground font-semibold">ID: {test.id}</span>
-                            <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
-                              <Calendar className="h-2.5 w-2.5" />
-                              {formatDistanceToNow(new Date(test.createdAt), { addSuffix: true })}
-                            </span>
-                          </div>
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5"><Calendar className="h-2.5 w-2.5" />{formatDistanceToNow(new Date(test.createdAt), { addSuffix: true })}</span>
                         </div>
                       </div>
                     </TableCell>
-                    {visibleColumns.subject && (
-                      <TableCell>
-                        <Badge variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-bold">
-                          {test.subject}
-                        </Badge>
-                      </TableCell>
-                    )}
-                    {visibleColumns.exams && (
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1 max-w-[200px]">
-                          {(test.examSlugs || (test.examSlug ? [test.examSlug] : [])).map(slug => {
-                            const exam = exams.find(e => e.slug === slug);
-                            return (
-                              <Badge key={slug} variant="outline" className="text-[9px] font-bold border-primary/20 text-primary py-0">
-                                {exam?.title || slug}
-                              </Badge>
-                            );
-                          })}
-                          {(!test.examSlugs && !test.examSlug) && <span className="text-[10px] text-muted-foreground italic">General</span>}
-                        </div>
-                      </TableCell>
-                    )}
-                    {visibleColumns.stats && (
-                      <TableCell>
-                        <div className="flex flex-col gap-1 text-[11px] font-semibold text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <HelpCircle className="h-3 w-3" /> {test.numberOfQuestions} Qs
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Timer className="h-3 w-3" /> {test.durationInMinutes}m
-                          </div>
-                        </div>
-                      </TableCell>
-                    )}
-                    {visibleColumns.access && (
-                      <TableCell>
-                        {test.isFree ? (
-                          <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[10px] font-bold">FREE</Badge>
-                        ) : (
-                          <Badge className="bg-amber-600/10 text-amber-600 border-none text-[10px] font-bold">PREMIUM</Badge>
-                        )}
-                      </TableCell>
-                    )}
-                    {visibleColumns.status && (
-                      <TableCell>
-                        {test.status === 'published' ? (
-                          <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
-                            <CheckCircle2 className="h-3 w-3" /> Published
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 text-muted-foreground font-bold text-[11px]">
-                            <CircleDashed className="h-3 w-3" /> Draft
-                          </div>
-                        )}
-                      </TableCell>
-                    )}
+                    <TableCell><Badge variant="secondary" className="bg-muted text-muted-foreground text-[10px]">{test.subject}</Badge></TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1 text-[11px] font-semibold text-muted-foreground">
+                        <span className="flex items-center gap-1.5"><HelpCircle className="h-3 w-3" /> {test.numberOfQuestions} Qs</span>
+                        <span className="flex items-center gap-1.5"><Timer className="h-3 w-3" /> {test.durationInMinutes}m</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {test.status === 'published' ? <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]"><CheckCircle2 className="h-3 w-3" /> Published</div> : <div className="flex items-center gap-1.5 text-muted-foreground font-bold text-[11px]"><CircleDashed className="h-3 w-3" /> Draft</div>}
+                    </TableCell>
                     <TableCell className="text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => handleEdit(test)}
-                          className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => handleDelete(test.id)}
-                          className={cn(
-                            "h-8 w-8 rounded-lg transition-all",
-                            confirmDeleteId === test.id 
-                              ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 w-16 px-2" 
-                              : "hover:bg-destructive/10 hover:text-destructive"
-                          )}
-                        >
-                          {confirmDeleteId === test.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
-                        </Button>
+                        <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs" onClick={() => handleManageQuestions(test)}>Manage Questions</Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(test)} className="h-8 w-8 hover:text-primary"><Edit2 className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(test.id)} className="h-8 w-8 hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -431,162 +345,128 @@ export default function AdminTestsPage() {
               </TableBody>
             </Table>
           </div>
-
-          <div className="p-4 bg-muted/10 border-t flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedTests.length)}</span> of <span className="font-bold text-foreground">{filteredAndSortedTests.length}</span> tests
-            </p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <Button key={page} variant={currentPage === page ? "default" : "outline"} className={cn("h-8 w-8 rounded-lg text-xs font-bold", currentPage === page && "shadow-lg")} onClick={() => setCurrentPage(page)}>
-                    {page}
-                  </Button>
-                ))}
-              </div>
-              <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
-      {/* Edit Test Drawer */}
+      {/* Main Configuration Drawer */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
-          <SheetHeader className="mb-6">
-            <SheetTitle className="text-xl">Edit Sectional Test</SheetTitle>
-            <SheetDescription>Update test parameters, subjects, and exam associations.</SheetDescription>
-          </SheetHeader>
-          
+          <SheetHeader className="mb-6"><SheetTitle>Edit Sectional Test</SheetTitle><SheetDescription>Modify test parameters and visibility.</SheetDescription></SheetHeader>
           {editingTest && (
-            <div className="space-y-6 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-test-title">Test Title</Label>
-                <Input 
-                  id="edit-test-title" 
-                  value={editingTest.title} 
-                  onChange={(e) => setEditingTest({...editingTest, title: e.target.value})}
-                  className="rounded-xl"
-                />
-              </div>
-
+            <div className="space-y-6">
+              <div className="space-y-2"><Label>Test Title</Label><Input value={editingTest.title} onChange={(e) => setEditingTest({...editingTest, title: e.target.value})}/></div>
               <div className="space-y-2">
                 <Label>Subject</Label>
-                <Select 
-                  value={editingTest.subject || "none"} 
-                  onValueChange={(val) => setEditingTest({...editingTest, subject: val === "none" ? undefined : val})}
-                >
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="Select subject" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Uncategorized</SelectItem>
-                    {subjects.map(s => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                  </SelectContent>
+                <Select value={editingTest.subject} onValueChange={(v) => setEditingTest({...editingTest, subject: v})}>
+                  <SelectTrigger><SelectValue placeholder="Select Subject" /></SelectTrigger>
+                  <SelectContent>{subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Questions</Label>
-                  <Input 
-                    type="number"
-                    value={editingTest.numberOfQuestions} 
-                    onChange={(e) => setEditingTest({...editingTest, numberOfQuestions: parseInt(e.target.value) || 0})}
-                    className="rounded-xl"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Duration (Mins)</Label>
-                  <Input 
-                    type="number"
-                    value={editingTest.durationInMinutes} 
-                    onChange={(e) => setEditingTest({...editingTest, durationInMinutes: parseInt(e.target.value) || 0})}
-                    className="rounded-xl"
-                  />
-                </div>
+                <div className="space-y-2"><Label>Qs</Label><Input type="number" value={editingTest.numberOfQuestions} onChange={(e) => setEditingTest({...editingTest, numberOfQuestions: parseInt(e.target.value)})}/></div>
+                <div className="space-y-2"><Label>Time (m)</Label><Input type="number" value={editingTest.durationInMinutes} onChange={(e) => setEditingTest({...editingTest, durationInMinutes: parseInt(e.target.value)})}/></div>
               </div>
-
               <div className="space-y-4 pt-4 border-t">
-                <div className="flex items-center gap-2">
-                  <GraduationCap className="h-4 w-4 text-primary" />
-                  <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Associated Exams</Label>
-                </div>
-                <div className="grid grid-cols-1 gap-2 p-4 bg-muted/30 rounded-2xl border">
-                  {exams.map(exam => {
-                    const isSelected = editingTest.examSlugs?.includes(exam.slug);
+                <Label className="text-[11px] font-black uppercase text-muted-foreground">Languages</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {AVAILABLE_LANGUAGES.map(lang => {
+                    const isSelected = editingTest.languages?.includes(lang);
                     return (
-                      <div key={exam.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-background/50 transition-colors">
-                        <Checkbox 
-                          id={`exam-${exam.slug}`} 
-                          checked={isSelected}
-                          onCheckedChange={() => toggleExamSelection(exam.slug)}
-                        />
-                        <Label 
-                          htmlFor={`exam-${exam.slug}`} 
-                          className="text-sm font-semibold cursor-pointer flex-grow"
-                        >
-                          {exam.title}
-                        </Label>
-                      </div>
+                      <Button key={lang} variant={isSelected ? "default" : "outline"} className="h-9 text-xs justify-between" onClick={() => toggleLanguage(lang)}>
+                        {lang} {isSelected && <Check className="h-3 w-3" />}
+                      </Button>
                     );
                   })}
                 </div>
-                <p className="text-[10px] text-muted-foreground italic px-1">This test will be visible in the selected exam pages.</p>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Access Level</Label>
-                  <Select 
-                    value={editingTest.isFree ? "free" : "premium"} 
-                    onValueChange={(val: any) => setEditingTest({...editingTest, isFree: val === "free"})}
-                  >
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue placeholder="Select access" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="free">Free Access</SelectItem>
-                      <SelectItem value="premium">Premium Only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Publication Status</Label>
-                  <Select 
-                    value={editingTest.status || "published"} 
-                    onValueChange={(val: any) => setEditingTest({...editingTest, status: val})}
-                  >
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="published">Published</SelectItem>
-                      <SelectItem value="draft">Draft (Hidden)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2 pt-4 border-t">
+                <Label>Status</Label>
+                <Select value={editingTest.status} onValueChange={(v: any) => setEditingTest({...editingTest, status: v})}>
+                  <SelectTrigger><SelectValue/></SelectTrigger>
+                  <SelectContent><SelectItem value="published">Published</SelectItem><SelectItem value="draft">Draft</SelectItem></SelectContent>
+                </Select>
               </div>
             </div>
           )}
+          <SheetFooter className="mt-8"><Button onClick={handleSave} className="w-full">Save Changes</Button></SheetFooter>
+        </SheetContent>
+      </Sheet>
 
-          <SheetFooter className="mt-8 gap-2 pb-8">
-            <SheetClose asChild>
-              <Button variant="outline" className="w-full rounded-xl h-11 font-bold">Cancel</Button>
-            </SheetClose>
-            <Button onClick={handleSave} className="w-full gap-2 rounded-xl h-11 font-bold shadow-lg shadow-primary/20">
-              <Save className="h-4 w-4" />
-              Save Changes
-            </Button>
-          </SheetFooter>
+      {/* Questions Editor Drawer */}
+      <Sheet open={isQuestionsSheetOpen} onOpenChange={setIsQuestionsSheetOpen}>
+        <SheetContent side="right" className="sm:max-w-4xl overflow-y-auto">
+          <SheetHeader className="border-b pb-4">
+            <div className="flex items-center justify-between">
+              <div><SheetTitle className="text-xl flex items-center gap-2"><FileJson className="h-5 w-5 text-primary" /> Questions Editor</SheetTitle><SheetDescription>Test: {managingQuestionsTest?.title}</SheetDescription></div>
+              {editingQuestionIndex !== null && <Button variant="ghost" size="sm" onClick={() => setEditingQuestionIndex(null)} className="h-8 gap-1.5 font-bold uppercase text-[10px]"><X className="h-4 w-4" /> Cancel</Button>}
+            </div>
+          </SheetHeader>
+
+          <div className="py-6">
+            {managingQuestionsTest && (
+              <Tabs value={activeLang} onValueChange={handleLanguageChange}>
+                <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-12 bg-muted/50 mb-6">
+                  {managingQuestionsTest.languages?.map(lang => (
+                    <TabsTrigger key={lang} value={lang} className="text-[10px] font-bold uppercase tracking-wider">{lang}</TabsTrigger>
+                  ))}
+                </TabsList>
+
+                {editingQuestionIndex === null && (
+                  <div className="flex gap-2 mb-6">
+                    <Button variant={isJsonMode ? "ghost" : "secondary"} className="flex-1 rounded-xl" onClick={() => setIsJsonMode(false)}><ListOrdered className="h-4 w-4 mr-2" /> Visual List</Button>
+                    <Button variant={isJsonMode ? "secondary" : "ghost"} className="flex-1 rounded-xl" onClick={() => setIsJsonMode(true)}><FileJson className="h-4 w-4 mr-2" /> Raw JSON</Button>
+                  </div>
+                )}
+
+                {editingQuestionIndex !== null && tempQuestion ? (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center"><Label className="text-[11px] font-black uppercase text-muted-foreground">Question Prompt ({activeLang})</Label><div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-full"><Label className="text-[10px] font-bold text-primary">MDX</Label><Switch checked={tempQuestion.mdx} onCheckedChange={(v) => setTempQuestion({...tempQuestion, mdx: v})} /></div></div>
+                      <Textarea value={tempQuestion.q} onChange={(e) => setTempQuestion({...tempQuestion, q: e.target.value})} className="min-h-[140px] rounded-2xl font-semibold"/>
+                    </div>
+                    <div className="space-y-4">
+                      <Label className="text-[11px] font-black uppercase text-muted-foreground">Options</Label>
+                      <RadioGroup value={tempQuestion.answer.toString()} onValueChange={(v) => setTempQuestion({...tempQuestion, answer: parseInt(v)})} className="space-y-3">
+                        {tempQuestion.options.map((opt, i) => (
+                          <div key={i} className={cn("flex items-center gap-3 p-2 rounded-2xl border", tempQuestion.answer === i && "bg-emerald-50 border-emerald-200")}>
+                            <RadioGroupItem value={i.toString()} className="h-5 w-5 ml-2" />
+                            <Input value={opt} onChange={(e) => { const next = [...tempQuestion.options]; next[i] = e.target.value; setTempQuestion({...tempQuestion, options: next})}} className="border-none shadow-none focus-visible:ring-0 font-medium" placeholder={`Option ${String.fromCharCode(65+i)}`}/>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </div>
+                    <div className="pt-4 flex gap-3"><Button variant="outline" className="flex-1" onClick={() => setEditingQuestionIndex(null)}>Discard</Button><Button className="flex-1" onClick={() => { const next = [...questionsByLang[activeLang]]; next[editingQuestionIndex] = tempQuestion; setQuestionsByLang({...questionsByLang, [activeLang]: next}); setEditingQuestionIndex(null); }}>Save Question</Button></div>
+                  </div>
+                ) : isJsonMode ? (
+                  <Textarea value={jsonByLang[activeLang]} onChange={(e) => setJsonByLang({...jsonByLang, [activeLang]: e.target.value})} className="min-h-[450px] font-mono text-[11px] p-6 bg-slate-900 text-slate-100 rounded-2xl" />
+                ) : (
+                  <div className="space-y-4">
+                    {questionsByLang[activeLang]?.map((q, i) => (
+                      <Card key={q.id} className="overflow-hidden border-none shadow-sm bg-muted/20">
+                        <div className="flex items-center justify-between px-4 py-2 bg-muted/40 border-b">
+                          <Badge className="bg-primary/10 text-primary text-[9px]"># {i + 1}</Badge>
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="icon" disabled={i === 0} onClick={() => moveQuestion(i, 'up')} className="h-7 w-7"><ChevronUp className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="icon" disabled={i === questionsByLang[activeLang].length - 1} onClick={() => moveQuestion(i, 'down')} className="h-7 w-7"><ChevronDown className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingQuestionIndex(i); setTempQuestion({...q}); }} className="h-7 w-7"><Edit2 className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => { const next = [...questionsByLang[activeLang]]; next.splice(i, 1); setQuestionsByLang({...questionsByLang, [activeLang]: next}); }} className="h-7 w-7 hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <div className="mb-4 text-sm font-bold line-clamp-2">{q.q}</div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {q.options.map((opt, oIdx) => <div key={oIdx} className={cn("text-[10px] p-2 rounded-lg border", q.answer === oIdx ? "bg-emerald-50 border-emerald-200 text-emerald-700 font-bold" : "bg-background")}>{opt}</div>)}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                    <Button variant="outline" className="w-full border-dashed h-12" onClick={() => { const newQ = { id: `q-${Date.now()}`, q: "New Question", options: ["A", "B", "C", "D"], answer: 0, mdx: false }; const next = [...(questionsByLang[activeLang] || []), newQ]; setQuestionsByLang({...questionsByLang, [activeLang]: next}); setEditingQuestionIndex(next.length - 1); setTempQuestion(newQ); }}><Plus className="h-4 w-4 mr-2" /> Add Question</Button>
+                  </div>
+                )}
+              </Tabs>
+            )}
+          </div>
+          <SheetFooter className="mt-8 pt-4 border-t"><Button onClick={handleSaveQuestions} className="w-full">Commit All Changes</Button></SheetFooter>
         </SheetContent>
       </Sheet>
     </div>

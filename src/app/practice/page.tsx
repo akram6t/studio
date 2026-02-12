@@ -1,2 +1,0 @@
-// Empty file to avoid route collision - route moved to (public)/practice/page.tsx
-export default function Empty() { return null; }

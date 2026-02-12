@@ -1,18 +1,22 @@
 "use client";
 
-import { getMockTests, TestItem, getExams, Exam } from "@/lib/api";
+import { getMockTests, TestItem, getExams, Exam, Question } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, 
   Plus, 
   Trophy, 
   Timer, 
-  Award, 
   Edit2,
   Trash2,
   Save,
@@ -26,7 +30,13 @@ import {
   CheckCircle2,
   CircleDashed,
   Calendar,
-  ArrowUpDown
+  ArrowUpDown,
+  FileJson,
+  ListOrdered,
+  X,
+  ChevronUp,
+  ChevronDown,
+  HelpCircle
 } from "lucide-react";
 import { 
   Sheet, 
@@ -52,11 +62,14 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
 const ITEMS_PER_PAGE = 5;
+const AVAILABLE_LANGUAGES = ["English", "Hindi", "Marathi", "Bengali", "Telugu", "Tamil"];
 
 type SortOption = 'newest' | 'oldest' | 'date-asc' | 'date-desc';
 
@@ -72,19 +85,20 @@ export default function AdminMocksPage() {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Column Selector
-  const [visibleColumns, setVisibleColumns] = useState({
-    exam: true,
-    section: true,
-    questions: true,
-    time: true,
-    access: true,
-    status: true
-  });
-
-  // Drawer State
+  // Main Edit State
   const [editingMock, setEditingMock] = useState<TestItem | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  // Questions Management State
+  const [managingQuestionsMock, setManagingQuestionsMock] = useState<TestItem | null>(null);
+  const [isQuestionsSheetOpen, setIsQuestionsSheetOpen] = useState(false);
+  const [isJsonMode, setIsJsonMode] = useState(false);
+  const [activeLang, setActiveLang] = useState<string>("");
+  const [questionsByLang, setQuestionsByLang] = useState<Record<string, Question[]>>({});
+  const [jsonByLang, setJsonByLang] = useState<Record<string, string>>({});
+  const [jsonError, setJsonError] = useState<string | null>(null);
+  const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
+  const [tempQuestion, setTempQuestion] = useState<Question | null>(null);
 
   // Deletion Confirmation State
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -107,14 +121,6 @@ export default function AdminMocksPage() {
     load();
   }, []);
 
-  // Dynamic Sections based on selected exam
-  const availableSections = useMemo(() => {
-    const relevantTests = examFilter === "all" 
-      ? mocks 
-      : mocks.filter(m => m.examSlug === examFilter);
-    return Array.from(new Set(relevantTests.map(m => m.subject))).filter(Boolean) as string[];
-  }, [mocks, examFilter]);
-
   const filteredAndSortedMocks = useMemo(() => {
     let result = mocks.filter(mock => {
       const matchesSearch = mock.title.toLowerCase().includes(search.toLowerCase());
@@ -123,11 +129,9 @@ export default function AdminMocksPage() {
       return matchesSearch && matchesExam && matchesSection;
     });
 
-    // Sorting logic
     result.sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
-      
       switch (sortBy) {
         case 'newest': return dateB - dateA;
         case 'oldest': return dateA - dateB;
@@ -147,21 +151,31 @@ export default function AdminMocksPage() {
   );
 
   const handleEdit = (mock: TestItem) => {
-    setEditingMock({
-      ...mock,
-      status: mock.status || 'published'
-    });
+    setEditingMock({ ...mock, status: mock.status || 'published', languages: mock.languages || ['English'] });
     setIsSheetOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirmDeleteId === id) {
-      setMocks(mocks.filter(m => m.id !== id));
-      setConfirmDeleteId(null);
-    } else {
-      setConfirmDeleteId(id);
-      setTimeout(() => setConfirmDeleteId(prev => prev === id ? null : prev), 3000);
-    }
+  const handleManageQuestions = (mock: TestItem) => {
+    setManagingQuestionsMock(mock);
+    const langs = mock.languages || ['English'];
+    const initialQs: Record<string, Question[]> = {};
+    const initialJson: Record<string, string> = {};
+    
+    langs.forEach(lang => {
+      const mockQs: Question[] = [
+        { id: `q1-mock-${mock.id}-${lang}`, q: `[${lang}] Mock test sample question...`, options: ['A', 'B', 'C', 'D'], answer: 0, mdx: true },
+      ];
+      initialQs[lang] = mockQs;
+      initialJson[lang] = JSON.stringify(mockQs, null, 2);
+    });
+
+    setQuestionsByLang(initialQs);
+    setJsonByLang(initialJson);
+    setActiveLang(langs[0]);
+    setIsQuestionsSheetOpen(true);
+    setJsonError(null);
+    setEditingQuestionIndex(null);
+    setIsJsonMode(false);
   };
 
   const handleSave = () => {
@@ -171,12 +185,22 @@ export default function AdminMocksPage() {
     }
   };
 
+  const handleSaveQuestions = () => {
+    setIsQuestionsSheetOpen(false);
+    setManagingQuestionsMock(null);
+  };
+
+  const moveQuestion = (index: number, direction: 'up' | 'down') => {
+    const updated = [...questionsByLang[activeLang]];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex >= 0 && newIndex < updated.length) {
+      [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+      setQuestionsByLang({ ...questionsByLang, [activeLang]: updated });
+    }
+  };
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
   return (
@@ -186,10 +210,7 @@ export default function AdminMocksPage() {
           <h1 className="text-2xl font-headline font-bold">Mock Test Management</h1>
           <p className="text-muted-foreground text-sm">Review and manage full-length official mock assessments.</p>
         </div>
-        <Button className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20">
-          <Plus className="h-4 w-4" />
-          Create Mock Test
-        </Button>
+        <Button className="gap-2 rounded-xl h-11 px-6 shadow-lg shadow-primary/20"><Plus className="h-4 w-4" />Create Mock Test</Button>
       </div>
 
       <Card className="border-none shadow-sm overflow-hidden">
@@ -198,113 +219,12 @@ export default function AdminMocksPage() {
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="relative w-full md:w-96">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search mocks..." 
-                  className="pl-10 rounded-xl bg-background border-none shadow-sm h-11"
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                />
+                <Input placeholder="Search mocks..." className="pl-10 rounded-xl h-11" value={search} onChange={(e) => setSearch(e.target.value)}/>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-[180px]">
-                  <Select value={sortBy} onValueChange={(val: SortOption) => setSortBy(val)}>
-                    <SelectTrigger className="h-11 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
-                      <div className="flex items-center gap-2">
-                        <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
-                        <SelectValue placeholder="Sort By" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="newest">Newest First</SelectItem>
-                      <SelectItem value="oldest">Oldest First</SelectItem>
-                      <SelectItem value="date-asc">Date ASC</SelectItem>
-                      <SelectItem value="date-desc">Date DESC</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-2 h-11 rounded-xl">
-                      <Settings2 className="h-4 w-4" />
-                      Columns
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuLabel>Visible Columns</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuCheckboxItem checked={visibleColumns.exam} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, exam: v }))}>
-                      Exam
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={visibleColumns.section} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, section: v }))}>
-                      Section
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={visibleColumns.questions} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, questions: v }))}>
-                      Questions
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={visibleColumns.time} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, time: v }))}>
-                      Time
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={visibleColumns.access} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, access: v }))}>
-                      Access
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={visibleColumns.status} onCheckedChange={(v) => setVisibleColumns(prev => ({ ...prev, status: v }))}>
-                      Status
-                    </DropdownMenuCheckboxItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="w-[200px]">
-                <Select 
-                  value={examFilter} 
-                  onValueChange={(val) => {
-                    setExamFilter(val);
-                    setSectionFilter("all"); 
-                    setCurrentPage(1);
-                  }}
-                >
-                  <SelectTrigger className="h-11 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
-                    <div className="flex items-center gap-2">
-                      <GraduationCap className="h-3 w-3 text-muted-foreground" />
-                      <SelectValue placeholder="All Exams" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Exams</SelectItem>
-                    {exams.map(exam => (
-                      <SelectItem key={exam.id} value={exam.slug}>{exam.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="w-[200px]">
-                <Select 
-                  value={sectionFilter} 
-                  onValueChange={(val) => {
-                    setSectionFilter(val);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <SelectTrigger className="h-11 rounded-xl bg-background border-none shadow-sm font-bold uppercase text-[10px] tracking-widest px-4">
-                    <div className="flex items-center gap-2">
-                      <Filter className="h-3 w-3 text-muted-foreground" />
-                      <SelectValue placeholder="All Sections" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Sections</SelectItem>
-                    {availableSections.map(s => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select value={sortBy} onValueChange={(val: SortOption) => setSortBy(val)}>
+                <SelectTrigger className="h-11 rounded-xl w-48 font-bold uppercase text-[10px] tracking-widest"><div className="flex items-center gap-2"><ArrowUpDown className="h-3 w-3" /><SelectValue placeholder="Sort By" /></div></SelectTrigger>
+                <SelectContent><SelectItem value="newest">Newest First</SelectItem><SelectItem value="oldest">Oldest First</SelectItem><SelectItem value="date-asc">Date ASC</SelectItem><SelectItem value="date-desc">Date DESC</SelectItem></SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
@@ -312,106 +232,32 @@ export default function AdminMocksPage() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/10">
-                <TableRow className="hover:bg-transparent border-b">
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest pl-6">Mock Details</TableHead>
-                  {visibleColumns.exam && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Associated Exam</TableHead>}
-                  {visibleColumns.section && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Section</TableHead>}
-                  {visibleColumns.questions && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Questions</TableHead>}
-                  {visibleColumns.time && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Time</TableHead>}
-                  {visibleColumns.access && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Access</TableHead>}
-                  {visibleColumns.status && <TableHead className="font-bold text-[10px] uppercase tracking-widest">Status</TableHead>}
-                  <TableHead className="font-bold text-[10px] uppercase tracking-widest text-right pr-6">Actions</TableHead>
+                <TableRow>
+                  <TableHead className="font-bold text-[10px] uppercase pl-6">Mock Details</TableHead>
+                  <TableHead className="font-bold text-[10px] uppercase">Associated Exam</TableHead>
+                  <TableHead className="font-bold text-[10px] uppercase">Status</TableHead>
+                  <TableHead className="font-bold text-[10px] uppercase text-right pr-6">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedMocks.map((mock) => (
-                  <TableRow key={mock.id} className="group border-b last:border-0 hover:bg-muted/5 transition-colors">
+                  <TableRow key={mock.id} className="group hover:bg-muted/5">
                     <TableCell className="py-4 pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-                          <Trophy className="h-5 w-5" />
-                        </div>
+                        <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center"><Trophy className="h-5 w-5" /></div>
                         <div className="flex flex-col">
                           <span className="font-bold text-sm leading-tight">{mock.title}</span>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] text-muted-foreground font-semibold">ID: {mock.id}</span>
-                            <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
-                              <Calendar className="h-2.5 w-2.5" />
-                              {formatDistanceToNow(new Date(mock.createdAt), { addSuffix: true })}
-                            </span>
-                          </div>
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5"><Calendar className="h-2.5 w-2.5" />{formatDistanceToNow(new Date(mock.createdAt), { addSuffix: true })}</span>
                         </div>
                       </div>
                     </TableCell>
-                    {visibleColumns.exam && (
-                      <TableCell>
-                        <span className="text-xs font-bold text-primary">
-                          {exams.find(e => e.slug === mock.examSlug)?.title || "General"}
-                        </span>
-                      </TableCell>
-                    )}
-                    {visibleColumns.section && (
-                      <TableCell>
-                        <Badge variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-bold">
-                          {mock.subject}
-                        </Badge>
-                      </TableCell>
-                    )}
-                    {visibleColumns.questions && (
-                      <TableCell>
-                        <span className="font-bold text-sm">{mock.numberOfQuestions} Qs</span>
-                      </TableCell>
-                    )}
-                    {visibleColumns.time && (
-                      <TableCell>
-                        <span className="font-bold text-sm">{mock.durationInMinutes}m</span>
-                      </TableCell>
-                    )}
-                    {visibleColumns.access && (
-                      <TableCell>
-                        {mock.isFree ? (
-                          <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[10px] font-bold px-2 py-0.5">FREE</Badge>
-                        ) : (
-                          <Badge className="bg-amber-600/10 text-amber-600 border-none text-[10px] font-bold px-2 py-0.5">PREMIUM</Badge>
-                        )}
-                      </TableCell>
-                    )}
-                    {visibleColumns.status && (
-                      <TableCell>
-                        {mock.status === 'published' ? (
-                          <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]">
-                            <CheckCircle2 className="h-3 w-3" /> Published
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 text-muted-foreground font-bold text-[11px]">
-                            <CircleDashed className="h-3 w-3" /> Draft
-                          </div>
-                        )}
-                      </TableCell>
-                    )}
+                    <TableCell><span className="text-xs font-bold text-primary">{exams.find(e => e.slug === mock.examSlug)?.title || "General"}</span></TableCell>
+                    <TableCell>{mock.status === 'published' ? <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px]"><CheckCircle2 className="h-3 w-3" /> Published</div> : <div className="flex items-center gap-1.5 text-muted-foreground font-bold text-[11px]"><CircleDashed className="h-3 w-3" /> Draft</div>}</TableCell>
                     <TableCell className="text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => handleEdit(mock)}
-                          className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => handleDelete(mock.id)}
-                          className={cn(
-                            "h-8 w-8 rounded-lg transition-all",
-                            confirmDeleteId === mock.id 
-                              ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 w-16 px-2" 
-                              : "hover:bg-destructive/10 hover:text-destructive"
-                          )}
-                        >
-                          {confirmDeleteId === mock.id ? <div className="flex items-center gap-1 text-[10px] font-bold"><Check className="h-3 w-3" /> YES</div> : <Trash2 className="h-4 w-4" />}
-                        </Button>
+                        <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs" onClick={() => handleManageQuestions(mock)}>Manage Questions</Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(mock)} className="h-8 w-8"><Edit2 className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => { if(confirm("Delete mock?")) setMocks(mocks.filter(m => m.id !== mock.id))}} className="h-8 w-8 hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -419,153 +265,101 @@ export default function AdminMocksPage() {
               </TableBody>
             </Table>
           </div>
-
-          <div className="p-4 bg-muted/10 border-t flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Showing <span className="font-bold text-foreground">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedMocks.length)}</span> of <span className="font-bold text-foreground">{filteredAndSortedMocks.length}</span> mocks
-            </p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <Button key={page} variant={currentPage === page ? "default" : "outline"} className={cn("h-8 w-8 rounded-lg text-xs font-bold", currentPage === page && "shadow-lg")} onClick={() => setCurrentPage(page)}>
-                    {page}
-                  </Button>
-                ))}
-              </div>
-              <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
-      {/* Edit Mock Drawer */}
+      {/* Main Edit Drawer */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
-          <SheetHeader className="mb-6">
-            <SheetTitle className="text-xl">Edit Mock Test</SheetTitle>
-            <SheetDescription>Update full-length mock test details and requirements.</SheetDescription>
-          </SheetHeader>
-          
+          <SheetHeader className="mb-6"><SheetTitle>Edit Mock Test</SheetTitle></SheetHeader>
           {editingMock && (
-            <div className="space-y-6 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-mock-title">Mock Title</Label>
-                <Input 
-                  id="edit-mock-title" 
-                  value={editingMock.title} 
-                  onChange={(e) => setEditingMock({...editingMock, title: e.target.value})}
-                  className="rounded-xl"
-                />
+            <div className="space-y-6">
+              <div className="space-y-2"><Label>Mock Title</Label><Input value={editingMock.title} onChange={(e) => setEditingMock({...editingMock, title: e.target.value})}/></div>
+              <div className="space-y-4 pt-4 border-t">
+                <Label className="text-[11px] font-black uppercase text-muted-foreground">Languages</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {AVAILABLE_LANGUAGES.map(lang => (
+                    <Button key={lang} variant={editingMock.languages?.includes(lang) ? "default" : "outline"} className="h-9 text-xs justify-between" onClick={() => {
+                      const cur = editingMock.languages || [];
+                      const next = cur.includes(lang) ? (cur.length > 1 ? cur.filter(l => l !== lang) : cur) : [...cur, lang];
+                      setEditingMock({...editingMock, languages: next});
+                    }}>{lang} {editingMock.languages?.includes(lang) && <Check className="h-3 w-3" />}</Button>
+                  ))}
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <Label>Associated Exam</Label>
-                <Select 
-                  value={editingMock.examSlug || "none"} 
-                  onValueChange={(val: any) => setEditingMock({...editingMock, examSlug: val === "none" ? undefined : val, subject: "Full Length"})}
-                >
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="Select associated exam" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None (General)</SelectItem>
-                    {exams.map(exam => (
-                      <SelectItem key={exam.id} value={exam.slug}>{exam.title}</SelectItem>
-                    ))}
-                  </SelectContent>
+              <div className="space-y-2 pt-4 border-t">
+                <Label>Status</Label>
+                <Select value={editingMock.status} onValueChange={(v: any) => setEditingMock({...editingMock, status: v})}>
+                  <SelectTrigger><SelectValue/></SelectTrigger>
+                  <SelectContent><SelectItem value="published">Published</SelectItem><SelectItem value="draft">Draft</SelectItem></SelectContent>
                 </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Total Questions</Label>
-                  <Input 
-                    type="number"
-                    value={editingMock.numberOfQuestions} 
-                    onChange={(e) => setEditingMock({...editingMock, numberOfQuestions: parseInt(e.target.value) || 0})}
-                    className="rounded-xl"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Total Time (Mins)</Label>
-                  <Input 
-                    type="number"
-                    value={editingMock.durationInMinutes} 
-                    onChange={(e) => setEditingMock({...editingMock, durationInMinutes: parseInt(e.target.value) || 0})}
-                    className="rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Mock Type / Section / Stage</Label>
-                <Select 
-                  value={editingMock.subject || "Full Length"} 
-                  onValueChange={(val) => setEditingMock({...editingMock, subject: val})}
-                >
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="Select section/stage" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* Dynamic options based on exam stages or fallback */}
-                    {(exams.find(e => e.slug === editingMock.examSlug)?.stages || ["Full Length"]).map(stage => (
-                      <SelectItem key={stage} value={stage}>{stage}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-[10px] text-muted-foreground italic px-1">Options vary based on the selected exam's curriculum.</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Access Mode</Label>
-                  <Select 
-                    value={editingMock.isFree ? "free" : "premium"} 
-                    onValueChange={(val: any) => setEditingMock({...editingMock, isFree: val === "free"})}
-                  >
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue placeholder="Select access" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="free">Free Access</SelectItem>
-                      <SelectItem value="premium">Premium Only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Publication Status</Label>
-                  <Select 
-                    value={editingMock.status || "published"} 
-                    onValueChange={(val: any) => setEditingMock({...editingMock, status: val})}
-                  >
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="published">Published</SelectItem>
-                      <SelectItem value="draft">Draft (Hidden)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
             </div>
           )}
+          <SheetFooter className="mt-8"><Button onClick={handleSave} className="w-full">Save Changes</Button></SheetFooter>
+        </SheetContent>
+      </Sheet>
 
-          <SheetFooter className="mt-8 gap-2">
-            <SheetClose asChild>
-              <Button variant="outline" className="w-full rounded-xl">Cancel</Button>
-            </SheetClose>
-            <Button onClick={handleSave} className="w-full gap-2 rounded-xl shadow-lg">
-              <Save className="h-4 w-4" />
-              Save Changes
-            </Button>
-          </SheetFooter>
+      {/* Questions Editor Drawer */}
+      <Sheet open={isQuestionsSheetOpen} onOpenChange={setIsQuestionsSheetOpen}>
+        <SheetContent side="right" className="sm:max-w-4xl overflow-y-auto">
+          <SheetHeader className="border-b pb-4">
+            <div className="flex items-center justify-between">
+              <div><SheetTitle className="text-xl flex items-center gap-2"><FileJson className="h-5 w-5 text-primary" /> Full-Length Mock Editor</SheetTitle><SheetDescription>Mock: {managingQuestionsMock?.title}</SheetDescription></div>
+              {editingQuestionIndex !== null && <Button variant="ghost" size="sm" onClick={() => setEditingQuestionIndex(null)} className="h-8 gap-1.5 font-bold uppercase text-[10px]"><X className="h-4 w-4" /> Cancel</Button>}
+            </div>
+          </SheetHeader>
+
+          <div className="py-6">
+            {managingQuestionsMock && (
+              <Tabs value={activeLang} onValueChange={setActiveLang}>
+                <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-12 bg-muted/50 mb-6">
+                  {managingQuestionsMock.languages?.map(lang => (
+                    <TabsTrigger key={lang} value={lang} className="text-[10px] font-bold uppercase tracking-wider">{lang}</TabsTrigger>
+                  ))}
+                </TabsList>
+
+                {editingQuestionIndex !== null && tempQuestion ? (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center"><Label className="text-[11px] font-black uppercase text-muted-foreground">Question ({activeLang})</Label><div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-full"><Label className="text-[10px] font-bold text-primary">MDX</Label><Switch checked={tempQuestion.mdx} onCheckedChange={(v) => setTempQuestion({...tempQuestion, mdx: v})} /></div></div>
+                      <Textarea value={tempQuestion.q} onChange={(e) => setTempQuestion({...tempQuestion, q: e.target.value})} className="min-h-[140px] rounded-2xl font-semibold"/>
+                    </div>
+                    <div className="space-y-4">
+                      <Label className="text-[11px] font-black uppercase text-muted-foreground">Multiple Choice Options</Label>
+                      <RadioGroup value={tempQuestion.answer.toString()} onValueChange={(v) => setTempQuestion({...tempQuestion, answer: parseInt(v)})} className="space-y-3">
+                        {tempQuestion.options.map((opt, i) => (
+                          <div key={i} className={cn("flex items-center gap-3 p-2 rounded-2xl border", tempQuestion.answer === i && "bg-emerald-50 border-emerald-200")}>
+                            <RadioGroupItem value={i.toString()} className="h-5 w-5 ml-2" />
+                            <Input value={opt} onChange={(e) => { const next = [...tempQuestion.options]; next[i] = e.target.value; setTempQuestion({...tempQuestion, options: next})}} className="border-none shadow-none focus-visible:ring-0 font-medium"/>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </div>
+                    <div className="pt-4 flex gap-3"><Button variant="outline" className="flex-1 rounded-xl" onClick={() => setEditingQuestionIndex(null)}>Discard</Button><Button className="flex-1 rounded-xl" onClick={() => { const next = [...questionsByLang[activeLang]]; next[editingQuestionIndex] = tempQuestion; setQuestionsByLang({...questionsByLang, [activeLang]: next}); setEditingQuestionIndex(null); }}>Save</Button></div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {questionsByLang[activeLang]?.map((q, i) => (
+                      <Card key={q.id} className="overflow-hidden border shadow-none bg-muted/10">
+                        <div className="flex items-center justify-between px-4 py-2 bg-muted/20 border-b">
+                          <span className="text-[10px] font-black"># {i + 1}</span>
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="icon" disabled={i === 0} onClick={() => moveQuestion(i, 'up')} className="h-7 w-7"><ChevronUp className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="icon" disabled={i === questionsByLang[activeLang].length - 1} onClick={() => moveQuestion(i, 'down')} className="h-7 w-7"><ChevronDown className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingQuestionIndex(i); setTempQuestion({...q}); }} className="h-7 w-7"><Edit2 className="h-3.5 w-3.5" /></Button>
+                          </div>
+                        </div>
+                        <div className="p-4"><p className="text-xs font-bold leading-relaxed">{q.q}</p></div>
+                      </Card>
+                    ))}
+                    <Button variant="outline" className="w-full border-dashed h-12" onClick={() => { const newQ = { id: `q-${Date.now()}`, q: "New Question", options: ["A", "B", "C", "D"], answer: 0, mdx: false }; const next = [...(questionsByLang[activeLang] || []), newQ]; setQuestionsByLang({...questionsByLang, [activeLang]: next}); setEditingQuestionIndex(next.length - 1); setTempQuestion(newQ); }}><Plus className="h-4 w-4 mr-2" /> Add Question</Button>
+                  </div>
+                )}
+              </Tabs>
+            )}
+          </div>
+          <SheetFooter className="mt-8 pt-4 border-t"><Button onClick={handleSaveQuestions} className="w-full">Save All Questions</Button></SheetFooter>
         </SheetContent>
       </Sheet>
     </div>
