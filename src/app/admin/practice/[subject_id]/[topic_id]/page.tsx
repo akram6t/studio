@@ -304,7 +304,7 @@ export default function AdminTopicSetsPage() {
                 <div className="shrink-0 flex items-center gap-2">
                   <Button 
                     variant="outline"
-                    className="rounded-xl h-10 px-4 font-bold border-primary/20 text-primary hover:bg-primary/5 shadow-sm"
+                    className="rounded-xl"
                     onClick={() => handleManageQuestions(set)}
                   >
                     Manage Questions
