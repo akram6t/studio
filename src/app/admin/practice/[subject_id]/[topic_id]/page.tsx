@@ -183,6 +183,17 @@ export default function AdminTopicSetsPage() {
     setQuestionsJson(JSON.stringify(updated, null, 2));
   };
 
+  const moveQuestion = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= questions.length) return;
+
+    const newQuestions = [...questions];
+    const [movedItem] = newQuestions.splice(index, 1);
+    newQuestions.splice(newIndex, 0, movedItem);
+    setQuestions(newQuestions);
+    setQuestionsJson(JSON.stringify(newQuestions, null, 2));
+  };
+
   const saveIndividualQuestion = () => {
     if (editingQuestionIndex !== null && tempQuestion) {
       const updated = [...questions];
@@ -540,6 +551,25 @@ export default function AdminTopicSetsPage() {
                         {q.mdx && <Badge variant="outline" className="text-[8px] font-black border-primary/20 text-primary uppercase">MDX</Badge>}
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          disabled={idx === 0}
+                          onClick={() => moveQuestion(idx, 'up')}
+                          className="h-7 w-7 rounded-lg hover:bg-primary/10 hover:text-primary"
+                        >
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          disabled={idx === questions.length - 1}
+                          onClick={() => moveQuestion(idx, 'down')}
+                          className="h-7 w-7 rounded-lg hover:bg-primary/10 hover:text-primary"
+                        >
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        </Button>
+                        <div className="w-px h-4 bg-border mx-1" />
                         <Button 
                           variant="ghost" 
                           size="icon" 
