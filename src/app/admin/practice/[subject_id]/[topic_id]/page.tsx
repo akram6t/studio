@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { 
   ArrowLeft, 
   Lock, 
@@ -25,7 +27,9 @@ import {
   Check,
   FileJson,
   ListOrdered,
-  AlertCircle
+  AlertCircle,
+  X,
+  Type
 } from "lucide-react";
 import { 
   Sheet, 
@@ -69,6 +73,10 @@ export default function AdminTopicSetsPage() {
   const [questionsJson, setQuestionsJson] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+  
+  // Individual Question Editing State
+  const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
+  const [tempQuestion, setTempQuestion] = useState<Question | null>(null);
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
@@ -115,7 +123,7 @@ export default function AdminTopicSetsPage() {
 
   const handleManageQuestions = (set: TopicSet) => {
     setManagingQuestionsSet(set);
-    // Use standard questions from API for initialization
+    // Initialize with dummy questions
     const initialQuestions: Question[] = [
       { id: 'q1', q: 'Find the value of $x$ in the equation $2^x = 1024$.', options: ['8', '9', '10', '12'], answer: 2, mdx: true },
       { id: 'q2', q: 'What is the largest 3-digit prime number?', options: ['991', '997', '993', '987'], answer: 1, mdx: false },
@@ -127,22 +135,62 @@ export default function AdminTopicSetsPage() {
     setQuestionsJson(JSON.stringify(initialQuestions, null, 2));
     setIsQuestionsSheetOpen(true);
     setJsonError(null);
+    setEditingQuestionIndex(null);
   };
 
   const handleSaveQuestions = () => {
     try {
+      let finalQuestions = [...questions];
       if (isJsonMode) {
         const parsed = JSON.parse(questionsJson);
         if (!Array.isArray(parsed)) throw new Error("Questions must be an array");
-        setQuestions(parsed);
-        if (managingQuestionsSet) {
-          setSets(sets.map(s => s.id === managingQuestionsSet.id ? { ...s, questions: parsed.length } : s));
-        }
+        finalQuestions = parsed;
+      }
+      
+      setQuestions(finalQuestions);
+      if (managingQuestionsSet) {
+        setSets(sets.map(s => s.id === managingQuestionsSet.id ? { ...s, questions: finalQuestions.length } : s));
       }
       setIsQuestionsSheetOpen(false);
       setManagingQuestionsSet(null);
     } catch (e: any) {
       setJsonError(e.message);
+    }
+  };
+
+  // Individual Question Actions
+  const startEditQuestion = (index: number) => {
+    setEditingQuestionIndex(index);
+    setTempQuestion({ ...questions[index] });
+  };
+
+  const addNewQuestion = () => {
+    const newQ: Question = {
+      id: `q-${Date.now()}`,
+      q: "",
+      options: ["", "", "", ""],
+      answer: 0,
+      mdx: false
+    };
+    setQuestions([...questions, newQ]);
+    startEditQuestion(questions.length);
+  };
+
+  const deleteQuestion = (index: number) => {
+    const updated = [...questions];
+    updated.splice(index, 1);
+    setQuestions(updated);
+    setQuestionsJson(JSON.stringify(updated, null, 2));
+  };
+
+  const saveIndividualQuestion = () => {
+    if (editingQuestionIndex !== null && tempQuestion) {
+      const updated = [...questions];
+      updated[editingQuestionIndex] = tempQuestion;
+      setQuestions(updated);
+      setQuestionsJson(JSON.stringify(updated, null, 2));
+      setEditingQuestionIndex(null);
+      setTempQuestion(null);
     }
   };
 
@@ -357,31 +405,45 @@ export default function AdminTopicSetsPage() {
       <Sheet open={isQuestionsSheetOpen} onOpenChange={setIsQuestionsSheetOpen}>
         <SheetContent side="right" className="sm:max-w-2xl overflow-y-auto">
           <SheetHeader className="mb-6 border-b pb-4">
-            <SheetTitle className="text-xl font-headline font-bold flex items-center gap-2">
-              <FileJson className="h-5 w-5 text-primary" /> Manage Questions
-            </SheetTitle>
+            <div className="flex items-center justify-between">
+              <SheetTitle className="text-xl font-headline font-bold flex items-center gap-2">
+                <FileJson className="h-5 w-5 text-primary" /> Manage Questions
+              </SheetTitle>
+              {editingQuestionIndex !== null && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setEditingQuestionIndex(null)}
+                  className="rounded-lg h-8 gap-1.5 text-muted-foreground"
+                >
+                  <X className="h-4 w-4" /> Back to List
+                </Button>
+              )}
+            </div>
             <SheetDescription className="font-medium">
               Update test questions for <span className="text-foreground font-bold">"{managingQuestionsSet?.title}"</span>.
             </SheetDescription>
           </SheetHeader>
 
           <div className="space-y-6 py-4">
-            <div className="flex items-center justify-between bg-muted/30 p-1 rounded-xl border">
-              <Button 
-                variant={isJsonMode ? "ghost" : "secondary"} 
-                className={cn("flex-1 gap-2 rounded-lg", !isJsonMode && "shadow-sm")}
-                onClick={() => setIsJsonMode(false)}
-              >
-                <ListOrdered className="h-4 w-4" /> List View
-              </Button>
-              <Button 
-                variant={isJsonMode ? "secondary" : "ghost"} 
-                className={cn("flex-1 gap-2 rounded-lg", isJsonMode && "shadow-sm")}
-                onClick={() => setIsJsonMode(true)}
-              >
-                <FileJson className="h-4 w-4" /> JSON Editor
-              </Button>
-            </div>
+            {editingQuestionIndex === null && (
+              <div className="flex items-center justify-between bg-muted/30 p-1 rounded-xl border">
+                <Button 
+                  variant={isJsonMode ? "ghost" : "secondary"} 
+                  className={cn("flex-1 gap-2 rounded-lg", !isJsonMode && "shadow-sm")}
+                  onClick={() => setIsJsonMode(false)}
+                >
+                  <ListOrdered className="h-4 w-4" /> List View
+                </Button>
+                <Button 
+                  variant={isJsonMode ? "secondary" : "ghost"} 
+                  className={cn("flex-1 gap-2 rounded-lg", isJsonMode && "shadow-sm")}
+                  onClick={() => setIsJsonMode(true)}
+                >
+                  <FileJson className="h-4 w-4" /> JSON Editor
+                </Button>
+              </div>
+            )}
 
             {jsonError && (
               <Alert variant="destructive" className="rounded-xl">
@@ -391,7 +453,67 @@ export default function AdminTopicSetsPage() {
               </Alert>
             )}
 
-            {isJsonMode ? (
+            {editingQuestionIndex !== null && tempQuestion ? (
+              // Individual Question Edit Form
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Question Text</Label>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="q-mdx" className="text-[10px] font-bold uppercase cursor-pointer">MDX Mode</Label>
+                      <Switch 
+                        id="q-mdx"
+                        checked={tempQuestion.mdx} 
+                        onCheckedChange={(val) => setTempQuestion({...tempQuestion, mdx: val})} 
+                      />
+                    </div>
+                  </div>
+                  <Textarea 
+                    value={tempQuestion.q}
+                    onChange={(e) => setTempQuestion({...tempQuestion, q: e.target.value})}
+                    className="min-h-[120px] rounded-xl font-semibold leading-relaxed"
+                    placeholder="Enter the question text here..."
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Answer Options</Label>
+                  <RadioGroup 
+                    value={tempQuestion.answer.toString()} 
+                    onValueChange={(val) => setTempQuestion({...tempQuestion, answer: parseInt(val)})}
+                    className="space-y-3"
+                  >
+                    {tempQuestion.options.map((opt, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="flex items-center justify-center h-10 w-10 shrink-0">
+                          <RadioGroupItem value={idx.toString()} id={`opt-${idx}`} className="h-5 w-5" />
+                        </div>
+                        <Input 
+                          value={opt}
+                          onChange={(e) => {
+                            const newOptions = [...tempQuestion.options];
+                            newOptions[idx] = e.target.value;
+                            setTempQuestion({...tempQuestion, options: newOptions});
+                          }}
+                          className="rounded-xl h-11"
+                          placeholder={`Option ${String.fromCharCode(65 + idx)}`}
+                        />
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+
+                <div className="pt-4 flex gap-2">
+                  <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setEditingQuestionIndex(null)}>
+                    Discard
+                  </Button>
+                  <Button className="flex-1 rounded-xl gap-2 shadow-lg" onClick={saveIndividualQuestion}>
+                    <Save className="h-4 w-4" /> Save Question
+                  </Button>
+                </div>
+              </div>
+            ) : isJsonMode ? (
+              // JSON Mode
               <div className="space-y-4">
                 <div className="flex justify-between items-end">
                   <Label className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Raw Question Bank (JSON)</Label>
@@ -408,12 +530,33 @@ export default function AdminTopicSetsPage() {
                 />
               </div>
             ) : (
+              // List View Mode
               <div className="space-y-4">
                 {questions.map((q, idx) => (
                   <div key={q.id} className="p-4 bg-muted/20 border rounded-2xl group relative hover:border-primary/20 transition-colors">
                     <div className="flex justify-between items-start mb-2">
-                      <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase">Q{idx + 1}</Badge>
-                      <span className="text-[10px] font-mono text-muted-foreground">ID: {q.id}</span>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase">Q{idx + 1}</Badge>
+                        {q.mdx && <Badge variant="outline" className="text-[8px] font-black border-primary/20 text-primary uppercase">MDX</Badge>}
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => startEditQuestion(idx)}
+                          className="h-7 w-7 rounded-lg hover:bg-primary/10 hover:text-primary"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => deleteQuestion(idx)}
+                          className="h-7 w-7 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                     
                     <div className="mb-4">
@@ -428,22 +571,27 @@ export default function AdminTopicSetsPage() {
                       {q.options.map((opt, oIdx) => (
                         <div key={oIdx} className={cn(
                           "p-2 rounded-lg text-[10px] font-bold border transition-colors flex items-center gap-2",
-                          q.answer === oIdx ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-background text-muted-foreground"
+                          q.answer === oIdx ? "bg-emerald-50 text-emerald-600 border-emerald-200 shadow-sm" : "bg-background text-muted-foreground"
                         )}>
                           <span className="opacity-50 shrink-0">{String.fromCharCode(65 + oIdx)}.</span>
                           <div className="flex-grow">
                             {q.mdx ? (
                               <MarkdownRenderer content={opt} className="prose-sm prose-p:m-0" />
                             ) : (
-                              <span>{opt}</span>
+                              <span className="line-clamp-1">{opt}</span>
                             )}
                           </div>
+                          {q.answer === oIdx && <Check className="h-3 w-3 ml-auto" />}
                         </div>
                       ))}
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" className="w-full border-dashed rounded-xl h-12 gap-2 text-muted-foreground hover:text-primary">
+                <Button 
+                  onClick={addNewQuestion}
+                  variant="outline" 
+                  className="w-full border-dashed rounded-xl h-12 gap-2 text-muted-foreground hover:text-primary transition-all hover:bg-primary/5"
+                >
                   <Plus className="h-4 w-4" /> Add Individual Question
                 </Button>
               </div>
@@ -454,7 +602,11 @@ export default function AdminTopicSetsPage() {
             <SheetClose asChild>
               <Button variant="outline" className="w-full rounded-xl h-11 font-bold">Discard</Button>
             </SheetClose>
-            <Button onClick={handleSaveQuestions} className="w-full gap-2 rounded-xl h-11 font-bold shadow-lg shadow-primary/20">
+            <Button 
+              disabled={editingQuestionIndex !== null}
+              onClick={handleSaveQuestions} 
+              className="w-full gap-2 rounded-xl h-11 font-bold shadow-lg shadow-primary/20"
+            >
               <Save className="h-4 w-4" />
               Commit Changes
             </Button>
