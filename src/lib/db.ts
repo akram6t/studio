@@ -8,6 +8,11 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');
 }
 
+/**
+ * Global is used here to maintain a cached connection across hot reloads
+ * in development. This prevents connections from growing exponentially
+ * during API Route usage.
+ */
 let cached = (global as any).mongoose;
 
 if (!cached) {
@@ -24,13 +29,16 @@ async function connectDB() {
       bufferCommands: false,
       dbName: DB_NAME || 'logical-book',
       maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000,
     };
 
+    console.log('🔄 Connecting to MongoDB Atlas...');
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log('MongoDB Connected to:', DB_NAME || 'logical-book');
+      console.log('✅ MongoDB Connected:', DB_NAME || 'logical-book');
       return mongoose;
     }).catch(err => {
-      console.error('MongoDB Connection Error:', err);
+      console.error('❌ MongoDB Connection Error:', err);
       cached.promise = null;
       throw err;
     });

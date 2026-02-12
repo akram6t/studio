@@ -7,7 +7,8 @@ const isPublicRoute = createRouteMatcher([
   '/signup(.*)',
   '/pricing(.*)',
   '/about(.*)',
-  '/auth-callback(.*)'
+  '/auth-callback(.*)',
+  '/favicon.ico'
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
@@ -18,8 +19,9 @@ export default clerkMiddleware(async (auth, request) => {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Skip Next.js internals and all static files
+    // Use a cleaner regex to exclude static assets from middleware execution
+    '/((?!_next/static|_next/image|assets|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|css)).*)',
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],
