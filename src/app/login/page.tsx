@@ -4,6 +4,7 @@ export default function LoginPage() {
   return (
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-10rem)] px-4 py-12">
       <SignIn 
+        routing="hash"
         appearance={{
           elements: {
             formButtonPrimary: "bg-primary hover:bg-primary/90 text-sm font-bold h-11",

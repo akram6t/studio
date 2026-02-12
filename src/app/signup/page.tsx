@@ -4,6 +4,7 @@ export default function SignupPage() {
   return (
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-10rem)] px-4 py-12">
       <SignUp 
+        routing="hash"
         appearance={{
           elements: {
             formButtonPrimary: "bg-accent hover:bg-accent/90 text-sm font-bold h-11",
