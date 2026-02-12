@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Menu, BookOpen, Sun, Moon, User } from 'lucide-react';
+import { Search, Menu, BookOpen, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 
@@ -76,30 +76,36 @@ export default function Navbar() {
             </Link>
           </div>
 
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open navigation menu">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right">
-              <SheetTitle className="sr-only">Menu</SheetTitle>
-              <SheetDescription className="sr-only">
-                Navigation links for exams, practice materials, pricing, and account management.
-              </SheetDescription>
-              <div className="flex flex-col gap-6 mt-10">
-                <Link href="/" className="text-lg font-bold">Home</Link>
-                <Link href="/exams" className="text-lg font-bold">Exams</Link>
-                <Link href="/practice" className="text-lg font-bold">Practice</Link>
-                <Link href="/books" className="text-lg font-bold">Books</Link>
-                <Link href="/pricing" className="text-lg font-bold">Pricing</Link>
-                <Link href="/admin" className="text-lg font-bold text-primary">Admin Dashboard</Link>
-                <hr className="opacity-20" />
-                <Link href="/login" className="text-lg font-bold">Log In</Link>
-                <Link href="/signup" className="text-lg font-bold text-accent">Sign Up</Link>
-              </div>
-            </SheetContent>
-          </Sheet>
+          {mounted ? (
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open navigation menu">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right">
+                <SheetTitle className="sr-only">Menu</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Navigation links for exams, practice materials, pricing, and account management.
+                </SheetDescription>
+                <div className="flex flex-col gap-6 mt-10">
+                  <Link href="/" className="text-lg font-bold">Home</Link>
+                  <Link href="/exams" className="text-lg font-bold">Exams</Link>
+                  <Link href="/practice" className="text-lg font-bold">Practice</Link>
+                  <Link href="/books" className="text-lg font-bold">Books</Link>
+                  <Link href="/pricing" className="text-lg font-bold">Pricing</Link>
+                  <Link href="/admin" className="text-lg font-bold text-primary">Admin Dashboard</Link>
+                  <hr className="opacity-20" />
+                  <Link href="/login" className="text-lg font-bold">Log In</Link>
+                  <Link href="/signup" className="text-lg font-bold text-accent">Sign Up</Link>
+                </div>
+              </SheetContent>
+            </Sheet>
+          ) : (
+            <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open navigation menu">
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </div>
     </header>

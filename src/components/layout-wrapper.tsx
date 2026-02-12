@@ -1,15 +1,12 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import dynamic from 'next/dynamic';
-
-// Optimization: Dynamically import Navbar and Footer to reduce initial hydration size
-const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: true });
-const Footer = dynamic(() => import("@/components/Footer"), { ssr: true });
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 /**
  * A client-side wrapper that conditionally renders the public Navbar and Footer.
- * Optimized to use usePathname efficiently.
+ * Reverted to static imports to ensure hydration stability while maintaining high performance.
  */
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
